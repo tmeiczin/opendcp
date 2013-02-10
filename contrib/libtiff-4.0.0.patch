@@ -1,0 +1,11 @@
+--- Makefile.in	2012-01-29 16:53:36.000000000 -0500
++++ Makefile.in	2012-01-29 16:53:54.000000000 -0500
+@@ -329,7 +329,7 @@
+ 	libtiff-4.pc.in
+ 
+ dist_doc_DATA = $(docfiles)
+-SUBDIRS = port libtiff tools build contrib test man html
++SUBDIRS = port libtiff
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = libtiff-4.pc
+ all: all-recursive

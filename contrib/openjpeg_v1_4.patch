@@ -1,0 +1,80 @@
+--- configure	2011-02-02 22:34:31.000000000 -0500
++++ configure	2011-02-02 22:35:56.000000000 -0500
+@@ -16153,20 +16153,6 @@
+ 
+ ac_config_files="$ac_config_files libopenjpeg/Makefile"
+ 
+-ac_config_files="$ac_config_files jpwl/Makefile"
+-
+-ac_config_files="$ac_config_files codec/Makefile"
+-
+-ac_config_files="$ac_config_files mj2/Makefile"
+-
+-ac_config_files="$ac_config_files doc/Makefile"
+-
+-ac_config_files="$ac_config_files jp3d/Makefile"
+-
+-ac_config_files="$ac_config_files jp3d/libjp3dvm/Makefile"
+-
+-ac_config_files="$ac_config_files jp3d/codec/Makefile"
+-
+ cat >confcache <<\_ACEOF
+ # This file is a shell script that caches the results of configure
+ # tests run on this system so they can be shared between configure
+@@ -17281,13 +17267,6 @@
+     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+     "libopenjpeg.pc") CONFIG_FILES="$CONFIG_FILES libopenjpeg.pc" ;;
+     "libopenjpeg/Makefile") CONFIG_FILES="$CONFIG_FILES libopenjpeg/Makefile" ;;
+-    "jpwl/Makefile") CONFIG_FILES="$CONFIG_FILES jpwl/Makefile" ;;
+-    "codec/Makefile") CONFIG_FILES="$CONFIG_FILES codec/Makefile" ;;
+-    "mj2/Makefile") CONFIG_FILES="$CONFIG_FILES mj2/Makefile" ;;
+-    "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
+-    "jp3d/Makefile") CONFIG_FILES="$CONFIG_FILES jp3d/Makefile" ;;
+-    "jp3d/libjp3dvm/Makefile") CONFIG_FILES="$CONFIG_FILES jp3d/libjp3dvm/Makefile" ;;
+-    "jp3d/codec/Makefile") CONFIG_FILES="$CONFIG_FILES jp3d/codec/Makefile" ;;
+ 
+   *) as_fn_error "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
+   esac
+
+
+--- Makefile.in	2011-02-03 01:35:50.000000000 -0500
++++ Makefile.in	2011-02-03 01:42:00.000000000 -0500
+@@ -244,7 +244,7 @@
+ with_doxygen = @with_doxygen@
+ 
+ #OpenJPEG top source directory
+-SUBDIRS = libopenjpeg codec mj2 @jpwl_dir@ @jp3d_dir@ doc
++SUBDIRS = libopenjpeg
+ pkgconf_dir = /usr/lib/pkgconfig
+ all: opj_config.h
+ 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
+@@ -757,16 +757,6 @@
+ 
+ install-data-hook:
+ 	@echo ""
+-	@l='$(SUBDIRS)'; for f in $$l ; do \
+-	cat $$f/.report.txt ; \
+-	done
+-	@echo ""
+-	@echo "Installing: libopenjpeg1.pc $(pkgconf_dir)"
+-	@echo ""
+-	@$(INSTALL) -d $(pkgconf_dir)
+-	@cp libopenjpeg.pc $(pkgconf_dir)/libopenjpeg1.pc
+-	@(cd $(pkgconf_dir) && $(RM) libopenjpeg.pc && \
+-	$(LN_S) libopenjpeg1.pc libopenjpeg.pc)
+ 
+ uninstall-hook:
+ 	@(cd $(pkgconf_dir) && $(RM) libopenjpeg.pc libopenjpeg1.pc)
+
+--- libopenjpeg/Makefile.in	2011-02-03 01:47:49.000000000 -0500
++++ libopenjpeg/Makefile.in	2011-02-03 01:49:04.000000000 -0500
+@@ -113,7 +113,8 @@
+ BUILD_NR = @BUILD_NR@
+ CC = @CC@
+ CCDEPMODE = @CCDEPMODE@
+-CFLAGS = $(COMPILERFLAGS) $(INCLUDES)
++CFLAGS1 = @CFLAGS@ 
++CFLAGS = $(CFLAGS1) $(COMPILERFLAGS) $(INCLUDES)
+ CPP = @CPP@
+ CPPFLAGS = @CPPFLAGS@
+ CXX = @CXX@

@@ -1,0 +1,81 @@
+OpenDCP
+------------
+This program builds the XML files for Digital Cinema Packages. 
+
+Requirements
+------------
+The program requires the following libraries. The versions listed are the ones tested with OpenDCP.
+Other versions may work, except where indicated.
+
+    Library                       Version Tested    Minimum Required    Website 
+    -------                       --------------    ----------------    -------
+    AS-DCP File Access Library**  1.8.41            1.7.40              http://www.cinecert.com/asdcplib
+    OpenSSL                       0.9.8             0.9.8               http://www.openssl.org/docs/crypto/crypto.html
+    LibXML2*                      2.7.8             2.7.8               http://xmlsoft.org
+    LibXSLT*                      1.1.26            1.1.26              http://xmlsoft.org
+    LibXMLSec*                    1.2.16            1.2.16              http://www.aleksey.com/xmlsec
+    LibTIFF                       3.9.4                                 http://www.libtiff.org
+~   OpenJPEG**                    1.4.0             1.3                 http://www.openjpeg.org
+    QT4***                        4.8.0             4.7.0               http://qt.nokia.com
+
+*   Optional, if you want XML signatures
+**  OpenDCP .20 uses locally compile version of these libraries 
+*** Optional, if you want to compile the GUI
+
+Mac OS X and many linux distributions already have OpenSSL (libcrypto) installed.
+
+Cmake
+------------
+CMake is used to build this application. You may need to install CMake.
+Most linux distributions have CMake installed or have it available through the package manager.
+On Mac OSX and Windows, CMake is easily installed from http://www.cmake.org/
+
+Compile
+------------
+It is recommended you perform an out-of-source build. This will prevent cluttering the source directory.
+This can be performed from anywhere, just give cmake the path to the root directory of the OpenDCP source.
+
+For example, if the OpenDCP source is in /home/opendcp, but you want to build in /home/opendcp-build
+
+$ cd /home/opendcp-build
+$ cmake /home/opendcp/
+
+By default XMLSEC libraries are enabled, but to simplify compiling you can disable it. 
+
+$ cmake -DENABLE_XMLSEC=OFF /home/opendcp
+
+If you wish to compile the GUI (see note below), enable the GUI flag
+
+$ cmake -DENABLE_GUI=ON /home/opendcp
+
+Once cmake completes, you should have the necessary make files. To compile issue the make command.
+
+$ make
+
+You should end up with opendcp_xml, opendcp_xml, opendc_xml_verify (if XMLSEC enabled) opendcp_j2k
+in the cli directory of the build tree.
+
+GUI 
+------------
+If you wish to compile the GUI, you will need install QT4 development and runtime
+libraries (4.7 or higher). On Linux you can usually install this through the package manager. 
+Otherwise, you can download it from http://qt.nokia.com/.
+
+GUI compiling is enabled by default, to disable it pass -DENABLE_GUI=OFF to cmake.
+
+Install
+------------
+You can install OpenDCP so you can invoke the command from anywhere. The behavior of where
+the binaries are installed varies between OSes.
+
+# make install
+
+Packages
+------------
+You can also create package/installers. Windows and OSX are detected automatically,
+but when compiling under linux you need to specify whether you want DEB or RPMS. This
+is done by passing -DRPM=ON or -DDEB=ON during the initial cmake.
+
+To then build the package:
+
+# make package

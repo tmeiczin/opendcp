@@ -1,0 +1,3534 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>872</height>
+   </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>800</width>
+    <height>925</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>OpenDCP</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../resources/opendcp.qrc">
+    <normaloff>:/images/opendcp.png</normaloff>:/images/opendcp.png</iconset>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>true</bool>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QScrollArea" name="scrollArea">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="widgetResizable">
+       <bool>false</bool>
+      </property>
+      <widget class="QWidget" name="scrollAreaWidgetContents">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>775</width>
+         <height>800</height>
+        </rect>
+       </property>
+       <widget class="QTabWidget" name="tabWidget">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>775</width>
+          <height>800</height>
+         </rect>
+        </property>
+        <property name="currentIndex">
+         <number>3</number>
+        </property>
+        <widget class="QWidget" name="j2kTab">
+         <attribute name="title">
+          <string notr="true">JPEG2000</string>
+         </attribute>
+         <widget class="QWidget" name="widget" native="true">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>760</width>
+            <height>750</height>
+           </rect>
+          </property>
+          <widget class="QGroupBox" name="inputGroupBox">
+           <property name="geometry">
+            <rect>
+             <x>80</x>
+             <y>320</y>
+             <width>600</width>
+             <height>121</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>Input Directories</string>
+           </property>
+           <widget class="QLabel" name="inImageLeft">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>30</y>
+              <width>80</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>25</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Left:</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="inImageLeftEdit">
+            <property name="geometry">
+             <rect>
+              <x>95</x>
+              <y>30</y>
+              <width>460</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>25</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+           <widget class="QToolButton" name="inImageLeftButton">
+            <property name="geometry">
+             <rect>
+              <x>565</x>
+              <y>30</y>
+              <width>27</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>27</horstretch>
+              <verstretch>25</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string notr="true">...</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="inImageRight">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>60</y>
+              <width>80</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>25</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Right:</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="inImageRightEdit">
+            <property name="geometry">
+             <rect>
+              <x>95</x>
+              <y>60</y>
+              <width>460</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>25</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+           <widget class="QToolButton" name="inImageRightButton">
+            <property name="geometry">
+             <rect>
+              <x>565</x>
+              <y>60</y>
+              <width>27</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>27</horstretch>
+              <verstretch>25</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string notr="true">...</string>
+            </property>
+           </widget>
+           <widget class="QSpinBox" name="startSpinBox">
+            <property name="geometry">
+             <rect>
+              <x>130</x>
+              <y>90</y>
+              <width>111</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+            <property name="buttonSymbols">
+             <enum>QAbstractSpinBox::PlusMinus</enum>
+            </property>
+            <property name="suffix">
+             <string notr="true"/>
+            </property>
+            <property name="prefix">
+             <string notr="true"/>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>999999</number>
+            </property>
+           </widget>
+           <widget class="QLabel" name="startLabel">
+            <property name="geometry">
+             <rect>
+              <x>68</x>
+              <y>90</y>
+              <width>60</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Start:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+           <widget class="QLabel" name="endLabel">
+            <property name="geometry">
+             <rect>
+              <x>248</x>
+              <y>90</y>
+              <width>60</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>End:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+           <widget class="QSpinBox" name="endSpinBox">
+            <property name="geometry">
+             <rect>
+              <x>310</x>
+              <y>90</y>
+              <width>111</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+            <property name="buttonSymbols">
+             <enum>QAbstractSpinBox::PlusMinus</enum>
+            </property>
+            <property name="suffix">
+             <string notr="true"/>
+            </property>
+            <property name="prefix">
+             <string notr="true"/>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>999999</number>
+            </property>
+           </widget>
+          </widget>
+          <widget class="QGroupBox" name="encoderGroup">
+           <property name="geometry">
+            <rect>
+             <x>80</x>
+             <y>10</y>
+             <width>600</width>
+             <height>191</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>JPEG2000 Encoder Parameters</string>
+           </property>
+           <widget class="QLabel" name="bwValueLabel">
+            <property name="geometry">
+             <rect>
+              <x>410</x>
+              <y>120</y>
+              <width>63</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>25</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string notr="true">125 mb/s</string>
+            </property>
+            <property name="indent">
+             <number>0</number>
+            </property>
+           </widget>
+           <widget class="QLabel" name="frameRateLabel">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>90</y>
+              <width>125</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>27</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Frame Rate:</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="encoderLabel">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>30</y>
+              <width>125</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>27</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Encoder:</string>
+            </property>
+           </widget>
+           <widget class="QComboBox" name="encoderComboBox">
+            <property name="geometry">
+             <rect>
+              <x>150</x>
+              <y>30</y>
+              <width>125</width>
+              <height>26</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>25</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>27</height>
+             </size>
+            </property>
+            <property name="editable">
+             <bool>false</bool>
+            </property>
+            <item>
+             <property name="text">
+              <string notr="true">OpenJPEG</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string notr="true">Kakadu</string>
+             </property>
+            </item>
+           </widget>
+           <widget class="QSlider" name="bwSlider">
+            <property name="geometry">
+             <rect>
+              <x>150</x>
+              <y>120</y>
+              <width>250</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>25</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>250</number>
+            </property>
+            <property name="value">
+             <number>125</number>
+            </property>
+            <property name="tracking">
+             <bool>true</bool>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::NoTicks</enum>
+            </property>
+           </widget>
+           <widget class="QSpinBox" name="threadsSpinBox">
+            <property name="geometry">
+             <rect>
+              <x>150</x>
+              <y>150</y>
+              <width>45</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>25</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="suffix">
+             <string notr="true"/>
+            </property>
+            <property name="prefix">
+             <string notr="true"/>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+           </widget>
+           <widget class="QCheckBox" name="stereoscopicCheckBox">
+            <property name="geometry">
+             <rect>
+              <x>290</x>
+              <y>60</y>
+              <width>190</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>25</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Stereoscopic image sequence</string>
+            </property>
+            <property name="text">
+             <string>Stereoscopic</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="profileLabel">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>60</y>
+              <width>125</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>27</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Profile:</string>
+            </property>
+           </widget>
+           <widget class="QComboBox" name="profileComboBox">
+            <property name="geometry">
+             <rect>
+              <x>150</x>
+              <y>60</y>
+              <width>125</width>
+              <height>26</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>25</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>27</height>
+             </size>
+            </property>
+            <item>
+             <property name="text">
+              <string notr="true">Cinema 2K</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string notr="true">Cinema 4K</string>
+             </property>
+            </item>
+           </widget>
+           <widget class="QLabel" name="bwLabel">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>120</y>
+              <width>125</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>27</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Bandwidth:</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="threadsLabel">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>150</y>
+              <width>125</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string notr="true">Threads:</string>
+            </property>
+           </widget>
+           <widget class="QCheckBox" name="overwritej2kCB">
+            <property name="geometry">
+             <rect>
+              <x>290</x>
+              <y>30</y>
+              <width>190</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>25</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Overwrite existing j2c files. Uncheck if you are resuming a previous conversion, which will save time.</string>
+            </property>
+            <property name="text">
+             <string>Overwrite Existing</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+           <widget class="QComboBox" name="frameRateComboBox">
+            <property name="geometry">
+             <rect>
+              <x>150</x>
+              <y>90</y>
+              <width>71</width>
+              <height>26</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>25</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <item>
+             <property name="text">
+              <string notr="true">24</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string notr="true">25</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string notr="true">30</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string notr="true">48</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string notr="true">50</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string notr="true">60</string>
+             </property>
+            </item>
+           </widget>
+          </widget>
+          <widget class="QGroupBox" name="outputGroupBox">
+           <property name="geometry">
+            <rect>
+             <x>80</x>
+             <y>450</y>
+             <width>600</width>
+             <height>95</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>Output Directories</string>
+           </property>
+           <widget class="QLabel" name="outJ2kLeft">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>30</y>
+              <width>80</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Left:</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="outJ2kLeftEdit">
+            <property name="geometry">
+             <rect>
+              <x>95</x>
+              <y>30</y>
+              <width>460</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+           <widget class="QToolButton" name="outJ2kLeftButton">
+            <property name="geometry">
+             <rect>
+              <x>565</x>
+              <y>30</y>
+              <width>27</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string notr="true">...</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="outJ2kRight">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>60</y>
+              <width>80</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Right:</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="outJ2kRightEdit">
+            <property name="geometry">
+             <rect>
+              <x>95</x>
+              <y>60</y>
+              <width>460</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+           <widget class="QToolButton" name="outJ2kRightButton">
+            <property name="geometry">
+             <rect>
+              <x>565</x>
+              <y>60</y>
+              <width>27</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string notr="true">...</string>
+            </property>
+           </widget>
+          </widget>
+          <widget class="QPushButton" name="encodeButton">
+           <property name="geometry">
+            <rect>
+             <x>563</x>
+             <y>565</y>
+             <width>115</width>
+             <height>40</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Convert</string>
+           </property>
+          </widget>
+          <widget class="QGroupBox" name="previewGroupBox">
+           <property name="geometry">
+            <rect>
+             <x>80</x>
+             <y>560</y>
+             <width>280</width>
+             <height>170</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>Preview</string>
+           </property>
+           <widget class="QLabel" name="previewLabel">
+            <property name="geometry">
+             <rect>
+              <x>5</x>
+              <y>22</y>
+              <width>270</width>
+              <height>143</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="scaledContents">
+             <bool>false</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </widget>
+          <widget class="QGroupBox" name="groupBox_3">
+           <property name="geometry">
+            <rect>
+             <x>80</x>
+             <y>210</y>
+             <width>600</width>
+             <height>101</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>Image Parameters</string>
+           </property>
+           <widget class="QComboBox" name="colorComboBox">
+            <property name="geometry">
+             <rect>
+              <x>150</x>
+              <y>30</y>
+              <width>150</width>
+              <height>26</height>
+             </rect>
+            </property>
+            <item>
+             <property name="text">
+              <string notr="true">sRGB</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string notr="true">Rec. 709</string>
+             </property>
+            </item>
+           </widget>
+           <widget class="QCheckBox" name="xyzCheckBox">
+            <property name="geometry">
+             <rect>
+              <x>315</x>
+              <y>30</y>
+              <width>151</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>25</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Perform RGB to X'Y'Z' colorspace conversion</string>
+            </property>
+            <property name="text">
+             <string>X'Y'Z' Transform</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+           <widget class="QCheckBox" name="dpxLogCheckBox">
+            <property name="geometry">
+             <rect>
+              <x>450</x>
+              <y>30</y>
+              <width>141</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>25</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>If input is DPX, use logarithmic conversion</string>
+            </property>
+            <property name="text">
+             <string notr="true">DPX Logarithmic</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+           <widget class="QLabel" name="colorLabel">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>30</y>
+              <width>141</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Source Color:</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="dciResizeLabel">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>60</y>
+              <width>141</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>DCI Resize:</string>
+            </property>
+           </widget>
+           <widget class="QComboBox" name="resizeComboBox">
+            <property name="geometry">
+             <rect>
+              <x>150</x>
+              <y>60</y>
+              <width>150</width>
+              <height>26</height>
+             </rect>
+            </property>
+            <item>
+             <property name="text">
+              <string>None</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Nearest Pixel</string>
+             </property>
+            </item>
+           </widget>
+          </widget>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="mxfTab">
+         <attribute name="title">
+          <string notr="true">MXF</string>
+         </attribute>
+         <widget class="QGroupBox" name="mxfGroupBox">
+          <property name="geometry">
+           <rect>
+            <x>80</x>
+            <y>10</y>
+            <width>600</width>
+            <height>131</height>
+           </rect>
+          </property>
+          <property name="title">
+           <string>MXF Parameters</string>
+          </property>
+          <widget class="QLabel" name="mxfTypeLabel">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>60</y>
+             <width>115</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Label:</string>
+           </property>
+          </widget>
+          <widget class="QComboBox" name="mxfTypeComboBox">
+           <property name="geometry">
+            <rect>
+             <x>130</x>
+             <y>60</y>
+             <width>120</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <item>
+            <property name="text">
+             <string notr="true">MXF Interop</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string notr="true">SMPTE</string>
+            </property>
+           </item>
+          </widget>
+          <widget class="QLabel" name="mxfFramerRateLabel">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>90</y>
+             <width>115</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Frame Rate:</string>
+           </property>
+          </widget>
+          <widget class="QComboBox" name="mxfFrameRateComboBox">
+           <property name="geometry">
+            <rect>
+             <x>130</x>
+             <y>90</y>
+             <width>120</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <item>
+            <property name="text">
+             <string notr="true">24</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string notr="true">25</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string notr="true">30</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string notr="true">48</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string notr="true">50</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string notr="true">60</string>
+            </property>
+           </item>
+          </widget>
+          <widget class="QLabel" name="mxfSourceTypeLabel">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>30</y>
+             <width>115</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Type:</string>
+           </property>
+          </widget>
+          <widget class="QComboBox" name="mxfSourceTypeComboBox">
+           <property name="geometry">
+            <rect>
+             <x>130</x>
+             <y>30</y>
+             <width>120</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <item>
+            <property name="text">
+             <string notr="true">JPEG2000</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string notr="true">MPEG2</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string notr="true">WAV</string>
+            </property>
+           </item>
+          </widget>
+         </widget>
+         <widget class="QPushButton" name="mxfButton">
+          <property name="geometry">
+           <rect>
+            <x>565</x>
+            <y>720</y>
+            <width>115</width>
+            <height>40</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Create MXF</string>
+          </property>
+         </widget>
+         <widget class="QStackedWidget" name="mxfInputStack">
+          <property name="geometry">
+           <rect>
+            <x>70</x>
+            <y>140</y>
+            <width>631</width>
+            <height>581</height>
+           </rect>
+          </property>
+          <property name="currentIndex">
+           <number>1</number>
+          </property>
+          <widget class="QWidget" name="page_1">
+           <widget class="QGroupBox" name="inputPGroupBox">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>90</y>
+              <width>600</width>
+              <height>100</height>
+             </rect>
+            </property>
+            <property name="title">
+             <string>Picture Input</string>
+            </property>
+            <widget class="QLabel" name="pictureLeftLabel">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>30</y>
+               <width>80</width>
+               <height>25</height>
+              </rect>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>25</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Left:</string>
+             </property>
+            </widget>
+            <widget class="QLineEdit" name="pictureLeftEdit">
+             <property name="geometry">
+              <rect>
+               <x>95</x>
+               <y>30</y>
+               <width>465</width>
+               <height>23</height>
+              </rect>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>25</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+            <widget class="QToolButton" name="pictureLeftButton">
+             <property name="geometry">
+              <rect>
+               <x>565</x>
+               <y>30</y>
+               <width>27</width>
+               <height>23</height>
+              </rect>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>27</horstretch>
+               <verstretch>25</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string notr="true">...</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="pictureRightLabel">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>65</y>
+               <width>80</width>
+               <height>25</height>
+              </rect>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>25</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Right:</string>
+             </property>
+            </widget>
+            <widget class="QLineEdit" name="pictureRightEdit">
+             <property name="geometry">
+              <rect>
+               <x>95</x>
+               <y>65</y>
+               <width>465</width>
+               <height>23</height>
+              </rect>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>25</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+            <widget class="QToolButton" name="pictureRightButton">
+             <property name="geometry">
+              <rect>
+               <x>565</x>
+               <y>65</y>
+               <width>27</width>
+               <height>23</height>
+              </rect>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>27</horstretch>
+               <verstretch>25</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string notr="true">...</string>
+             </property>
+            </widget>
+           </widget>
+           <widget class="QGroupBox" name="mxfOutPGroupBox">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>205</y>
+              <width>600</width>
+              <height>70</height>
+             </rect>
+            </property>
+            <property name="title">
+             <string>Output Files</string>
+            </property>
+            <widget class="QLabel" name="pMxfOutLabel">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>30</y>
+               <width>80</width>
+               <height>25</height>
+              </rect>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>25</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Picture:</string>
+             </property>
+            </widget>
+            <widget class="QToolButton" name="pMxfOutButton">
+             <property name="geometry">
+              <rect>
+               <x>565</x>
+               <y>30</y>
+               <width>27</width>
+               <height>23</height>
+              </rect>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>27</horstretch>
+               <verstretch>25</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string notr="true">...</string>
+             </property>
+            </widget>
+            <widget class="QLineEdit" name="pMxfOutEdit">
+             <property name="geometry">
+              <rect>
+               <x>95</x>
+               <y>30</y>
+               <width>465</width>
+               <height>23</height>
+              </rect>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>25</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </widget>
+           <widget class="QGroupBox" name="pictureParametersGroupBox">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>10</y>
+              <width>600</width>
+              <height>70</height>
+             </rect>
+            </property>
+            <property name="title">
+             <string>Picture Parameters</string>
+            </property>
+            <widget class="QCheckBox" name="mxfStereoscopicCheckBox">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>30</y>
+               <width>130</width>
+               <height>27</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Stereoscopic</string>
+             </property>
+            </widget>
+            <widget class="QCheckBox" name="mxfSlideCheckBox">
+             <property name="geometry">
+              <rect>
+               <x>150</x>
+               <y>30</y>
+               <width>100</width>
+               <height>27</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Slideshow</string>
+             </property>
+            </widget>
+            <widget class="QSpinBox" name="mxfSlideSpinBox">
+             <property name="geometry">
+              <rect>
+               <x>260</x>
+               <y>30</y>
+               <width>57</width>
+               <height>25</height>
+              </rect>
+             </property>
+             <property name="suffix">
+              <string notr="true">s</string>
+             </property>
+             <property name="prefix">
+              <string notr="true"/>
+             </property>
+             <property name="maximum">
+              <number>300</number>
+             </property>
+             <property name="value">
+              <number>1</number>
+             </property>
+            </widget>
+            <widget class="QLabel" name="mxfSlideDurationLabel">
+             <property name="geometry">
+              <rect>
+               <x>330</x>
+               <y>30</y>
+               <width>141</width>
+               <height>27</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>duration per slide</string>
+             </property>
+            </widget>
+           </widget>
+          </widget>
+          <widget class="QWidget" name="page_2">
+           <widget class="QGroupBox" name="soundTypeGroupBox">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>5</y>
+              <width>600</width>
+              <height>65</height>
+             </rect>
+            </property>
+            <property name="title">
+             <string>Sound Input Type</string>
+            </property>
+            <widget class="QWidget" name="layoutWidget1">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>29</y>
+               <width>202</width>
+               <height>24</height>
+              </rect>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_5">
+              <item row="0" column="0">
+               <widget class="QRadioButton" name="mxfSoundTypeRadioMono">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Mono</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QRadioButton" name="mxfSoundTypeRadioMulti">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string notr="true">Multi-Channel</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+           <widget class="QStackedWidget" name="mxfSoundInputStack">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>70</y>
+              <width>631</width>
+              <height>511</height>
+             </rect>
+            </property>
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <widget class="QWidget" name="monoPage">
+             <widget class="QGroupBox" name="inputSGroupBox">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>70</y>
+                <width>600</width>
+                <height>361</height>
+               </rect>
+              </property>
+              <property name="title">
+               <string>Input Files</string>
+              </property>
+              <widget class="QWidget" name="layoutWidget2">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>25</y>
+                 <width>581</width>
+                 <height>326</height>
+                </rect>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_2">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="aLeftLabel">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Left:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLineEdit" name="aLeftEdit">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true"/>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QToolButton" name="aLeftButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>27</horstretch>
+                    <verstretch>25</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true">...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="aRightLabel">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Right:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLineEdit" name="aRightEdit">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true"/>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QToolButton" name="aRightButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>27</horstretch>
+                    <verstretch>25</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true">...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="aCenterLabel">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Center:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QLineEdit" name="aCenterEdit">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true"/>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
+                 <widget class="QToolButton" name="aCenterButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>27</horstretch>
+                    <verstretch>25</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true">...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="aSubLabel">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Sub:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QLineEdit" name="aSubEdit">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true"/>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="2">
+                 <widget class="QToolButton" name="aSubButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>27</horstretch>
+                    <verstretch>25</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true">...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QLabel" name="aLeftSLabel">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Left Surround:</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="1">
+                 <widget class="QLineEdit" name="aLeftSEdit">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true"/>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="2">
+                 <widget class="QToolButton" name="aLeftSButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>27</horstretch>
+                    <verstretch>25</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true">...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="0">
+                 <widget class="QLabel" name="aRightSLabel">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Right Surround:</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="1">
+                 <widget class="QLineEdit" name="aRightSEdit">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true"/>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="2">
+                 <widget class="QToolButton" name="aRightSButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>27</horstretch>
+                    <verstretch>25</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true">...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="0">
+                 <widget class="QLabel" name="aLeftCLabel">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Left Center:</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="1">
+                 <widget class="QLineEdit" name="aLeftCEdit">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true"/>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="2">
+                 <widget class="QToolButton" name="aLeftCButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>27</horstretch>
+                    <verstretch>25</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true">...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="0">
+                 <widget class="QLabel" name="aRightCLabel">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Right Center:</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="1">
+                 <widget class="QLineEdit" name="aRightCEdit">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true"/>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="2">
+                 <widget class="QToolButton" name="aRightCButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>27</horstretch>
+                    <verstretch>25</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true">...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="0">
+                 <widget class="QLabel" name="aHILabel">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true">HI:</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="1">
+                 <widget class="QLineEdit" name="aHIEdit">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true"/>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="2">
+                 <widget class="QToolButton" name="aHIButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>27</horstretch>
+                    <verstretch>25</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true">...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="9" column="0">
+                 <widget class="QLabel" name="aVILabel">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true">VI-N:</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="9" column="1">
+                 <widget class="QLineEdit" name="aVIEdit">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true"/>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="9" column="2">
+                 <widget class="QToolButton" name="aVIButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>27</horstretch>
+                    <verstretch>25</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true">...</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+             <widget class="QGroupBox" name="soundParametersGroupBox">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>0</y>
+                <width>600</width>
+                <height>65</height>
+               </rect>
+              </property>
+              <property name="title">
+               <string>Sound Output Parameters</string>
+              </property>
+              <widget class="QWidget" name="layoutWidget3">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>31</y>
+                 <width>399</width>
+                 <height>24</height>
+                </rect>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_4">
+                <item row="0" column="0">
+                 <widget class="QRadioButton" name="mxfSoundRadio2">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Stereo</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QRadioButton" name="mxfSoundRadio5">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true">5.1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QRadioButton" name="mxfSoundRadio7">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true">7.1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
+                 <widget class="QCheckBox" name="mxfHVCheckBox">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Hearing/Visually Impaired</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+             <widget class="QGroupBox" name="amxfOutGroupBox">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>430</y>
+                <width>600</width>
+                <height>71</height>
+               </rect>
+              </property>
+              <property name="title">
+               <string>Output File</string>
+              </property>
+              <widget class="QWidget" name="layoutWidget4">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>30</y>
+                 <width>581</width>
+                 <height>29</height>
+                </rect>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_3">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="aMxfOutLabel">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>25</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>25</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Sound:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLineEdit" name="aMxfOutEdit">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>25</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true"/>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QToolButton" name="aMxfOutButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>27</horstretch>
+                    <verstretch>25</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true">...</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </widget>
+            <widget class="QWidget" name="multiPage">
+             <widget class="QGroupBox" name="multiGroupBox">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>0</y>
+                <width>600</width>
+                <height>65</height>
+               </rect>
+              </property>
+              <property name="title">
+               <string>Input File</string>
+              </property>
+              <widget class="QLineEdit" name="aMultiEdit">
+               <property name="geometry">
+                <rect>
+                 <x>135</x>
+                 <y>30</y>
+                 <width>425</width>
+                 <height>23</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string notr="true"/>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+              <widget class="QToolButton" name="aMultiButton">
+               <property name="geometry">
+                <rect>
+                 <x>565</x>
+                 <y>30</y>
+                 <width>27</width>
+                 <height>23</height>
+                </rect>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>27</horstretch>
+                 <verstretch>25</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string notr="true">...</string>
+               </property>
+              </widget>
+              <widget class="QLabel" name="aMultiLabel">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>30</y>
+                 <width>115</width>
+                 <height>23</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Wav File:</string>
+               </property>
+              </widget>
+             </widget>
+             <widget class="QGroupBox" name="amxfOutGroupBox_2">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>70</y>
+                <width>600</width>
+                <height>71</height>
+               </rect>
+              </property>
+              <property name="title">
+               <string>Output File</string>
+              </property>
+              <widget class="QWidget" name="layoutWidget5">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>30</y>
+                 <width>581</width>
+                 <height>29</height>
+                </rect>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_6">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="aMxfOutLabelMulti">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>25</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>25</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Sound:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLineEdit" name="aMxfOutEditMulti">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>25</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true"/>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QToolButton" name="aMxfOutButtonMulti">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>27</horstretch>
+                    <verstretch>25</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string notr="true">...</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </widget>
+           </widget>
+          </widget>
+         </widget>
+         <zorder>mxfInputStack</zorder>
+         <zorder>mxfGroupBox</zorder>
+         <zorder>mxfButton</zorder>
+        </widget>
+        <widget class="QWidget" name="subTab">
+         <attribute name="title">
+          <string notr="true">Subtitles</string>
+         </attribute>
+         <widget class="QGroupBox" name="subtitleGroupBox">
+          <property name="geometry">
+           <rect>
+            <x>80</x>
+            <y>10</y>
+            <width>600</width>
+            <height>131</height>
+           </rect>
+          </property>
+          <property name="title">
+           <string>Subtitles and Closed Captions</string>
+          </property>
+          <widget class="QLabel" name="mxfTypeLabel_2">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>60</y>
+             <width>115</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Label:</string>
+           </property>
+          </widget>
+          <widget class="QComboBox" name="mxfTypeComboBox_2">
+           <property name="geometry">
+            <rect>
+             <x>130</x>
+             <y>60</y>
+             <width>120</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <item>
+            <property name="text">
+             <string>SMPTE</string>
+            </property>
+           </item>
+          </widget>
+          <widget class="QLabel" name="mxfSourceTypeLabel_2">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>30</y>
+             <width>115</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Type:</string>
+           </property>
+          </widget>
+          <widget class="QComboBox" name="mxfSourceTypeComboBox_2">
+           <property name="geometry">
+            <rect>
+             <x>130</x>
+             <y>30</y>
+             <width>171</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <item>
+            <property name="text">
+             <string notr="true">SMPTE (Timed Text)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string notr="true">Closed Caption</string>
+            </property>
+           </item>
+          </widget>
+         </widget>
+         <widget class="QGroupBox" name="subInputGrpBox">
+          <property name="geometry">
+           <rect>
+            <x>80</x>
+            <y>150</y>
+            <width>600</width>
+            <height>100</height>
+           </rect>
+          </property>
+          <property name="title">
+           <string>Subtitle</string>
+          </property>
+          <widget class="QLabel" name="subInLabel">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>30</y>
+             <width>80</width>
+             <height>25</height>
+            </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>25</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Input:</string>
+           </property>
+          </widget>
+          <widget class="QLineEdit" name="subInEdit">
+           <property name="geometry">
+            <rect>
+             <x>95</x>
+             <y>30</y>
+             <width>465</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>25</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string notr="true"/>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QToolButton" name="subInButton">
+           <property name="geometry">
+            <rect>
+             <x>565</x>
+             <y>30</y>
+             <width>27</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>27</horstretch>
+             <verstretch>25</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string notr="true">...</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="sMxfOutLabel">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>65</y>
+             <width>80</width>
+             <height>25</height>
+            </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>25</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Output:</string>
+           </property>
+          </widget>
+          <widget class="QLineEdit" name="sMxfOutEdit">
+           <property name="geometry">
+            <rect>
+             <x>95</x>
+             <y>65</y>
+             <width>465</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>25</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string notr="true"/>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QToolButton" name="sMxfOutButton">
+           <property name="geometry">
+            <rect>
+             <x>565</x>
+             <y>65</y>
+             <width>27</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>27</horstretch>
+             <verstretch>25</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string notr="true">...</string>
+           </property>
+          </widget>
+         </widget>
+         <widget class="QPushButton" name="subCreateButton">
+          <property name="geometry">
+           <rect>
+            <x>565</x>
+            <y>280</y>
+            <width>115</width>
+            <height>40</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Create</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="xmlTab">
+         <attribute name="title">
+          <string notr="true">DCP</string>
+         </attribute>
+         <widget class="QGroupBox" name="cplGroupBox">
+          <property name="geometry">
+           <rect>
+            <x>80</x>
+            <y>10</y>
+            <width>600</width>
+            <height>231</height>
+           </rect>
+          </property>
+          <property name="title">
+           <string>Composition Parameters</string>
+          </property>
+          <widget class="QWidget" name="layoutWidget">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>28</y>
+             <width>581</width>
+             <height>189</height>
+            </rect>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_8">
+            <item row="0" column="0">
+             <widget class="QLabel" name="cplTitleLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Title:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1" colspan="2">
+             <widget class="QLineEdit" name="cplTitleEdit">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string notr="true"/>
+              </property>
+              <property name="maxLength">
+               <number>80</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QPushButton" name="cplTitleGenButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Title Generator</string>
+              </property>
+              <property name="flat">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="cplAnnotationLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Annotation:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1" colspan="2">
+             <widget class="QLineEdit" name="cplAnnotationEdit">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string notr="true"/>
+              </property>
+              <property name="maxLength">
+               <number>128</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="cplIssuerLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Issuer:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1" colspan="2">
+             <widget class="QLineEdit" name="cplIssuerEdit">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string notr="true"/>
+              </property>
+              <property name="maxLength">
+               <number>128</number>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="cplRatingLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Rating:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QComboBox" name="cplRatingComboBox">
+              <item>
+               <property name="text">
+                <string notr="true"/>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string notr="true">G</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string notr="true">PG</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string notr="true">PG-13</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string notr="true">R</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string notr="true">NC-17</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="cplKindLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Kind:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QComboBox" name="cplKindComboBox">
+              <item>
+               <property name="text">
+                <string notr="true">advertisement</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string notr="true">feature</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string notr="true">policy</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string notr="true">psa</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string notr="true">rating</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string notr="true">short</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string notr="true">teaser</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string notr="true">test</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string notr="true">trailer</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string notr="true">transitional</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="5" column="0" colspan="2">
+             <widget class="QCheckBox" name="digitalSignatureCheckBox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string notr="true">Add XML Digital Signatures</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="2" colspan="2">
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>100</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+         <widget class="QGroupBox" name="reelGroupBox">
+          <property name="geometry">
+           <rect>
+            <x>80</x>
+            <y>250</y>
+            <width>601</width>
+            <height>331</height>
+           </rect>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="title">
+           <string>Reel</string>
+          </property>
+          <widget class="QLabel" name="reelAnnotationLabel">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>30</y>
+             <width>100</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Annotation:</string>
+           </property>
+          </widget>
+          <widget class="QLineEdit" name="reelAnnotationEdit">
+           <property name="geometry">
+            <rect>
+             <x>110</x>
+             <y>30</y>
+             <width>450</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string notr="true"/>
+           </property>
+           <property name="maxLength">
+            <number>128</number>
+           </property>
+          </widget>
+          <widget class="QWidget" name="reelPictureWidget" native="true">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>70</y>
+             <width>600</width>
+             <height>71</height>
+            </rect>
+           </property>
+           <widget class="QLabel" name="reelPictureLabel">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>10</y>
+              <width>100</width>
+              <height>16</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Picture:</string>
+            </property>
+           </widget>
+           <widget class="QToolButton" name="reelPictureButton">
+            <property name="geometry">
+             <rect>
+              <x>565</x>
+              <y>10</y>
+              <width>27</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string notr="true">...</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="reelPictureEdit">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>10</y>
+              <width>450</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string notr="true"/>
+            </property>
+           </widget>
+           <widget class="QWidget" name="layoutWidget6">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>40</y>
+              <width>451</width>
+              <height>29</height>
+             </rect>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <item>
+              <widget class="QLabel" name="reelPictureDurationLabel">
+               <property name="text">
+                <string>Duration:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="reelPictureDurationSpinBox">
+               <property name="layoutDirection">
+                <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::PlusMinus</enum>
+               </property>
+               <property name="suffix">
+                <string notr="true"/>
+               </property>
+               <property name="prefix">
+                <string notr="true"/>
+               </property>
+               <property name="maximum">
+                <number>999999</number>
+               </property>
+               <property name="value">
+                <number>0</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="reelPictureDurationFrameLabel">
+               <property name="text">
+                <string>frames</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="Line" name="line_5">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="reelPictureOffsetLabel">
+               <property name="text">
+                <string>Entry Point:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="reelPictureOffsetSpinBox">
+               <property name="layoutDirection">
+                <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="frame">
+                <bool>true</bool>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::PlusMinus</enum>
+               </property>
+               <property name="suffix">
+                <string notr="true"/>
+               </property>
+               <property name="prefix">
+                <string notr="true"/>
+               </property>
+               <property name="maximum">
+                <number>999999</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="reelPictureOffsetFrameLabel">
+               <property name="text">
+                <string>frame</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+          <widget class="QWidget" name="reelSoundWidget" native="true">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>160</y>
+             <width>600</width>
+             <height>71</height>
+            </rect>
+           </property>
+           <widget class="QLabel" name="reelSoundLabel">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>10</y>
+              <width>100</width>
+              <height>16</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Sound:</string>
+            </property>
+           </widget>
+           <widget class="QToolButton" name="reelSoundButton">
+            <property name="geometry">
+             <rect>
+              <x>565</x>
+              <y>10</y>
+              <width>27</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string notr="true">...</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="reelSoundEdit">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>10</y>
+              <width>450</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string notr="true"/>
+            </property>
+           </widget>
+           <widget class="QWidget" name="layoutWidget7">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>40</y>
+              <width>451</width>
+              <height>29</height>
+             </rect>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <item>
+              <widget class="QLabel" name="reelSoundDurationLabel">
+               <property name="text">
+                <string>Duration:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="reelSoundDurationSpinBox">
+               <property name="layoutDirection">
+                <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::PlusMinus</enum>
+               </property>
+               <property name="suffix">
+                <string notr="true"/>
+               </property>
+               <property name="prefix">
+                <string notr="true"/>
+               </property>
+               <property name="maximum">
+                <number>999999</number>
+               </property>
+               <property name="value">
+                <number>0</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="reelSoundDurationFrameLabel">
+               <property name="text">
+                <string>frames</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="Line" name="line">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="reelSoundOffsetLabel">
+               <property name="text">
+                <string>Entry Point:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="reelSoundOffsetSpinBox">
+               <property name="layoutDirection">
+                <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::PlusMinus</enum>
+               </property>
+               <property name="suffix">
+                <string notr="true"/>
+               </property>
+               <property name="prefix">
+                <string notr="true"/>
+               </property>
+               <property name="maximum">
+                <number>999999</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="reelSoundOffsetFrameLabel">
+               <property name="text">
+                <string>frame</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+          <widget class="QWidget" name="reelSubtitleWidget" native="true">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>250</y>
+             <width>600</width>
+             <height>71</height>
+            </rect>
+           </property>
+           <widget class="QLabel" name="reelSubtitleLabel">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>10</y>
+              <width>100</width>
+              <height>16</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Subtitle:</string>
+            </property>
+           </widget>
+           <widget class="QToolButton" name="reelSubtitleButton">
+            <property name="geometry">
+             <rect>
+              <x>565</x>
+              <y>10</y>
+              <width>27</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string notr="true">...</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="reelSubtitleEdit">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>10</y>
+              <width>450</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string notr="true"/>
+            </property>
+           </widget>
+           <widget class="QWidget" name="layoutWidget8">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>40</y>
+              <width>451</width>
+              <height>29</height>
+             </rect>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QLabel" name="reelSubtitleDurationLabel">
+               <property name="text">
+                <string>Duration:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="reelSubtitleDurationSpinBox">
+               <property name="layoutDirection">
+                <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::PlusMinus</enum>
+               </property>
+               <property name="suffix">
+                <string notr="true"/>
+               </property>
+               <property name="prefix">
+                <string notr="true"/>
+               </property>
+               <property name="maximum">
+                <number>999999</number>
+               </property>
+               <property name="value">
+                <number>0</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="reelSubtitleDurationFrameLabel">
+               <property name="text">
+                <string>frames</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="Line" name="line_4">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="reelSubtitleOffsetLabel">
+               <property name="text">
+                <string>Entry Point:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="reelSubtitleOffsetSpinBox">
+               <property name="layoutDirection">
+                <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::PlusMinus</enum>
+               </property>
+               <property name="suffix">
+                <string notr="true"/>
+               </property>
+               <property name="prefix">
+                <string notr="true"/>
+               </property>
+               <property name="maximum">
+                <number>999999</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="reelSubtitleOffsetFrameLabel">
+               <property name="text">
+                <string>frame</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+          <widget class="Line" name="line_1">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>55</y>
+             <width>560</width>
+             <height>20</height>
+            </rect>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+          <widget class="Line" name="line_2">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>140</y>
+             <width>560</width>
+             <height>20</height>
+            </rect>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+          <widget class="Line" name="line_3">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>230</y>
+             <width>560</width>
+             <height>20</height>
+            </rect>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </widget>
+         <widget class="QPushButton" name="createDcpButton">
+          <property name="geometry">
+           <rect>
+            <x>565</x>
+            <y>690</y>
+            <width>115</width>
+            <height>40</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Create DCP</string>
+          </property>
+         </widget>
+         <widget class="QGroupBox" name="gbDCP">
+          <property name="geometry">
+           <rect>
+            <x>80</x>
+            <y>590</y>
+            <width>600</width>
+            <height>85</height>
+           </rect>
+          </property>
+          <property name="title">
+           <string>Options</string>
+          </property>
+          <widget class="QWidget" name="layoutWidget">
+           <property name="geometry">
+            <rect>
+             <x>24</x>
+             <y>30</y>
+             <width>561</width>
+             <height>55</height>
+            </rect>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_7">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>MXF File Behavior:</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::AutoText</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QRadioButton" name="rbCopyMxf">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Copy</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QCheckBox" name="overwriteMxfCB">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>25</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>Overwrite existing j2c files. Uncheck if you are resuming a previous conversion, which will save time.</string>
+              </property>
+              <property name="text">
+               <string>Overwrite Existing</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QRadioButton" name="rbMoveMxf">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Move</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </widget>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="../resources/opendcp.qrc"/>
+ </resources>
+ <connections/>
+</ui>

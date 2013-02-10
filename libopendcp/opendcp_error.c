@@ -1,0 +1,13 @@
+#include "opendcp.h"
+
+const char *OPENDCP_ERROR_STRING[] = {
+    FOREACH_OPENDCP_ERROR_MSG(GENERATE_STRING)
+};
+
+const char *OPENDCP_ERROR_NAME[] = {
+    FOREACH_OPENDCP_ERROR_MSG(GENERATE_NAME)
+};
+
+const opendcp_error_t OPENDCP_ERROR_T[] = {
+    FOREACH_OPENDCP_ERROR_MSG(GENERATE_STRUCT)
+};

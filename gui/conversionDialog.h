@@ -1,0 +1,51 @@
+/*
+     OpenDCP: Builds Digital Cinema Packages
+     Copyright (c) 2010-2011 Terrence Meiczinger, All Rights Reserved
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef CONVERSIONDIALOG_H
+#define CONVERSIONDIALOG_H
+
+#include "ui_conversion.h"
+
+class ConversionDialog : public QDialog, private Ui::ConversionDialog {
+    Q_OBJECT
+
+public:
+    ConversionDialog(QWidget *parent = 0);
+    void init(int nFrames, int threadCount);
+
+private:
+    int  m_totalCount;
+    int  m_currentCount;
+    int  m_result;
+    bool m_canceled;
+
+    void setButtons(int);
+
+signals:
+    void cancel();
+
+public slots:
+    void update();
+    void finished();
+    void setResult(int);
+
+private slots:
+    void stop();
+};
+
+#endif // CONVERSIONDIALOG_H

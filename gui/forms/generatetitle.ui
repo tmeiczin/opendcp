@@ -1,0 +1,544 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GenerateTitle</class>
+ <widget class="QDialog" name="GenerateTitle">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>750</width>
+    <height>640</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Title Generator</string>
+  </property>
+  <widget class="QGroupBox" name="groupBox">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>5</y>
+     <width>710</width>
+     <height>561</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Film Title Wizard</string>
+   </property>
+   <widget class="QLabel" name="contentLabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>40</y>
+      <width>91</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Title:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="contentEdit">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>40</y>
+      <width>581</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Courier</family>
+     </font>
+    </property>
+    <property name="text">
+     <string notr="true"/>
+    </property>
+    <property name="maxLength">
+     <number>80</number>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="Line" name="line">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>70</y>
+      <width>671</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>100</y>
+      <width>671</width>
+      <height>452</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="filmLabel">
+       <property name="text">
+        <string>Film Title:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1" colspan="8">
+      <widget class="QLineEdit" name="filmEdit">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <property name="text">
+        <string notr="true"/>
+       </property>
+       <property name="maxLength">
+        <number>14</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="typeLabel">
+       <property name="text">
+        <string>Type:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" colspan="8">
+      <widget class="QComboBox" name="typeComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <property name="frame">
+        <bool>true</bool>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="aspectLabel">
+       <property name="text">
+        <string>Aspect Ratio:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1" colspan="8">
+      <widget class="QComboBox" name="aspectComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="languageAudioLabel">
+       <property name="text">
+        <string>Language Audio:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" colspan="8">
+      <widget class="QComboBox" name="languageAudioComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="languageSubtitleLabel">
+       <property name="text">
+        <string>Language Subtitle:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1" colspan="8">
+      <widget class="QComboBox" name="languageSubtitleComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string notr="true">XX    No Subtitle</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="territoryLabel">
+       <property name="text">
+        <string>Territory:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1" colspan="8">
+      <widget class="QComboBox" name="territoryComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="ratingLabel">
+       <property name="text">
+        <string>Rating:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1" colspan="8">
+      <widget class="QComboBox" name="ratingComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <property name="acceptDrops">
+        <bool>false</bool>
+       </property>
+       <property name="maxVisibleItems">
+        <number>10</number>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
+       </property>
+       <property name="frame">
+        <bool>true</bool>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="audioLabel">
+       <property name="text">
+        <string>Audio Type:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1" colspan="8">
+      <widget class="QComboBox" name="audioComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="8" column="0">
+      <widget class="QLabel" name="narrativeLabel">
+       <property name="text">
+        <string>Narrative:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1" colspan="8">
+      <widget class="QComboBox" name="narrativeComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <property name="maxVisibleItems">
+        <number>10</number>
+       </property>
+       <property name="frame">
+        <bool>true</bool>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="9" column="0">
+      <widget class="QLabel" name="resolutionLabel">
+       <property name="text">
+        <string>Resolution:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="1" colspan="8">
+      <widget class="QComboBox" name="resolutionComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="10" column="0">
+      <widget class="QLabel" name="studioLabel">
+       <property name="text">
+        <string>Studio:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="1" colspan="8">
+      <widget class="QComboBox" name="studioComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <property name="editable">
+        <bool>false</bool>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="11" column="0">
+      <widget class="QLabel" name="studioLabel_2">
+       <property name="text">
+        <string>Facility:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="1" colspan="8">
+      <widget class="QComboBox" name="facilityComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="12" column="0">
+      <widget class="QLabel" name="dateLabel">
+       <property name="text">
+        <string>Date:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="1">
+      <widget class="QSpinBox" name="dateYearSB">
+       <property name="suffix">
+        <string notr="true"/>
+       </property>
+       <property name="prefix">
+        <string notr="true"/>
+       </property>
+       <property name="minimum">
+        <number>2000</number>
+       </property>
+       <property name="maximum">
+        <number>2999</number>
+       </property>
+      </widget>
+     </item>
+     <item row="13" column="0">
+      <widget class="QLabel" name="steroscopicLabel">
+       <property name="text">
+        <string>3D Specs:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="13" column="1" colspan="8">
+      <widget class="QComboBox" name="stereoscopicComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="14" column="0">
+      <widget class="QLabel" name="packageLabel">
+       <property name="text">
+        <string>Package Type:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="14" column="1" colspan="8">
+      <widget class="QComboBox" name="packageComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="12" column="2">
+      <widget class="QSpinBox" name="dateMonthSB">
+       <property name="suffix">
+        <string notr="true"/>
+       </property>
+       <property name="prefix">
+        <string notr="true"/>
+       </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>12</number>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="3">
+      <widget class="QSpinBox" name="dateDaySB">
+       <property name="suffix">
+        <string notr="true"/>
+       </property>
+       <property name="prefix">
+        <string notr="true"/>
+       </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>31</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDialogButtonBox" name="buttonBox">
+   <property name="geometry">
+    <rect>
+     <x>550</x>
+     <y>590</y>
+     <width>164</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="standardButtons">
+    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   </property>
+   <property name="centerButtons">
+    <bool>false</bool>
+   </property>
+  </widget>
+ </widget>
+ <tabstops>
+  <tabstop>contentEdit</tabstop>
+  <tabstop>filmEdit</tabstop>
+  <tabstop>typeComboBox</tabstop>
+  <tabstop>aspectComboBox</tabstop>
+  <tabstop>languageAudioComboBox</tabstop>
+  <tabstop>languageSubtitleComboBox</tabstop>
+  <tabstop>territoryComboBox</tabstop>
+  <tabstop>ratingComboBox</tabstop>
+  <tabstop>audioComboBox</tabstop>
+  <tabstop>narrativeComboBox</tabstop>
+  <tabstop>resolutionComboBox</tabstop>
+  <tabstop>studioComboBox</tabstop>
+  <tabstop>facilityComboBox</tabstop>
+  <tabstop>dateYearSB</tabstop>
+  <tabstop>stereoscopicComboBox</tabstop>
+  <tabstop>packageComboBox</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>GenerateTitle</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>631</x>
+     <y>605</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>374</x>
+     <y>319</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>GenerateTitle</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>631</x>
+     <y>605</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>374</x>
+     <y>319</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

@@ -1,0 +1,53 @@
+--- util/mkuniversal.sh    1969-12-31 19:00:00.000000000 -0500
++++ util/mkuniversal.sh      2011-04-24 18:50:47.000000000 -0400
+@@ -0,0 +1,38 @@
++#!/bin/sh
++
++PREFIX_ARG=$1
++ACTION=$2
++
++if [ "$ACTION" == "configure" ]
++then
++    exit
++fi
++
++PREFIX_ARG_386="$PREFIX_ARG/i386"
++PREFIX_ARG_x86_64="$PREFIX_ARG/x86_64"
++OPENSSL_CFLAGS_386="CFLAG=-arch i386 -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk"
++OPENSSL_LDFLAGS_386="LDFLAG=-arch i386 -mmacosx-version-min=10.5 -Wl,-search_paths_first"
++
++echo "Building OPENSSL i386"
++echo "  config $PREFIX_ARG_386"
++./config $PREFIX_ARG_386
++echo "  make $OPENSSL_CFLAGS_386 -f Makefile"
++make "$OPENSSL_CFLAGS_386" -f Makefile
++make install -f Makefile
++
++echo "Building OPENSSL x86_64"
++make clean
++./Configure darwin64-x86_64-cc $PREFIX_ARG_x86_64
++make -f Makefile
++make install -f Makefile
++
++echo "Making Universal"
++PREFIX_ARG=${PREFIX_ARG//--prefix=}
++PREFIX_ARG_386=${PREFIX_ARG_386//--prefix=}
++PREFIX_ARG_x86_64=${PREFIX_ARG_x86_64//--prefix=}
++echo "lipo -create $PREFIX_ARG_386/lib/libssl.a $PREFIX_ARG_x86_64/lib/libssl.a -output $PREFIX_ARG/lib/libssl.a"
++lipo -create $PREFIX_ARG_386/lib/libssl.a $PREFIX_ARG_x86_64/lib/libssl.a -output $PREFIX_ARG/lib/libssl.a
++echo "lipo -create $PREFIX_ARG_386/lib/libssl.a $PREFIX_ARG_x86_64/lib/libcrypto.a -output $PREFIX_ARG/lib/libcrypto.a"
++lipo -create $PREFIX_ARG_386/lib/libcrypto.a $PREFIX_ARG_x86_64/lib/libcrypto.a -output $PREFIX_ARG/lib/libcrypto.a
++echo "cp -r $PREFIX_ARG_x86_64/include/openssl $PREFIX_ARG/include"
++cp -r $PREFIX_ARG_x86_64/include/openssl $PREFIX_ARG/include
+
+--- Makefile.org	2010-01-27 11:06:36.000000000 -0500
++++ Makefile.org	2011-02-25 01:17:27.000000000 -0500
+@@ -615,7 +615,7 @@
+ dist_pem_h:
+ 	(cd crypto/pem; $(MAKE) -e $(BUILDENV) pem.h; $(MAKE) clean)
+ 
+-install: all install_docs install_sw
++install: all install_sw
+ 
+ install_sw:
+ 	@$(PERL) $(TOP)/util/mkdir-p.pl $(INSTALL_PREFIX)$(INSTALLTOP)/bin \

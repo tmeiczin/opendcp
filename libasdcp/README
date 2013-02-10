@@ -1,0 +1,699 @@
+
+$Id: README,v 1.63 2010/11/15 18:09:51 mikey Exp $
+
+The asdcplib library is a set of objects that offer
+simplified access to files conforming to the sound and
+picture track file formats developed by the SMPTE Working
+Group DC28.20.
+
+This work was originally funded by Digital Cinema
+Initiatives, LLC (DCI). Subsequent efforts have been funded
+by Deluxe Laboratories, Doremi Labs, CineCert LLC, Avica
+Technology and others.
+
+**The asdcplib project was originally housed on SourceForge.
+The project has moved to http://www.cinecert.com/asdcplib/
+
+The project formerly depended upon the mxflib project. Because
+of its focus on covering the whole of the MXF specifications,
+mxflib is considerably larger and more complex that what I
+require for this application. For this reason I have created
+a dedicated MXF implementation that is now part of this
+library. Special thanks to Matt Beard and Oliver Morgan for
+their great work and support.
+
+Thanks also to the members of the SMPTE DC28.20 packaging
+ad-hoc group and the members of the MXF Interop Initiative
+for their encouragement and support. Special thanks to
+Jim Whittlesey and Howard Lukk at DCI for proposing and
+supporting this project.
+
+
+Design Notes
+
+This library is intended (but of course not limited) for
+use by developers of commercial D-Cinema products.  It is
+designed to be easily integrated into a wide variety of
+development environments.  Commercial users are strongly
+urged to use static linking (at least where you use this
+library) to prevent malicious in-field replacement of
+critical system modules. This recommendation should be
+considered wherever Open Source or Free software is being
+used in conjunction with critical security parameters, such
+as cryptographic keys.
+
+The author strives mightily to provide an API that is completely
+independent of operating system and other library dependencies,
+and which allows selective replacement of some modules for
+local needs.  Specifically, the essence parsers and OpenSSL
+crypto functions can be replaced by linking to alternative
+implementations of the ASDCP:: objects which provide those
+services.
+
+AS_DCP.h contains the entire API.  You do not need to read
+any of the other files, except maybe asdcp-test.cpp which
+contains detailed usage examples of each of the API's
+services. The KM_* files may be of interest for general
+development support, but may be ignored if all you want
+is simple AS-DCP support.
+
+
+Build Instructions
+
+On more-or-less POSIX systems (OS X, Linux, and BSD), GNU make is
+required to build asdcplib. The same configure script will also
+build this package on Windows machines with Cygwin and
+MinGW installed. For those Windows users who would prefer to build
+this natively, an "nmake" build file and instructions can be found
+in the win32 subdirectory.
+
+OpenSSL is also required, version 0.9.8k is recommended. See 
+http://www.openssl.org/ for more information and download 
+instructions.
+
+Optional support for writing Timed Text Track Files is supported by
+either Xerces-C or Expat. See http://xerces.apache.org/xerces-c/ or
+http://expat.sourceforge.net/ for source and build instructions.
+
+To configure and build, type './configure' followed by 'make'. There
+are several test targets on the POSIX side, but you need to assemble
+a set of test files to use them.
+
+I have tested this build on win32, Linux, OpenBSD, and Darwin
+platforms. Others may work as well.
+
+
+
+
+Utilities
+
+asdcp-test - Writes, reads and verifies AS-DCP (MXF) track files.
+
+kmfilegen - Writes and verifies large files using a platform-
+independent format. Use it to test issues related to large files.
+
+kmuuidgen, kmrandgen - generate UUID values and random numbers.
+
+wavesplit - Splits a WAVE file into two or more output files. Used
+  to untangle incorrectly-paired DCDM sound files.
+
+blackwave - Write a WAVE file full of zeros,  Used to make filler
+  tracks (though you would be better off modifying asdcp-test if
+  this is a common use case).
+
+
+Documentation
+
+The API documentation is mostly in AS_DCP.h. Read that file for
+a detailed description of the library's capabilities. Read
+asdcp-test.cpp for library usage examples. The command-line
+utilities all respond to -h.
+
+
+Change History
+
+2010.11.15 - bug fixes, enhancements v1.7.40
+ o Fixed bug in long KLV packet support (Thanks to Jim R.).
+ o Fixed AvgBps in PCM files, *again*. Sorry for the crazy.
+ o More fixes and changes in support of 25, 30, 50, 60 fps.
+   (Thanks to Hans K. for the TC rate bug).
+ o Updated KLVFill UL version element to 0x02.
+ o Type change to support Xerces-C 3.x. (Thanks to Matt S.).
+ o Some internal API changes to KLV types. Does not affect
+   operation.
+ o Added NetworkLocator type to MXF metadata types.
+ o Added file offset display to klvwalk.
+
+
+2010.09.09 -  bug fixes, enhancements, v1.7.39
+ o Fixed bug in JP2K PictureDescriptor initialization in
+   JP2K::MXFReader::OpenRead() and JP2K::MXFSReader::OpenRead()
+ o Once again fiddling with AvgBbs. How can something so simple
+   be such a constant cause of trouble? Tested with 1-, 2- and
+   6-channel input Wav files.
+ o asdcp-test now accepts a directory name when making PCM
+   files (-c). The directory name should be the only filename
+   argument. All files in the directory must be Wav files
+   (mixed channel sizes OK). Files are sorted alphabetically by
+   filename. Hint: use numeric name infix to define order:
+   my_movie_00_L.wav
+   my_movie_01_R.wav
+   my_movie_02_C.wav
+   my_movie_03_LFE.wav
+   my_movie_04_LS.wav
+   my_movie_05_RS.wav
+
+
+2010.07.20 -  bug fixes, v1.6.37
+ o Fixed TimedTextResourceSubDescriptor UL value.
+
+
+2010.06.16 -  bug fixes, v1.6.36
+ o Added support for new Edit Rates to asdcp-test.cpp.
+ o Expanded timed-text file reader in asdcp-test.cpp.
+ o Fixed large BER value encoding (plaintext) and decoding
+   (plaintext and ciphertext). This feature was introduced in
+   v1.5.31).
+ o Fixed AvgBps value for multi-channel Wave input.
+
+
+2010.05.13 -  bug fixes, enhancements, v1.6.34
+ o ST 429-5 files have corrected ULs for DCTimedTextDescriptor and
+   GenericStream DataElement. Files made with previous versions of
+   the library are incompatible with this and future versions.
+ o Fixed File Package TrackNumber values. Thanks to Sankar.
+ o Added edit rate constants to AS_DCP.h (25, 30, 50, 60).
+ o Changed AudioDescriptor "SampelRate" element name to "EditRate"
+   to make it consistent with the other types.
+ o Now builds with XercesC 3.x.
+ o KM_memio.h has better const behavior.
+ o Fixed a bug in KM_memio.h string archiving.
+
+
+2010.01.05 -  bug fixes, enhancements, v1.5.32
+ o Re-fixed swapped Interop and SMPTE OP Atom UL values. The swap
+   introduced in v1.5.31 was done in error.
+ o Added -z,-Z options to asdcp-test (j2c parameter checking)
+ o Reformed jp2k-test as j2c-test, added help and list processing,
+   added to standard install target.
+
+
+2009.12.31 -  bug fixes, enhancements, v1.5.31
+ o Fixed swapped Interop and SMPTE OP Atom UL values.
+ o Added get_BER_length_for_value() subroutine.
+ o Modified ASDCP::h__Writer::WriteEKLVPacket() to allow larger BER
+   lengths for KLV packets larger than 16 MB. This was required to
+   support large font files in the SMPTE 429-5 implementation.
+
+
+2009.11.06 - bug fixes, enhancements, v1.5.29
+ o Fixed a bug that could cause HMAC values to be incorrectly
+   stored in MXF files.  Files created with versions of asdcplib
+   prior to this version may have incorrect HMAC values. 
+ o Improved handing of XML files for MXF wrapping.  
+ o Jpeg2000 codestream EditRate and SampleRate mismatches
+   now warns instead of returning an error. 
+ o Improved error handling in Jpeg2000 sequence parsing routines.  
+ o Added two methods to Kumu::Timestamp, AddSeconds(), to add (or
+   subtract) seconds to a time value, and GetSecondsSinceEpoch()
+   to get the number of seconds since the unix epoch.
+ o Added new option to asdcp-test, '-a', to specify a UUID when
+   creating MXF files.
+ o Added support for specifying the intrinsic duration of MXF files
+   containing timed text.
+ o Added new option to wavesplit, '-i', to display WAV file metadata.
+
+
+2009.05.21 - bug fixes, v.1.4.24
+ o Fixed a bug that caused incorrect SubDescriptors UL values to be 
+   written into interop format MXF track files.  Note that this involved
+   a substantial reorganization of MXF internals.  Please test thoroughly
+   in your application before using in production.  Note that this is a 
+   significant bug fix and track files created with 1.4.22 may be incompatible
+   with other systems.  
+
+
+2009.04.09 - SMPTE format fixes, enhancements and bug fixes, v.1.4.22
+ o asdcplib now uses GNU autotools on POSIX systems to configure 
+   and build.  See "./configure" for details.  Note that two options, 
+   --enable-freedist and --with-python are not enabled in the free
+   version of asdcplib and should not be used.  
+ o Added build option (CONFIG_RANDOM_UUID) to enable mixed case UUID
+   generation when environment variable KM_USE_RANDOM_UUID is defined.
+ o Fixed a condition that could cause an error to occur when wrapping 
+   SMPTE format timed text track files that do not define a starting 
+   frame.
+ o Updated ULs for SMPTE format track files.
+ o SampleRate added to JP2K metadata
+ o Support for wrapping 96kHz WAV files added.
+ o Updated ULs for audio channel formats  (ChannelFormat)  
+ o Updated font subdescriptor MIME Types for TimedText Trackfiles.
+ o Changed time implementation to support dates beyond Jan 19th, 2038.
+ o Xerces-C XML parser support added.  
+ o New build method for Windows (see win32/README.txt for details).
+ o Added new functionality in Kumu to recursively create and delete files 
+   and directories, and get free disk space for a given volume path.
+ o Added a method to Kumu::Timestamp, AddMinutes(), to add (or subtract) 
+   minutes to a time value.  
+ o Improved how Kumu::Timestamp parses timestamps with offsets. 
+ o Fixed a bug that caused incorrect HMAC values to be calculated.
+
+
+2008.02.16 - SMPTE format fixes, bug fixes v.1.3.18
+ o Added correct SMPTE UL for StereoscopicPictureSubDescriptor.
+ o Exposed JP2K metadata parser as ParseMetadataIntoDesc().
+ o Added simple stereoscopic framebuffer to support paired ReadFrame()
+   and WriteFrame() methods (allows simpler integration with other
+   single-buffer code).
+ o Improved detection of JPEG Interop stereoscopic files.
+ o Win32 build fixes (Thanks to Mike Crowe at DTS).
+ o Added the WITH_MD macro to the makefile. Set this value to one
+   to build Win32 with /MD[d] instead of /MT[d].
+ o The Generic Container UL has been added to the EssenceContainers
+   set in the header partition pack for encrypted files. It has always
+   been there in plaintext files.
+ - Below this point the changes are internal and should not affect you
+   unless you use Kumu directly.
+ o Major refactoring of KM_log.[h|cpp].
+ o Fixed buffer re-sizing issue in Kumu::ByteString.
+ o Replaced type IdentifierList with ArchivableList.
+ o Added COPYING file to the release bundle.
+
+
+2007.12.13 - Bug fixes v.1.2.17
+ o Changed Result_t implementation to use int instead of long, which
+   was causing trouble on some 64 bit platforms.
+ o Fixed EKLV HMAC. NOTE: Breaks backward compatibility with older
+   Interop files. To validate these files, use asdcplib-1.1.14. This
+   should not cause too much trouble since files with broken and
+   non-broken HMAC have been in the wild for years without issue.
+ o Fixed HMAC sequence numbering in encrypted stereoscopic files.
+ o Finished stereoscopic test targets in the makefile.
+ o Fixed the win32 build, now expects VS2005 compiler by default,
+   use WITH_VC6=1 top get VC6 flags.
+ o Stereoscopic and Timed Text modes now have SMPTE UL values.
+   NOTE: SMPTE 429-5 and 429-10 are not yet published. It is possible
+   that these UL values may change before publication. Please use
+   caution when using these features for production work.
+ o Changed a bunch of symbol names in the 429-5 implementation to
+   better match the spec.
+ o Added -U option to asdcp-test to dump the UL library to stdout.
+ o Fixed erroneous placement of the PictureEssenceCoding UL in JP2K
+   files (Interop and SMPTE modes).
+
+
+2007.10.22 - Timed Text, Stereoscopic Picture and Bug fixes v.1.2.16
+ o Significant API changes have been made. Please read all entries
+   in this changelog to be sure you understand the changes. Also
+   note that some changes have been made to LS_MXF_SMPTE files that
+   are incompatible with earlier releases (e.g., EKLV HMAC). If
+   you are looking for a stable interop release, use  v.1.1.14.
+ o Fixed RFC 2104 HMAC implementation for LS_MXF_SMPTE only. The
+   broken implementation has been maintained for Interop mode.
+ o Added support for draft SMPTE 429-5 Timed Text Track File. This
+   is still waiting for official SMPTE ULs, so do not use it for
+   shipping products.  An XML parser is needed to create a Timed
+   Text Track File; Expat is now an optional part of the build.
+   Make with WITH_XML_PARSER=1 to link with Expat. If you do not
+   link with expat, you will get an error when using the TimedText::
+   DCSubtitleParser class. See also S429-5-cgi.cpp for an example
+   that shows how to serve plaintext MXF file elements directly via
+   HTTP.
+ o Added support for draft SMPTE 429-10 Stereoscopic Picture Track
+   File, including the JPEG Interop version. This is still waiting
+   for official SMPTE ULs, so do not use it with LS_MXF_SMPTE for
+   shipping products.  
+ o Refactored the following files as a side-effect of the above
+   work: AS_DCP_JP2K.cpp AS_DCP_MPEG2.cpp AS_DCP_PCM.cpp
+   AS_DCP_MXF.cpp AS_DCP_internal.h MXF.[h|cpp] MXFTypes.[h|cpp]
+   Metadata.[h|cpp] h__Reader.cpp h__Writer.cpp klvwalk.cpp.
+   WARNING: While significant effort has been extended to make sure
+   that these changes do not affect existing stable file support,
+   users are cautioned to test this release thouroughly.
+ o Added a large set of filesystem path manglers to KM_fileio.h. See
+   path-test.cpp for example usage. The path manglers have not yet
+   been tested on win32 platforms (they are currently used only by
+   the Timed Text module.
+ o The PathIsFile(), PathIsDirectory() and FileSize() subroutines
+   have been modified to accept const std::string& instead of
+   const char*.
+ o Added namespace and parsing support (Expat) to Kumu::XMLElement
+   (currently used only for Timed Text support). Also added some
+   new accessors.
+ o Altered MXF::UTF16String to use mbtowc() and wctomb().
+
+
+2007.03.31 - Bug fixes v.1.1.14
+ o Fixed KeyFrameOffset value in MPEG wrapping to have negative
+   value. This is probably not yet complete for handling all
+   types of GOPs. Please send chunks of MPEG-2 VES that you
+   find which break this. Thanks to Doremi.
+ ** no other file format changes in this release **
+ o Fixed error in RIP interpretation when reading arbitrary (i.e.,
+   non-MXF) files.
+ o Fixed a memory leak in ASDCP::MXF::OPAtomHeader when used
+   in read mode. Thanks to Mahesh Bajaj for pointing out this
+   bug and the one above.
+ o Removed asserts from KM_fileio, replaced with RESULT_WRITEFAIL
+   return value statements.
+ o Added -s and -p to the makefile install target.
+ o Altered ByteString behavior to use target Length() in copy
+   operations (instead of Capacity()).
+ o Added new Set() method to ByteString.
+ o Fixed a bug in ByteString::Unarchive() that caused the operation
+   to fail when the buffer was smaller than the read (i.e., when
+   Capacity() was called).
+ o Added IdentifierList class to KM_util.h.
+ o Changed some Error() messages to Debug() in Wav.cpp
+ o Revived jp2k-test.cpp and asdcp-mem-test.cpp (they both had
+   stale #includes).
+
+
+2007.02.15 - Bug fixes v1.1.13
+ o Removed 'VDescObj->SampleRate.Numerator = VDesc.FrameRate;'
+   from MPEG2_VDesc_to_MD() in AS_DCP_MPEG2.cpp, was line 76.
+ o Added KM_TEST_NULL_STR_L() and KM_TEST_NULL_L() macros to
+   KM_log.h. These versions log the location of the null value.
+   Macros are now used in any module that includes KM_log.h.
+ o MPEG2 VES with run of zero values at the head is now OK.
+ o Increased VESHeaderBufSize to 16K.
+ o Added makefile support for local OpenSSL in ../openssl, if
+   present.
+ o The Kumu::PathIs*() functions now return false if a null or
+   empty string is given (used to be an assert).
+ o Cleaned up the install target in the makefile.
+ o Fixed SMPTE 429-6 HMAC -- FIPS 186-2 implementation was
+   laughably incorrect. Thanks to Doremi for pointing this out.
+ o Removed default parameter to HMACContext::InitKey().
+ o Cleaned up messages and CLI arg handling in asdcp-test.
+
+
+2006.11.19 - Mo better stuff v1.1.12
+ o Changed read-only Result_t accessor methods to const.
+ o Added Base64 (-B) option to kmrandgen.
+ o Removed 16-bit alignment restriction from kmrandgen.
+ o Improved WAV file extraction speed (Thanks to Jim Radford
+   for pointing this out).
+ o Added single-channel split for WAV extraction (asdcp-test -1).
+ o Fixed remainder bug in h__RNG::fill_rand().
+
+
+2006.11.03 - Bug fixes v1.1.11
+ o Increased index table entry list size to 5000.
+ o Added length checking to TLV writer (returns error if TLV
+   payload exceeds 64kB).
+ o Fixed partition header and RIP errors related to 2-partition
+   files (MXF Interop mode).
+ o Added -t option to asdcp-test (SHA-1 digest with Base64 output
+   on stdout).
+ o Fixed Sub Descriptor reference bug (Thanks to Denis Leconte
+   for dogged determination).
+ o Added directory-of-wav detection to RawEssenceType()
+ o Modified MXF::Partition::AddChildObject() to only generate
+   a UUID if the InstanceID is unset.
+ o Added ComponentMaxRef & ComponentMinRef to RGBAEssenceDescriptor.
+   More to follow.
+ o Added detection of 2K/4K jp2c, writing correct 4K metadata.
+
+
+2006.10.05 - Bug fixes v1.1.10
+ o Changed RM_RELEASE to RL_RELEASE in MXFTypes.h.
+ o Changed the MXF writer to use RL_RELEASE (was RL_DEVELOPMENT).
+ o Really fixed source reference chain.
+ o Updated JP2K file package label.
+ o Changed location of JPEG2000PictureSubDescriptor in the
+   header (was erroneously before Preface).
+ o Altered LS_MXF_INTEROP to produce 2-partition files.
+
+
+2006.09.25 - Bug fixes v1.1.9
+ o Fixed SourcePackageID value. All files will be 'original',
+   i.e. SourcePackageID will be all zeros. Let me know if you
+   want to set SourcePackageID.
+ o Fixed compiler warnings on some Linux platforms
+ o Fixed the build so that BUILD_DIR is no longer created
+   as a dependency.
+ o Added duration detection to the raw essence parsers. The
+   MPEG parser uses a nasty approximation so don't use it
+   without paying close attention to the result.
+ o Modified PCMParserList to make it more useful as a base
+   class.
+ o Fixed bugs and re-organized command-line help in asdcp-test
+   and klvwalk.
+ o Fixed two-partition file reads.
+ o Fixed Win32 PRNG initialization.
+ o Renamed asdcp-lf-test as kmfilegen.
+ o Added kmrandgen and kmuuidgen.
+ o Added string retrieval mechanism to Result_t.
+ o Refactored Kumu::Identifier and its sub-classes.
+ o Altered Kumu::PathIsFile to return true when the path
+   is a symbolic link (unix only).
+ o Altered Kumu::FileWriter::OpenWrite to use file creation
+   mode 0664 (was 0644) (unix only).
+ o Added Kumu::WriteStringIntoFile() subroutine.
+
+
+2006.04.05 - Bug fixes and new stuff v1.1.7
+ o Fixed a bug in the MPEG parser that caused it to fail when
+   handling start codes spanning buffer boundaries
+ o Added wavesplit and blackwave utility programs
+ o Added support for revised SMPTE HMAC key derivation when
+   using LS_MXF_SMPTE
+ o Refactored platform compatibility and general utilities
+   into a new sub-library "Kumu". There are no new build
+   steps or dependencies, but some important things have
+   changed:
+   + Result_t is no longer an enum, it is now a class.
+     Library result codes are now declared as const objects
+     like this:
+
+     const Kumu::Result_t RESULT_FORMAT (-101, "The file...");
+
+     The macros ASDCP_SUCCESS and ASDCP_FAILURE still work
+     the same way thanks to an operator overload for type long.
+     See KM_error.h for more information.
+   + The logging interface has been moved out of AS_DCP.h
+     and into KM_log.h
+ o Some of the command line utilities that were using headers
+   other than AS_DCP.h have been changed to use the Kumu
+   equivalents. If you have code based on those utilities, you
+   will have to update by hand.
+ o Added new types to the EssenceType_t enum.
+ o The guard macro for Win32 code has changed from WIN32 to
+   KM_WIN32.
+
+
+2006.03.2x - new stuff
+ o Proper handling of stream-id byte of essence UL values
+ o writes 3-partition files, reads 2-part or 3-part
+
+
+2006.03.16 - bug fixes plus
+ o Removed SMPTE_LABELS compile-time option. The reader will now
+   silently accept either SMPTE or MXF Interop labels, the writer
+   can be instructed which to use at runtime. Default is Interop.
+ o Added an AIFF reader. Support is preliminary, it works with the
+   AIFF files I have on hand.
+ o More code refactoring. More to come.
+
+
+2006.03.09 - full read-write
+ o Removed ASDCP_WITHOUT_OPENSSL compile-time option.
+ o Full read/write now working on new MXF library
+
+
+2005.00.00 - A New Hope
+ o The temporary mxf-lite has been removed. MXF files are now 
+   managed via the objects in KLV.h, MXFTypes.h MXF.h and
+   Metadata.h. This release does not support writing MXF files.
+ o Fixed a header interpretation error in the Wav parser.
+
+
+2005.00.00 - The Reformation
+ o Removed mxflib as a dependency by forking the necessary
+   functions and placing them in the mxf-lite subdirectory.
+   Please note that the very heavy modifications done here
+   render all comparisson to mxflib code a substantial task.
+   All errors are now mine and users are warned not to bug
+   Oliver or Matt for help with this code. The version of
+   mxflib at the time of the fork was: 0.5.1.3.
+
+
+2005.06.03 - bug fixes v0.10.18
+ o Updated UL batch to include GC UL.
+
+
+2005.05.27 - bug fixes v0.10.17
+ o Un-did essence container and compression descriptor changes.
+   The default build reflects MXF Interop decisions as of 26 May.
+ o Added note about build versions to README (see above).
+ o Added warnings to SMPTE_LABELS builds.
+ o Fixed JP2K essence container label.
+
+
+2005.05.02 - bug fixes v0.10.16
+ o Reorganized internal files, added file reader object, added OS
+   portability header, removed and renamed some files. If you have a
+   patch against previous versions of the source, you should check
+   it thoroughly.
+ o Added RGBA attributes to JP2K descriptor.
+ o Changed interface to CodestreamParser.
+ o Added JP2K parser implementation. It is parsing each frame but is
+   not yet being used to populate the descriptor.
+ o Added 48fps option for `asdcp-test -p`.
+ o Added picture rate constants to AS_DCP.h (23.976, 24, 48).
+ o Added sample rate constant to AS_DCP.h (48k).
+ o Changed asdcp-test to encrypt picture headers by default
+   (plaintext offset will be 0), added -E option to allow
+   plaintext headers.
+
+
+2005.04.28 - bug fixes v0.9.15
+ o The XML descriptors for the crypto DMS have moved in mxflib to
+   the file DMS_Crypto.xml (they were in DMS_DCPENC.xml).  Older
+   installations should update the file from mxflib.
+ o Added Close() and Seek() to ~MyFileWriter(), cleaned up headers
+ o Added UUID generator output mode (-u).
+ o Added -S option to extract PCM essence into stereo wav files
+ o Added more UL testing and conformance checking.
+ o Added macro SMPTE_LABELS which causes the library to be built
+   with SMPTE (as opposed to MXF Interop) labels. This is not
+   set by default, and currently only affects the PCM container
+   label and encrypted element label.
+ o Cleaned up the GNUmakefile test targets, the source files
+   are now named with the TEST_FILE_PREFIX macro.
+ o enabled 23.976-framed PCM (2002 samples per frame)
+ o The size of the asdcp-test frame buffer for picture essence
+   may now be set from the command line (-b).  The default is 4MB.
+ o h__Reader::ReadEKLVPacket() now tests the UL (duh) and switches
+   on the value, allowing plaintext and ciphertext frames to
+   be mixed in the file.
+ o Fixed error in UUID generator format.
+ o JP2K files now use the GenericPictureDescriptor to store
+   ContainerDuration and SampleRate. SampleRate is mapped
+   to EditRate in the PictureDescriptor struct. This fixes
+   the second caveat from the 0.8.13 release.
+ o Fxed bug in PCMParserList that was miscalculating the extent
+   of a PCM sample.  This bug did not affect API users, it was
+   only present in asdcp-test.
+ o Fixed EditRate on PCM files (was showing sample rate)
+ o Fixed Encrypted Essence Container UL
+ o Fixed BlockAlign value for PCM essence
+
+ - The following changes were provided by Jeff Loewenguth
+ - Thanks Jeff!
+ o Moved the DMS CryptographicFramework entry from the material
+   package to the source package
+ o Fixed erroneous Source Essence Container Label value
+ o Fixed broken sort of JP2K frames in JP2K parser
+ o Added FindFrameGOPStart() method to the MPEG2 MXFReader
+ o Added missing length values for EKLV packets without HMAC
+ o -x with JP2K essence writes to files with 6 digit names
+   (up from 5 digits).
+ o The Key ID may now be specified as an argument to asdcp-test
+    (-j <key-id-string>)
+
+
+2004.12.30 - bug fixes + wav files v0.8.14
+ o Added WAV file write to asdcp-test (uses mxflib::waveheader_t).
+ o Three-partition files reading properly.  adscplib still writes
+   two-partition files.
+ o Changes in the mxflib WAV essence parser API had broken
+   asdcplib's ability to read essence from a WAV file.  I have
+   fixed this bug, but at the expense of breaking compatibility
+   with older versions of mxflib. Beware!
+ o Removed redundant (but working) bin-text-bin conversions.
+
+
+2004.12.23 - JPEG 2000 support v0.8.13
+ o Reads/writes JPEG 2000 essence in plaintext and ciphertext
+   with the following caveats:
+    - The Picture Essence Descriptor is empty.
+    - Because there is no essence descriptor, the reader code
+      in asdcp-test has no idea how many frames are in the file
+      and ends with an out-of-bounds frame error.  This error
+      is being suppressed in asdcp-test for the current release.
+ o Still broken when reading three-partition files.
+
+
+2004.10.22 - fixes and UL updates v0.7.11
+ WARNING: COMPATIBILITY BREAKPOINT
+ Files created with this and future versions of this library are
+ not compatible with previous versions of this library.  As you
+ might suspect, files created with previous versions of this
+ library are not compatible with  this and future versions.
+
+ o h__Reader will now open a three-partitition file (untested)
+ o Moved DMS from Material partition to File partition
+ o Added length fields to appropriate places in EKLV packet 
+
+
+2004.10.22 - fixes and UL updates v0.7.10
+ o fixed frame buffer handling of externally allocated buffer,
+   created unit test (asdcp-mem-test)
+ o added operator==() and operator!=() to Rational type
+ o fixed some type-related compiler warnings
+ o asdcp-test -p now works on unwrap
+ o updated some ULs to match documentation (thanks to Arun
+   for the submission)
+ o canonicalized line endings
+
+
+2004.07.02 - full plaintext + ciphertext read/write v0.6.9
+ o HMAC, plaintext offest and raw ciphertext read supported
+ o back to proper CBR index
+ o MPEG temporal offset working
+
+
+2004.07.01 - plaintext + ciphertext read/write v0.5.8
+ o encryption of MPEG and PCM essence supported with the
+   following caveats:
+   - no HMAC support
+   - no plaintext offest support
+   - no raw ciphertext read support
+ o moved to reflecting the whole KLV triplet in the CBR
+   index (now incompatible with mxflib, still searching
+   for info about what's "right")
+ o awaitng the following fixes/features:
+   - retrieve Temporal Offset from index in MPEG2::Reader
+   - test for correct ULs when reading frame triplets
+   - fix header metadata items for encrypted files
+   - HMAC support
+   - plaintext offest support
+   - raw ciphertext read support
+
+
+2004.06.14 - plaintext read/write w/key generator v0.4.5
+ o Project now uses OpenSSL (tested with 0.9.7d on win32, Linux, Darwin)
+   Use `make ASDCP_WITHOUT_OPENSSL=1` to make plaintext-only version
+ o Accepts interior I frames when parsing MPEG2 VES
+ o Improved error reporting on format errors
+ o Added support for encryption to asdcp-test
+ o Added RNG for asdcp-test (non-production use only, see notes in FortunaRNG.h)
+ o Implemented CBC encrypt, decrypt module
+ o Added partial TemporalOffset retrieval from MPEG2 parser
+ o Fixed win32 binmode bug
+
+
+2004.05.12 - plaintext read/write v0.3.4
+ o Full read/write of plaintext MPEG-2 VES and WAV files
+   (does not yet support mux from or demux to 2 channel pairs)
+ o Builds with autoconf-based mxflib
+ o Added ASDCP_ prefix to macros
+ o Updated documentation, fixed documentation errors
+ o Simplified API for MXF writer setup
+ o Decoupled essence parsers from MXF writers
+ o added raw ciphertext support to FrameBuffer
+ o Cleaned up Get/Set naming confusion
+ o Added missing const qualifiers
+
+
+2004.04.27 - preview release v0.2.1
+ o hasty release for quick review
+ o this release may not build with mxflib using autoconf.
+ o writes plaintext AS-DCP MPEG2 essence files
+ o tested under win32 and linux. FreeBSD and Darwin do not work
+
+
+2004.02.04 - First release (v0.1.1):
+ o asdcp-test is mostly complete. It should correctly provide
+   access to the read and info capabilities of the library.
+ o The MPEG2 reader is functional but not fully tested.
+ o Some file format integrity tests remain to be coded.
+ o The PCM reader is mostly complete, I am having difficulty
+   getting a suitable test file from mxfwrap.
+ o The makefile creates a static library module. The API
+   will cleanly support a DSO (or DLL). Let me know if DSO
+   support is important to you.
+ o Nothing is thread safe. Thread safety was not a requirement
+   in the initial project definition. Thread safety may be added
+   above the mxflib/klvlib level. Let me know if it is important
+   to you.
+ o The files xmldict.xml and types.xml must be in the current
+   directory when the program is run. The files are supplied
+   with mxflib. Runtime location of the files is not currently
+   a project goal. Comments on how best to handle this situation
+   would be appreciated. See AS_DCP.cpp at init_mxf_types()
+   for a more detailed discussion.
+
+--

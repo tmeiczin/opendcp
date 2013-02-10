@@ -1,0 +1,13 @@
+There have been many people who have helped with OpenDCP in various ways.
+This is by no means a complete list. It is ever growing, but for now...
+
+Wolfgang Woehl
+Yuri Mamaev
+Luca Trisciani
+Stephen van Vuuren
+Chris Young
+Andrew Hunter
+
+Translations:
+French  - Gérald Maruccia 
+Spanish - Petter Brox
