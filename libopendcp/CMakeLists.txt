@@ -30,7 +30,6 @@ SET(OPENDCP_CODEC_SRC
      codecs/opendcp_encoder.c
      codecs/opendcp_encoder_kakadu.c
      codecs/opendcp_encoder_openjpeg.c
-     codecs/opendcp_encoder_remote.c
      codecs/opendcp_encoder_tif.c
 )
 
