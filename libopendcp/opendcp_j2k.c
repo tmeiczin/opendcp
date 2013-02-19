@@ -34,13 +34,6 @@ int convert_to_j2k(opendcp_t *opendcp, char *sfile, char *dfile) {
     extension = strrchr(dfile,'.');
     extension++;
 
-    opendcp->remote.host = "192.168.1.3";
-    opendcp->remote.id   = 1;
-    opendcp->remote.port = 6080;
-    opendcp_encode_remote(opendcp, sfile, dfile);
-
-    return OPENDCP_NO_ERROR;
-
     encoder = opendcp_encoder_find(NULL, extension, 0);
     OPENDCP_LOG(LOG_DEBUG, "using %s encoder (%s) to convert file %s to %s", encoder->name, extension, sfile, dfile);
 
