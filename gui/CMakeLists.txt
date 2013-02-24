@@ -10,9 +10,8 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 #--find qt4-------------------------------------------------------------
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
-find_package(Qt4 )
+FIND_PACKAGE(Qt4 REQUIRED)
+INCLUDE(${QT_USE_FILE})
 #-----------------------------------------------------------------------------
 
 #--set gui source-------------------------------------------------------------
