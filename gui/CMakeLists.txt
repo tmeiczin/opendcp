@@ -201,6 +201,7 @@ IF(APPLE)
         CODE "
         file(GLOB_RECURSE QTPLUGINS
              \"${PLUGIN_DEST_DIR}/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
+        set(BU_CHMOD_BUNDLE_ITEMS ON)
         include(BundleUtilities)
         fixup_bundle(\"${APPLICATION_DIR}\" \"\${QTPLUGINS}\" \"${OSX_LIB_DIRS}\")
         "
