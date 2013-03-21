@@ -114,6 +114,9 @@ int write_cpl_asset(opendcp_t *opendcp, xmlTextWriterPtr xml, asset_t asset) {
 
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "Id","%s%s","urn:uuid:",asset.uuid);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "AnnotationText","%s",asset.annotation);
+    xmlTextWriterWriteFormatElement(xml, BAD_CAST "IssueDate","%s",opendcp->dcp.timestamp);
+    xmlTextWriterWriteFormatElement(xml, BAD_CAST "Issuer","%s",opendcp->dcp.issuer);
+    xmlTextWriterWriteFormatElement(xml, BAD_CAST "Creator","%s",opendcp->dcp.creator);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "EditRate","%s",asset.edit_rate);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "IntrinsicDuration","%d",asset.intrinsic_duration);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "EntryPoint","%d",asset.entry_point);
