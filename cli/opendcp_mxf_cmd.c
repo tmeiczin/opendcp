@@ -290,7 +290,7 @@ int main (int argc, char **argv) {
     if (opendcp->stereoscopic) {
         filelist = get_filelist_3d(in_path_left, in_path_right);
     } else {
-        filelist = get_filelist(in_path, "j2c,j2k");
+        filelist = get_filelist(in_path, "j2c,j2k,wav");
     }
 
     if (!filelist) {
