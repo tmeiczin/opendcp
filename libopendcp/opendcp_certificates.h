@@ -22,7 +22,7 @@
 ------------------------------------------------------------------*/
 
 /* OpenDCP ROOT certificate */
-static const unsigned char *opendcp_root_cert = "-----BEGIN CERTIFICATE-----\n\
+static const char *opendcp_root_cert = "-----BEGIN CERTIFICATE-----\n\
 MIIESzCCAzOgAwIBAgIBBTANBgkqhkiG9w0BAQsFADB1MRQwEgYDVQQKEwtvcGVu\n\
 ZGNwLm9yZzEQMA4GA1UECxMHT3BlbkRDUDEkMCIGA1UEAxMbLm9wZW5kY3AuY2Vy\n\
 dGlmaWNhdGUuMi5ST09UMSUwIwYDVQQuExxVYUJmcHVOR3Z5MUsxQ3BCRzY4a0Vn\n\
@@ -49,7 +49,7 @@ Ub5y3neQNJWGCM2ppDd2MOvTZW1fpj9Dh0J7BuOTZz0suLMOFT0m5lHQIVy56L8=\n\
 -----END CERTIFICATE-----\n";
 
 /* OpenDCP INTERMEDIATE certificate */
-static const unsigned char *opendcp_ca_cert = "-----BEGIN CERTIFICATE-----\n\
+static const char *opendcp_ca_cert = "-----BEGIN CERTIFICATE-----\n\
 MIIEUzCCAzugAwIBAgIBBjANBgkqhkiG9w0BAQsFADB1MRQwEgYDVQQKEwtvcGVu\n\
 ZGNwLm9yZzEQMA4GA1UECxMHT3BlbkRDUDEkMCIGA1UEAxMbLm9wZW5kY3AuY2Vy\n\
 dGlmaWNhdGUuMi5ST09UMSUwIwYDVQQuExxVYUJmcHVOR3Z5MUsxQ3BCRzY4a0Vn\n\
@@ -77,7 +77,7 @@ PyGfFc9KAvzQbhQUqBqQKDN30zTobCiOV4Q/6ixzrOz3BzDAoLb5/SP+cKFgW5N6\n\
 -----END CERTIFICATE-----\n";
 
 /* OpenDCP signer certificate */
-static const unsigned char *opendcp_signer_cert = "-----BEGIN CERTIFICATE-----\n\
+static const char *opendcp_signer_cert = "-----BEGIN CERTIFICATE-----\n\
 MIIETjCCAzagAwIBAgIBBzANBgkqhkiG9w0BAQsFADB9MRQwEgYDVQQKEwtvcGVu\n\
 ZGNwLm9yZzEQMA4GA1UECxMHT3BlbkRDUDEsMCoGA1UEAxMjLm9wZW5kY3AuY2Vy\n\
 dGlmaWNhdGUuMS5JTlRFUk1FRElBVEUxJTAjBgNVBC4THG9UY3VrUk14QzhWdG9J\n\
@@ -105,7 +105,7 @@ SbA=\n\
 -----END CERTIFICATE-----\n";
 
 /* OpenDCP private key */
-static const unsigned char *opendcp_private_key ="-----BEGIN RSA PRIVATE KEY-----\n\
+static const char *opendcp_private_key ="-----BEGIN RSA PRIVATE KEY-----\n\
 MIIEpQIBAAKCAQEA75E2kzOh/s/ZmdPLiFxx8DOi2QY9cIevKqIMkfSTmYb4FoSD\n\
 yb6fi+2xkZ2xUtIjqiQqhWtWJZjsQvIhxR4VdwT6V33Y0HLCkevbC5B64XYuHUhB\n\
 /xqAP6bc3qkDjUOpjgme60X9Ot35hRUxK7OsozoX2fhjT2e6GH9ddnjmvfGkTzrk\n\

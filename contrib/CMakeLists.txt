@@ -71,9 +71,9 @@ IF(ENABLE_XMLSEC AND COMPILE_XMLSEC)
         SET(URL http://www.aleksey.com/xmlsec/download)
     ENDIF()
     EXTERNALPROJECT_ADD(06_XMLSEC1
-        URL ${URL}/xmlsec1-1.2.18.tar.gz
+        URL ${URL}/xmlsec1-1.2.19.tar.gz
         BUILD_IN_SOURCE 1
-        PATCH_COMMAND patch -d <SOURCE_DIR> -p0 -t -N < ${PROJECT_SOURCE_DIR}/contrib/xmlsec1-1.1.28.patch
+        PATCH_COMMAND patch -d <SOURCE_DIR> -p0 -t -N < ${PROJECT_SOURCE_DIR}/contrib/xmlsec1-1.1.29.patch
         CONFIGURE_COMMAND ${CONFIGURE} ${PREFIX_ARG} ${AUTO_CFLAGS} ${AUTO_CXXFLAGS} ${AUTO_LDFLAGS}
                           --enable-pkgconfig=no
                           --disable-dependency-tracking --enable-static=yes --enable-shared=no

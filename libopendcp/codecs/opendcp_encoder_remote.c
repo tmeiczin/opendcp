@@ -77,7 +77,7 @@ int opendcp_encode_remote(opendcp_t *opendcp, char *sfile, char *dfile) {
 
     /* initialize encode requet */
     memset(&request, 0, sizeof(encode_request_t));
-    
+
     /* get file details and read */
     slength = get_file_length(sfile);
     sdata = malloc(slength + 1);
@@ -128,12 +128,12 @@ int opendcp_encode_remote(opendcp_t *opendcp, char *sfile, char *dfile) {
     ddata = malloc(request.file_size);
     receive_data(connection, ddata, request.file_size);
 
-     OPENDCP_LOG(LOG_DEBUG, "writing file %s", dfile);
-     fp = fopen(dfile, "wb");
-     fwrite(ddata, 1, request.file_size, fp);
-     fclose(fp);
+    OPENDCP_LOG(LOG_DEBUG, "writing file %s", dfile);
+    fp = fopen(dfile, "wb");
+    fwrite(ddata, 1, request.file_size, fp);
+    fclose(fp);
 
-     free(ddata);
+    free(ddata);
 
     /* ok, done... server will call us back when it's done */
     close(connection);
