@@ -463,8 +463,8 @@ int xml_sign(opendcp_t *opendcp, char *filename) {
     /* find signature node */
     OPENDCP_LOG(LOG_DEBUG, "find signature node");
     sign_node = xmlSecFindNode(root_node, xmlSecNodeSignature, xmlSecDSigNs);
-    if(sign_node == NULL) {
-        fprintf(stderr, "start node not found");
+    if (sign_node == NULL) {
+        OPENDCP_LOG(LOG_ERROR, "start node not found");
         goto done;
     }
 
@@ -472,7 +472,7 @@ int xml_sign(opendcp_t *opendcp, char *filename) {
     OPENDCP_LOG(LOG_DEBUG, "load certificates");
     key_manager = load_certificates_sign(opendcp);
     if (key_manager == NULL) {
-        fprintf(stderr, "failed to create key manager\n");
+        OPENDCP_LOG(LOG_ERROR, "failed to create key manager\n");
         goto done;
     }
 
@@ -481,14 +481,14 @@ int xml_sign(opendcp_t *opendcp, char *filename) {
     dsig_ctx = xmlSecDSigCtxCreate(key_manager);
 
     if(dsig_ctx == NULL) {
-        fprintf(stderr, "failed to create signature opendcp\n");
+        OPENDCP_LOG(LOG_ERROR, "failed to create signature context");
         goto done;
     }
 
     /* sign the template */
     OPENDCP_LOG(LOG_DEBUG, "sign template");
     if(xmlSecDSigCtxSign(dsig_ctx, sign_node) < 0) {
-        fprintf(stderr,"Error: signature failed\n");
+        OPENDCP_LOG(LOG_ERROR, "Error: signature failed\n");
         goto done;
     }
 
@@ -497,14 +497,14 @@ int xml_sign(opendcp_t *opendcp, char *filename) {
     fp = fopen(filename,"wb");
 
     if (fp == NULL) {
-        fprintf(stderr,"Error: could not open output file\n");
+        OPENDCP_LOG(LOG_ERROR, "Error: could not open output file\n");
         goto done;
     }
 
     /* write the xml file */
     OPENDCP_LOG(LOG_DEBUG, "write signed XML document");
     if (xmlDocDump(fp, doc) < 0) {
-        fprintf(stderr,"Error: writing XML document failed\n");
+        OPENDCP_LOG(LOG_ERROR, "Error: writing XML document failed\n");
         goto done;
     }
 
