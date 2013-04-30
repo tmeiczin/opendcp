@@ -114,9 +114,6 @@ int write_cpl_asset(opendcp_t *opendcp, xmlTextWriterPtr xml, asset_t asset) {
 
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "Id","%s%s","urn:uuid:",asset.uuid);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "AnnotationText","%s",asset.annotation);
-    xmlTextWriterWriteFormatElement(xml, BAD_CAST "IssueDate","%s",opendcp->dcp.timestamp);
-    xmlTextWriterWriteFormatElement(xml, BAD_CAST "Issuer","%s",opendcp->dcp.issuer);
-    xmlTextWriterWriteFormatElement(xml, BAD_CAST "Creator","%s",opendcp->dcp.creator);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "EditRate","%s",asset.edit_rate);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "IntrinsicDuration","%d",asset.intrinsic_duration);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "EntryPoint","%d",asset.entry_point);
@@ -217,8 +214,9 @@ int write_cpl(opendcp_t *opendcp, cpl_t *cpl) {
     /* cpl attributes */
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "Id","%s%s","urn:uuid:",cpl->uuid);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "AnnotationText","%s",cpl->annotation);
-    xmlTextWriterWriteFormatElement(xml, BAD_CAST "IssueDate","%s",cpl->timestamp);
-    xmlTextWriterWriteFormatElement(xml, BAD_CAST "Creator","%s",cpl->creator);
+    xmlTextWriterWriteFormatElement(xml, BAD_CAST "IssueDate","%s",opendcp->dcp.timestamp);
+    xmlTextWriterWriteFormatElement(xml, BAD_CAST "Issuer","%s",opendcp->dcp.issuer);
+    xmlTextWriterWriteFormatElement(xml, BAD_CAST "Creator","%s",opendcp->dcp.creator);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "ContentTitleText","%s",cpl->title);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "ContentKind","%s",cpl->kind);
 
@@ -430,11 +428,15 @@ int write_assetmap(opendcp_t *opendcp) {
 
     /* assetmap attributes */
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "Id","%s%s","urn:uuid:",uuid_s);
-    xmlTextWriterWriteFormatElement(xml, BAD_CAST "Creator","%s",opendcp->dcp.creator);
+    if (opendcp->ns == XML_NS_SMPTE) {
+        xmlTextWriterWriteFormatElement(xml, BAD_CAST "Creator","%s",opendcp->dcp.creator);
+    }
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "VolumeCount","%d",1);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "IssueDate","%s",opendcp->dcp.timestamp);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "Issuer","%s",opendcp->dcp.issuer);
-
+    if (opendcp->ns == XML_NS_INTEROP) {
+        xmlTextWriterWriteFormatElement(xml, BAD_CAST "Creator","%s",opendcp->dcp.creator);
+    }
     xmlTextWriterStartElement(xml, BAD_CAST "AssetList");
 
     OPENDCP_LOG(LOG_INFO, "writing ASSETMAP PKL");
