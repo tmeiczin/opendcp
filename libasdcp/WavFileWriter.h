@@ -136,22 +136,36 @@ class WavFileWriter
       assert(file_count && m_ChannelCount);
 
       ui32_t element_size = ASDCP::PCM::CalcFrameBufferSize(m_ADesc) / file_count;
+      if (split == ST_NONE)
+      {
+          snprintf(filename, Kumu::MaxFilePath, "%s", file_root);
+          m_OutFile.push_back(new WavFileElement(element_size));
+          result = m_OutFile.back()->OpenWrite(filename);
+          if ( ASDCP_SUCCESS(result) )
+          {
+              ASDCP::PCM::AudioDescriptor tmpDesc = m_ADesc;
+              tmpDesc.ChannelCount = m_ChannelCount;
+              ASDCP::RF64::SimpleRF64Header Wav(tmpDesc);
+              result = Wav.WriteToFile(*(m_OutFile.back()));
+          }
+      }
+      else
+      {
+          for ( ui32_t i = 0; i < file_count && ASDCP_SUCCESS(result); i++ )
+          {
+              snprintf(filename, Kumu::MaxFilePath, "%s_%u.wav", file_root, (i + 1));
+              m_OutFile.push_back(new WavFileElement(element_size));
+              result = m_OutFile.back()->OpenWrite(filename);
 
-      for ( ui32_t i = 0; i < file_count && ASDCP_SUCCESS(result); i++ )
-	{
-	  snprintf(filename, Kumu::MaxFilePath, "%s_%u.wav", file_root, (i + 1));
-	  m_OutFile.push_back(new WavFileElement(element_size));
-	  result = m_OutFile.back()->OpenWrite(filename);
-
-	  if ( ASDCP_SUCCESS(result) )
-	    {
-	      ASDCP::PCM::AudioDescriptor tmpDesc = m_ADesc;
-	      tmpDesc.ChannelCount = m_ChannelCount;
-	      ASDCP::Wav::SimpleWaveHeader Wav(tmpDesc);
-	      result = Wav.WriteToFile(*(m_OutFile.back()));
-	    }
-	}
-      
+              if ( ASDCP_SUCCESS(result) )
+              {
+                  ASDCP::PCM::AudioDescriptor tmpDesc = m_ADesc;
+                  tmpDesc.ChannelCount = m_ChannelCount;
+                  ASDCP::RF64::SimpleRF64Header Wav(tmpDesc);
+                  result = Wav.WriteToFile(*(m_OutFile.back()));
+              }
+          }
+      }
       return result;
     }
 

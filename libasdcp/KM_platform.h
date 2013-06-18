@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2004-2009, John Hurst
+Copyright (c) 2004-2012, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_platform.h
-    \version $Id: KM_platform.h,v 1.6 2010/09/14 19:21:47 msheby Exp $
+    \version $Id: KM_platform.h,v 1.7 2012/03/15 17:54:15 jhurst Exp $
     \brief   platform portability
   */
 
@@ -42,37 +42,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #  define WIN32_LEAN_AND_MEAN
 #  define VC_EXTRALEAN
 #  include <windows.h>
-/* we like the "SendMessage" name, so get rid of the preprocessor define
- * and replace with an inline function */
-#  undef SendMessage
-#ifdef UNICODE
-inline
-WINUSERAPI
-LRESULT
-WINAPI
-SendMessage(
-    __in HWND hWnd,
-    __in UINT Msg,
-    __in WPARAM wParam,
-    __in LPARAM lParam)
-{
-	return SendMessageW(hWnd, Msg, wParam, lParam);
-}
-#else
-inline
-WINUSERAPI
-LRESULT
-WINAPI
-SendMessage(
-    HWND hWnd,
-    UINT Msg,
-    WPARAM wParam,
-    LPARAM lParam)
-{
-	return SendMessageA(hWnd, Msg, wParam, lParam);
-}
-#endif // !UNICODE
-
 #  include <stdlib.h>
 #  include <stdio.h>
 #  include <stdarg.h>

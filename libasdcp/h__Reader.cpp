@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    h__Reader.cpp
-    \version $Id: h__Reader.cpp,v 1.31 2012/02/07 18:54:25 jhurst Exp $
+    \version $Id: h__Reader.cpp,v 1.32 2013/02/08 19:11:58 jhurst Exp $
     \brief   MXF file reader base class
 */
 
@@ -59,103 +59,74 @@ ASDCP::default_md_object_init()
 }
 
 
-//
-ASDCP::h__Reader::h__Reader(const Dictionary& d) :
-  m_HeaderPart(m_Dict), m_BodyPart(m_Dict), m_FooterPart(m_Dict), m_Dict(&d), m_EssenceStart(0)
-{
-  default_md_object_init();
-}
-
-ASDCP::h__Reader::~h__Reader()
-{
-  Close();
-}
-
-void
-ASDCP::h__Reader::Close()
-{
-  m_File.Close();
-}
-
 //------------------------------------------------------------------------------------------
 //
 
 //
+ASDCP::h__ASDCPReader::h__ASDCPReader(const Dictionary& d) : MXF::TrackFileReader<OPAtomHeader, OPAtomIndexFooter>(d), m_BodyPart(m_Dict) {}
+ASDCP::h__ASDCPReader::~h__ASDCPReader() {}
+
+
+// AS-DCP method of opening an MXF file for read
 Result_t
-ASDCP::h__Reader::InitInfo()
+ASDCP::h__ASDCPReader::OpenMXFRead(const char* filename)
 {
-  assert(m_Dict);
-  InterchangeObject* Object;
+  Result_t result = ASDCP::MXF::TrackFileReader<OPAtomHeader, OPAtomIndexFooter>::OpenMXFRead(filename);
 
-  m_Info.LabelSetType = LS_MXF_UNKNOWN;
-
-  if ( m_HeaderPart.OperationalPattern.ExactMatch(MXFInterop_OPAtom_Entry().ul) )
-    m_Info.LabelSetType = LS_MXF_INTEROP;
-  else if ( m_HeaderPart.OperationalPattern.ExactMatch(SMPTE_390_OPAtom_Entry().ul) )
-    m_Info.LabelSetType = LS_MXF_SMPTE;
-
-  // Identification
-  Result_t result = m_HeaderPart.GetMDObjectByType(OBJ_TYPE_ARGS(Identification), &Object);
-
-  if( ASDCP_SUCCESS(result) )
-    MD_to_WriterInfo((Identification*)Object, m_Info);
-
-  // SourcePackage
-  if( ASDCP_SUCCESS(result) )
-    result = m_HeaderPart.GetMDObjectByType(OBJ_TYPE_ARGS(SourcePackage), &Object);
-
-  if( ASDCP_SUCCESS(result) )
+  if ( KM_SUCCESS(result) )
     {
-      SourcePackage* SP = (SourcePackage*)Object;
-      memcpy(m_Info.AssetUUID, SP->PackageUID.Value() + 16, UUIDlen);
+        // if this is a three partition file, go to the body
+        // partition and read the partition pack
+        if ( m_HeaderPart.m_RIP.PairArray.size() > 2 )
+        {
+            Array<RIP::Pair>::iterator r_i = m_HeaderPart.m_RIP.PairArray.begin();
+            r_i++;
+            m_File.Seek((*r_i).ByteOffset);
+            result = m_BodyPart.InitFromFile(m_File);
+            if( !ASDCP_SUCCESS(result) )
+            {
+                DefaultLogSink().Error("ASDCP::h__Reader::OpenMXFRead, m_BodyPart.InitFromFile failed\n");
+            }
+        }
     }
+    else
+      DefaultLogSink().Error("ASDCP::h__Reader::OpenMXFRead, TrackFileReader::OpenMXFRead failed\n");
 
-  // optional CryptographicContext
-  if( ASDCP_SUCCESS(result) )
-    {
-      Result_t cr_result = m_HeaderPart.GetMDObjectByType(OBJ_TYPE_ARGS(CryptographicContext), &Object);
 
-      if( ASDCP_SUCCESS(cr_result) )
-	MD_to_CryptoInfo((CryptographicContext*)Object, m_Info, *m_Dict);
-    }
+  if ( KM_SUCCESS(result) )
+      m_HeaderPart.BodyOffset = m_File.Tell();
 
   return result;
 }
 
-
-// standard method of opening an MXF file for read
+//
 Result_t
-ASDCP::h__Reader::OpenMXFRead(const char* filename)
+ASDCP::h__ASDCPReader::InitInfo()
 {
-  m_LastPosition = 0;
-  Result_t result = m_File.OpenRead(filename);
+  Result_t result = ASDCP::MXF::TrackFileReader<OPAtomHeader, OPAtomIndexFooter>::InitInfo();
 
-  if ( ASDCP_SUCCESS(result) )
-    result = m_HeaderPart.InitFromFile(m_File);
-
-  if ( ASDCP_SUCCESS(result) )
+  if( KM_SUCCESS(result) )
     {
-      // if this is a three partition file, go to the body
-      // partition and read the partition pack
-      if ( m_HeaderPart.m_RIP.PairArray.size() > 2 )
+      InterchangeObject* Object;
+
+      m_Info.LabelSetType = LS_MXF_UNKNOWN;
+
+      if ( m_HeaderPart.OperationalPattern.ExactMatch(MXFInterop_OPAtom_Entry().ul) )
 	{
-	  Array<RIP::Pair>::iterator r_i = m_HeaderPart.m_RIP.PairArray.begin();
-	  r_i++;
-	  m_File.Seek((*r_i).ByteOffset);
-
-	  result = m_BodyPart.InitFromFile(m_File);
+	m_Info.LabelSetType = LS_MXF_INTEROP;
 	}
-
-      m_EssenceStart = m_File.Tell();
+      else if ( m_HeaderPart.OperationalPattern.ExactMatch(SMPTE_390_OPAtom_Entry().ul) )
+	{
+	  m_Info.LabelSetType = LS_MXF_SMPTE;
+	}
     }
 
   return result;
 }
 
-
-// standard method of populating the in-memory index
+// AS-DCP method of populating the in-memory index
 Result_t
-ASDCP::h__Reader::InitMXFIndex()
+ASDCP::h__ASDCPReader::InitMXFIndex()
 {
   if ( ! m_File.IsOpen() )
     return RESULT_INIT;
@@ -169,10 +140,33 @@ ASDCP::h__Reader::InitMXFIndex()
     }
 
   if ( ASDCP_SUCCESS(result) )
-    m_File.Seek(m_EssenceStart);
+    m_File.Seek(m_HeaderPart.BodyOffset);
 
   return result;
 }
+
+
+// AS-DCP method of reading a plaintext or encrypted frame
+Result_t
+ASDCP::h__ASDCPReader::ReadEKLVFrame(ui32_t FrameNum, ASDCP::FrameBuffer& FrameBuf,
+				     const byte_t* EssenceUL, AESDecContext* Ctx, HMACContext* HMAC)
+{
+  return ASDCP::MXF::TrackFileReader<OPAtomHeader, OPAtomIndexFooter>::ReadEKLVFrame(m_HeaderPart, FrameNum, FrameBuf,
+										     EssenceUL, Ctx, HMAC);
+}
+
+Result_t
+ASDCP::h__ASDCPReader::LocateFrame(ui32_t FrameNum, Kumu::fpos_t& streamOffset,
+                           i8_t& temporalOffset, i8_t& keyFrameOffset)
+{
+  return ASDCP::MXF::TrackFileReader<OPAtomHeader, OPAtomIndexFooter>::LocateFrame(m_HeaderPart, FrameNum,
+                                                                                   streamOffset, temporalOffset, keyFrameOffset);
+}
+
+
+//------------------------------------------------------------------------------------------
+//
+
 
 //
 Result_t
@@ -229,55 +223,26 @@ ASDCP::KLReader::ReadKLFromFile(Kumu::FileReader& Reader)
   return InitFromBuffer(m_KeyBuf, header_length);
 }
 
-// standard method of reading a plaintext or encrypted frame
+// base subroutine for reading a KLV packet, assumes file position is at the first byte of the packet
 Result_t
-ASDCP::h__Reader::ReadEKLVFrame(ui32_t FrameNum, ASDCP::FrameBuffer& FrameBuf,
-				const byte_t* EssenceUL, AESDecContext* Ctx, HMACContext* HMAC)
-{
-  // look up frame index node
-  IndexTableSegment::IndexEntry TmpEntry;
-
-  if ( ASDCP_FAILURE(m_FooterPart.Lookup(FrameNum, TmpEntry)) )
-    {
-      DefaultLogSink().Error("Frame value out of range: %u\n", FrameNum);
-      return RESULT_RANGE;
-    }
-
-  // get frame position and go read the frame's key and length
-  Kumu::fpos_t FilePosition = m_EssenceStart + TmpEntry.StreamOffset;
-  Result_t result = RESULT_OK;
-
-  if ( FilePosition != m_LastPosition )
-    {
-      m_LastPosition = FilePosition;
-      result = m_File.Seek(FilePosition);
-    }
-
-  if( ASDCP_SUCCESS(result) )
-    result = ReadEKLVPacket(FrameNum, FrameNum + 1, FrameBuf, EssenceUL, Ctx, HMAC);
-
-  return result;
-}
-
-
-Result_t
-ASDCP::h__Reader::ReadEKLVPacket(ui32_t FrameNum, ui32_t SequenceNum, ASDCP::FrameBuffer& FrameBuf,
-				 const byte_t* EssenceUL, AESDecContext* Ctx, HMACContext* HMAC)
+ASDCP::Read_EKLV_Packet(Kumu::FileReader& File, const ASDCP::Dictionary& Dict, const MXF::OPAtomHeader& HeaderPart,
+			const ASDCP::WriterInfo& Info, Kumu::fpos_t& LastPosition, ASDCP::FrameBuffer& CtFrameBuf,
+			ui32_t FrameNum, ui32_t SequenceNum, ASDCP::FrameBuffer& FrameBuf,
+			const byte_t* EssenceUL, AESDecContext* Ctx, HMACContext* HMAC)
 {
   KLReader Reader;
-  Result_t result = Reader.ReadKLFromFile(m_File);
+  Result_t result = Reader.ReadKLFromFile(File);
 
-  if ( ASDCP_FAILURE(result) )
+  if ( KM_FAILURE(result) )
     return result;
 
   UL Key(Reader.Key());
   ui64_t PacketLength = Reader.Length();
-  m_LastPosition = m_LastPosition + Reader.KLLength() + PacketLength;
-  assert(m_Dict);
+  LastPosition = LastPosition + Reader.KLLength() + PacketLength;
 
-  if ( Key.MatchIgnoreStream(m_Dict->ul(MDD_CryptEssence)) )  // ignore the stream numbers
+  if ( Key.MatchIgnoreStream(Dict.ul(MDD_CryptEssence)) )  // ignore the stream numbers
     {
-      if ( ! m_Info.EncryptedEssence )
+      if ( ! Info.EncryptedEssence )
 	{
 	  DefaultLogSink().Error("EKLV packet found, no Cryptographic Context in header.\n");
 	  return RESULT_FORMAT;
@@ -285,10 +250,9 @@ ASDCP::h__Reader::ReadEKLVPacket(ui32_t FrameNum, ui32_t SequenceNum, ASDCP::Fra
 
       // read encrypted triplet value into internal buffer
       assert(PacketLength <= 0xFFFFFFFFL);
-      m_CtFrameBuf.Capacity((ui32_t) PacketLength);
+      CtFrameBuf.Capacity((ui32_t) PacketLength);
       ui32_t read_count;
-      result = m_File.Read(m_CtFrameBuf.Data(), (ui32_t) PacketLength,
-			   &read_count);
+      result = File.Read(CtFrameBuf.Data(), (ui32_t) PacketLength, &read_count);
 
       if ( ASDCP_FAILURE(result) )
 	return result;
@@ -299,17 +263,17 @@ ASDCP::h__Reader::ReadEKLVPacket(ui32_t FrameNum, ui32_t SequenceNum, ASDCP::Fra
           return RESULT_FORMAT;
         }
 
-      m_CtFrameBuf.Size((ui32_t) PacketLength);
+      CtFrameBuf.Size((ui32_t) PacketLength);
 
       // should be const but mxflib::ReadBER is not
-      byte_t* ess_p = m_CtFrameBuf.Data();
+      byte_t* ess_p = CtFrameBuf.Data();
 
       // read context ID length
       if ( ! Kumu::read_test_BER(&ess_p, UUIDlen) )
 	return RESULT_FORMAT;
 
       // test the context ID
-      if ( memcmp(ess_p, m_Info.ContextID, UUIDlen) != 0 )
+      if ( memcmp(ess_p, Info.ContextID, UUIDlen) != 0 )
 	{
 	  DefaultLogSink().Error("Packet's Cryptographic Context ID does not match the header.\n");
 	  return RESULT_FORMAT;
@@ -331,11 +295,11 @@ ASDCP::h__Reader::ReadEKLVPacket(ui32_t FrameNum, ui32_t SequenceNum, ASDCP::Fra
       if ( ! UL(ess_p).MatchIgnoreStream(EssenceUL) ) // ignore the stream number
 	{
 	  char strbuf[IntBufferLen];
-	  const MDDEntry* Entry = m_Dict->FindUL(Key.Value());
+	  const MDDEntry* Entry = Dict.FindUL(Key.Value());
 	  if ( Entry == 0 )
-	    DefaultLogSink().Warn("Unexpected Encrypted Essence UL found: %s.\n", Key.EncodeString(strbuf, IntBufferLen));
+	    DefaultLogSink().Warn("Unexpected Essence UL found: %s.\n", Key.EncodeString(strbuf, IntBufferLen));
 	  else
-	    DefaultLogSink().Warn("Unexpected Encrypted Essence UL found: %s.\n", Entry->name);
+	    DefaultLogSink().Warn("Unexpected Essence UL found: %s.\n", Entry->name);
 	  return RESULT_FORMAT;
 	}
       ess_p += SMPTE_UL_LENGTH;
@@ -363,7 +327,7 @@ ASDCP::h__Reader::ReadEKLVPacket(ui32_t FrameNum, ui32_t SequenceNum, ASDCP::Fra
 	  return RESULT_FORMAT;
 	}
 
-      ui32_t tmp_len = esv_length + (m_Info.UsesHMAC ? klv_intpack_size : 0);
+      ui32_t tmp_len = esv_length + (Info.UsesHMAC ? klv_intpack_size : 0);
 
       if ( PacketLength < tmp_len )
 	{
@@ -385,10 +349,10 @@ ASDCP::h__Reader::ReadEKLVPacket(ui32_t FrameNum, ui32_t SequenceNum, ASDCP::Fra
 	  FrameBuf.FrameNumber(FrameNum);
   
 	  // detect and test integrity pack
-	  if ( ASDCP_SUCCESS(result) && m_Info.UsesHMAC && HMAC )
+	  if ( ASDCP_SUCCESS(result) && Info.UsesHMAC && HMAC )
 	    {
 	      IntegrityPack IntPack;
-	      result = IntPack.TestValues(TmpWrapper, m_Info.AssetUUID, SequenceNum, HMAC);
+	      result = IntPack.TestValues(TmpWrapper, Info.AssetUUID, SequenceNum, HMAC);
 	    }
 	}
       else // return ciphertext to caller
@@ -421,7 +385,7 @@ ASDCP::h__Reader::ReadEKLVPacket(ui32_t FrameNum, ui32_t SequenceNum, ASDCP::Fra
       // read the data into the supplied buffer
       ui32_t read_count;
       assert(PacketLength <= 0xFFFFFFFFL);
-      result = m_File.Read(FrameBuf.Data(), (ui32_t) PacketLength, &read_count);
+      result = File.Read(FrameBuf.Data(), (ui32_t) PacketLength, &read_count);
 	  
       if ( ASDCP_FAILURE(result) )
 	return result;
@@ -443,11 +407,12 @@ ASDCP::h__Reader::ReadEKLVPacket(ui32_t FrameNum, ui32_t SequenceNum, ASDCP::Fra
   else
     {
       char strbuf[IntBufferLen];
-      const MDDEntry* Entry = m_Dict->FindUL(Key.Value());
+      const MDDEntry* Entry = Dict.FindUL(Key.Value());
       if ( Entry == 0 )
         DefaultLogSink().Warn("Unexpected Essence UL found: %s.\n", Key.EncodeString(strbuf, IntBufferLen));
       else
         DefaultLogSink().Warn("Unexpected Essence UL found: %s.\n", Entry->name);
+
       return RESULT_FORMAT;
     }
 

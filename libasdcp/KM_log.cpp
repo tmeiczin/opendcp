@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_log.cpp
-    \version $Id: KM_log.cpp,v 1.15 2011/03/08 19:03:47 jhurst Exp $
+    \version $Id: KM_log.cpp,v 1.17 2012/09/20 21:19:23 jhurst Exp $
     \brief   message logging API
   */
 
@@ -90,7 +90,8 @@ Kumu::DefaultLogSink()
 void
 Kumu::EntryListLogSink::WriteEntry(const LogEntry& Entry)
 {
-  AutoMutex L(m_Lock);
+  AutoMutex L(m_lock);
+  WriteEntryToListeners(Entry);
 
   if ( Entry.TestFilter(m_filter) )
     m_Target.push_back(Entry);
@@ -102,13 +103,15 @@ Kumu::EntryListLogSink::WriteEntry(const LogEntry& Entry)
 void
 Kumu::StdioLogSink::WriteEntry(const LogEntry& Entry)
 {
-  AutoMutex L(m_Lock);
   std::string buf;
+  AutoMutex L(m_lock);
+  WriteEntryToListeners(Entry);
 
   if ( Entry.TestFilter(m_filter) )
     {
       Entry.CreateStringWithOptions(buf, m_options);
       fputs(buf.c_str(), m_stream);
+      fflush(m_stream);
     }
 }
 
@@ -121,8 +124,9 @@ Kumu::StdioLogSink::WriteEntry(const LogEntry& Entry)
 void
 Kumu::WinDbgLogSink::WriteEntry(const LogEntry& Entry)
 {
-  AutoMutex L(m_Lock);
   std::string buf;
+  AutoMutex L(m_lock);
+  WriteEntryToListeners(Entry);
 
   if ( Entry.TestFilter(m_filter) )
     {
@@ -140,8 +144,9 @@ Kumu::WinDbgLogSink::WriteEntry(const LogEntry& Entry)
 void
 Kumu::StreamLogSink::WriteEntry(const LogEntry& Entry)
 {
-  AutoMutex L(m_Lock);
   std::string buf;
+  AutoMutex L(m_lock);
+  WriteEntryToListeners(Entry);
 
   if ( Entry.TestFilter(m_filter) )
     {
@@ -199,7 +204,8 @@ Kumu::SyslogLogSink::WriteEntry(const LogEntry& Entry)
     case Kumu::LOG_DEBUG:   priority = SYSLOG_DEBUG; break;
     }
 
-  AutoMutex L(m_Lock);
+  AutoMutex L(m_lock);
+  WriteEntryToListeners(Entry);
 
   if ( Entry.TestFilter(m_filter) )
     {

@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_util.h
-    \version $Id: KM_util.h,v 1.32 2012/02/21 02:09:30 jhurst Exp $
+    \version $Id: KM_util.h,v 1.34 2013/02/08 19:11:58 jhurst Exp $
     \brief   Utility functions
   */
 
@@ -244,7 +244,7 @@ namespace Kumu
       virtual ~ArchivableString() {}
 
       bool   HasValue() const { return ! this->empty(); }
-      ui32_t ArchiveLength() const { return static_cast<ui32_t>((sizeof(ui32_t) + this->size())|0xffffffff); }
+      ui32_t ArchiveLength() const { sizeof(ui32_t) + static_cast<ui32_t>(this->size()); }
 
       bool   Archive(MemIOWriter* Writer) const {
 	if ( Writer == 0 ) return false;
@@ -453,6 +453,9 @@ namespace Kumu
       // Return the number of seconds since the Unix epoch UTC (1970-01-01T00:00:00+00:00)
       ui64_t GetCTime() const;
 
+      // Set internal time to the number of seconds since the Unix epoch UTC
+      void SetCTime(const ui64_t& ctime);
+
       // Read and write the timestamp (always UTC) value as a byte string having
       // the following format:
       // | 16 bits int, big-endian |    8 bits   |   8 bits  |   8 bits   |    8 bits    |    8 bits    |
@@ -531,6 +534,14 @@ namespace Kumu
     hexdump(buf.RoData(), buf.Length());
   }
 
+  // Locates the first occurrence of the null-terminated string s2 in the string s1, where not more
+  // than n characters are searched.  Characters that appear after a `\0' character are not searched.
+  // Reproduced here from BSD for portability.
+  const char *km_strnstr(const char *s1, const char *s2, size_t n);
+
+  // Split the input string into tokens using the given separator. If the separator is not found the
+  // entire string will be returned as a single-item list.
+  std::list<std::string> km_token_split(const std::string& str, const std::string& separator);
 
 } // namespace Kumu
 

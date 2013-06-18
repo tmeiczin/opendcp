@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_JP2k.cpp
-    \version $Id: AS_DCP_JP2K.cpp,v 1.54 2012/02/07 18:54:24 jhurst Exp $
+    \version $Id: AS_DCP_JP2K.cpp,v 1.55 2013/02/08 19:11:58 jhurst Exp $
     \brief   AS-DCP library, JPEG 2000 essence reader and writer implementation
 */
 
@@ -205,7 +205,7 @@ ASDCP::JP2K::PictureDescriptorDump(const PictureDescriptor& PDesc, FILE* stream)
 // hidden, internal implementation of JPEG 2000 reader
 
 
-class lh__Reader : public ASDCP::h__Reader
+class lh__Reader : public ASDCP::h__ASDCPReader
 {
   RGBAEssenceDescriptor*        m_EssenceDescriptor;
   JPEG2000PictureSubDescriptor* m_EssenceSubDescriptor;
@@ -219,7 +219,7 @@ public:
   PictureDescriptor m_PDesc;        // codestream parameter list
 
   lh__Reader(const Dictionary& d) :
-    ASDCP::h__Reader(d), m_EssenceDescriptor(0), m_EssenceSubDescriptor(0), m_Format(ESS_UNKNOWN) {}
+    ASDCP::h__ASDCPReader(d), m_EssenceDescriptor(0), m_EssenceSubDescriptor(0), m_Format(ESS_UNKNOWN) {}
   Result_t    OpenRead(const char*, EssenceType_t);
   Result_t    ReadFrame(ui32_t, JP2K::FrameBuffer&, AESDecContext*, HMACContext*);
   Result_t    MD_to_JP2K_PDesc(JP2K::PictureDescriptor& PDesc);
@@ -279,6 +279,22 @@ lh__Reader::MD_to_JP2K_PDesc(JP2K::PictureDescriptor& PDesc)
 
   return RESULT_OK;
 }
+
+// Compares the actual floating point value of the rates.
+// This allows, for example, {300000,1001} and {2997,100) to be considered equivalent.
+// to 29.97.
+bool 
+epsilon_compare(const ASDCP::Rational& left, const ASDCP::Rational& right, double epsilon = 0.001)
+{
+  bool result = false;
+  double difference = left.Quotient() - right.Quotient();
+
+  if (fabs(difference) < epsilon)
+    result = true;
+
+  return result;
+}
+// end DOLBY
 
 //
 //
@@ -459,6 +475,8 @@ ASDCP::JP2K::MXFReader::MXFReader()
 
 ASDCP::JP2K::MXFReader::~MXFReader()
 {
+  if ( m_Reader && m_Reader->m_File.IsOpen() )
+    m_Reader->Close();
 }
 
 // Warning: direct manipulation of MXF structures can interfere
@@ -508,6 +526,12 @@ ASDCP::JP2K::MXFReader::ReadFrame(ui32_t FrameNum, FrameBuffer& FrameBuf,
     return m_Reader->ReadFrame(FrameNum, FrameBuf, Ctx, HMAC);
 
   return RESULT_INIT;
+}
+
+ASDCP::Result_t
+ASDCP::JP2K::MXFReader::LocateFrame(ui32_t FrameNum, Kumu::fpos_t& streamOffset, i8_t& temporalOffset, i8_t& keyFrameOffset) const
+{
+    return m_Reader->LocateFrame(FrameNum, streamOffset, temporalOffset, keyFrameOffset);
 }
 
 
@@ -595,7 +619,7 @@ public:
       }
 
     // get frame position
-    Kumu::fpos_t FilePosition = m_EssenceStart + TmpEntry.StreamOffset;
+    Kumu::fpos_t FilePosition = m_HeaderPart.BodyOffset + TmpEntry.StreamOffset;
     Result_t result = RESULT_OK;
 
     if ( phase == SP_LEFT )
@@ -663,6 +687,8 @@ ASDCP::JP2K::MXFSReader::MXFSReader()
 
 ASDCP::JP2K::MXFSReader::~MXFSReader()
 {
+  if ( m_Reader && m_Reader->m_File.IsOpen() )
+    m_Reader->Close();
 }
 
 // Warning: direct manipulation of MXF structures can interfere
@@ -729,6 +755,12 @@ ASDCP::JP2K::MXFSReader::ReadFrame(ui32_t FrameNum, StereoscopicPhase_t phase, F
     return m_Reader->ReadFrame(FrameNum, phase, FrameBuf, Ctx, HMAC);
 
   return RESULT_INIT;
+}
+
+ASDCP::Result_t
+ASDCP::JP2K::MXFSReader::LocateFrame(ui32_t FrameNum, Kumu::fpos_t& streamOffset, i8_t& temporalOffset, i8_t& keyFrameOffset) const
+{
+    return m_Reader->LocateFrame(FrameNum, streamOffset, temporalOffset, keyFrameOffset);
 }
 
 // Fill the struct with the values from the file's header.

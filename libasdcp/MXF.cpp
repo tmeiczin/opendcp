@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MXF.cpp
-    \version $Id: MXF.cpp,v 1.62 2012/03/05 13:11:47 jhurst Exp $
+    \version $Id: MXF.cpp,v 1.64 2012/03/16 19:27:45 jhurst Exp $
     \brief   MXF objects
 */
 
@@ -43,8 +43,6 @@ const ui32_t CBRIndexEntriesPerSegment = 5000;
 //------------------------------------------------------------------------------------------
 //
 
-const ui32_t kl_length = ASDCP::SMPTE_UL_LENGTH + ASDCP::MXF_BER_LENGTH;
-
 //
 ASDCP::Result_t
 ASDCP::MXF::SeekToRIP(const Kumu::FileReader& Reader)
@@ -59,7 +57,10 @@ ASDCP::MXF::SeekToRIP(const Kumu::FileReader& Reader)
 
   if ( ASDCP_SUCCESS(result)
        && end_pos < (SMPTE_UL_LENGTH+MXF_BER_LENGTH) )
-    result = RESULT_FAIL;  // File is smaller than an empty packet!
+    {
+      DefaultLogSink().Error("File is smaller than an KLV empty packet.\n");
+      result = RESULT_FAIL;
+    }
 
   if ( ASDCP_SUCCESS(result) )
     result = Reader.Seek(end_pos - 4);
@@ -74,7 +75,10 @@ ASDCP::MXF::SeekToRIP(const Kumu::FileReader& Reader)
       result = Reader.Read(intbuf, MXF_BER_LENGTH, &read_count);
 
       if ( ASDCP_SUCCESS(result) && read_count != 4 )
-	result = RESULT_FAIL;
+	{
+	  DefaultLogSink().Error("RIP contains fewer than four bytes.\n");
+	  result = RESULT_FAIL;
+	}
     }
 
   if ( ASDCP_SUCCESS(result) )
@@ -82,7 +86,10 @@ ASDCP::MXF::SeekToRIP(const Kumu::FileReader& Reader)
       rip_size = KM_i32_BE(Kumu::cp2i<ui32_t>(intbuf));
 
       if ( rip_size > end_pos ) // RIP can't be bigger than the file
-	return RESULT_FAIL;
+	{
+	  DefaultLogSink().Error("RIP size impossibly large.\n");
+	  return RESULT_FAIL;
+	}
     }
 
   // reposition to start of RIP
@@ -174,80 +181,77 @@ ASDCP::MXF::RIP::Dump(FILE* stream)
 //
 
 //
-class ASDCP::MXF::Partition::h__PacketList
+ASDCP::MXF::Partition::PacketList::~PacketList() {
+  while ( ! m_List.empty() )
+    {
+      delete m_List.back();
+      m_List.pop_back();
+    }
+}
+
+//
+void
+ASDCP::MXF::Partition::PacketList::AddPacket(InterchangeObject* ThePacket) // takes ownership
 {
-public:
-  std::list<InterchangeObject*> m_List;
-  std::map<UUID, InterchangeObject*> m_Map;
+  assert(ThePacket);
+  m_Map.insert(std::map<UUID, InterchangeObject*>::value_type(ThePacket->InstanceUID, ThePacket));
+  m_List.push_back(ThePacket);
+}
 
-  ~h__PacketList() {
-    while ( ! m_List.empty() )
-      {
-	delete m_List.back();
-	m_List.pop_back();
-      }
-  }
+//
+ASDCP::Result_t
+ASDCP::MXF::Partition::PacketList::GetMDObjectByID(const UUID& ObjectID, InterchangeObject** Object)
+{
+  ASDCP_TEST_NULL(Object);
 
-  //
-  void AddPacket(InterchangeObject* ThePacket) // takes ownership
-  {
-    assert(ThePacket);
-    m_Map.insert(std::map<UUID, InterchangeObject*>::value_type(ThePacket->InstanceUID, ThePacket));
-    m_List.push_back(ThePacket);
-  }
+  std::map<UUID, InterchangeObject*>::iterator mi = m_Map.find(ObjectID);
+  
+  if ( mi == m_Map.end() )
+    {
+      *Object = 0;
+      return RESULT_FAIL;
+    }
 
-  //
-  Result_t GetMDObjectByID(const UUID& ObjectID, InterchangeObject** Object)
-  {
-    ASDCP_TEST_NULL(Object);
+  *Object = (*mi).second;
+  return RESULT_OK;
+}
 
-    std::map<UUID, InterchangeObject*>::iterator mi = m_Map.find(ObjectID);
+//
+ASDCP::Result_t
+ASDCP::MXF::Partition::PacketList::GetMDObjectByType(const byte_t* ObjectID, InterchangeObject** Object)
+{
+  ASDCP_TEST_NULL(ObjectID);
+  ASDCP_TEST_NULL(Object);
+  std::list<InterchangeObject*>::iterator li;
+  *Object = 0;
 
-    if ( mi == m_Map.end() )
-      {
-	*Object = 0;
-	return RESULT_FAIL;
-      }
+  for ( li = m_List.begin(); li != m_List.end(); li++ )
+    {
+      if ( (*li)->HasUL(ObjectID) )
+	{
+	  *Object = *li;
+	  return RESULT_OK;
+	}
+    }
 
-    *Object = (*mi).second;
-    return RESULT_OK;
-  }
+  return RESULT_FAIL;
+}
 
-  //
-  Result_t GetMDObjectByType(const byte_t* ObjectID, InterchangeObject** Object)
-  {
-    ASDCP_TEST_NULL(ObjectID);
-    ASDCP_TEST_NULL(Object);
-    std::list<InterchangeObject*>::iterator li;
-    *Object = 0;
+//
+ASDCP::Result_t
+ASDCP::MXF::Partition::PacketList::GetMDObjectsByType(const byte_t* ObjectID, std::list<InterchangeObject*>& ObjectList)
+{
+  ASDCP_TEST_NULL(ObjectID);
+  std::list<InterchangeObject*>::iterator li;
 
-    for ( li = m_List.begin(); li != m_List.end(); li++ )
-      {
-	if ( (*li)->HasUL(ObjectID) )
-	  {
-	    *Object = *li;
-	    return RESULT_OK;
-	  }
-      }
+  for ( li = m_List.begin(); li != m_List.end(); li++ )
+    {
+      if ( (*li)->HasUL(ObjectID) )
+	ObjectList.push_back(*li);
+    }
 
-    return RESULT_FAIL;
-  }
-
-  //
-  Result_t GetMDObjectsByType(const byte_t* ObjectID, std::list<InterchangeObject*>& ObjectList)
-  {
-    ASDCP_TEST_NULL(ObjectID);
-    std::list<InterchangeObject*>::iterator li;
-
-    for ( li = m_List.begin(); li != m_List.end(); li++ )
-      {
-	if ( (*li)->HasUL(ObjectID) )
-	  ObjectList.push_back(*li);
-      }
-
-    return ObjectList.empty() ? RESULT_FAIL : RESULT_OK;
-  }
-};
+  return ObjectList.empty() ? RESULT_FAIL : RESULT_OK;
+}
 
 //------------------------------------------------------------------------------------------
 //
@@ -260,7 +264,7 @@ ASDCP::MXF::Partition::Partition(const Dictionary*& d) :
   FooterPartition(0), HeaderByteCount(0), IndexByteCount(0), IndexSID(0),
   BodyOffset(0), BodySID(0)
 {
-  m_PacketList = new h__PacketList;
+  m_PacketList = new PacketList;
 }
 
 ASDCP::MXF::Partition::~Partition()
@@ -721,12 +725,20 @@ ASDCP::MXF::OPAtomHeader::InitFromFile(const Kumu::FileReader& Reader)
 	    }
 	}
     }
+  else
+  {
+    DefaultLogSink().Error("OPAtomHeader::InitFromFile, SeekToRIP failed\n");
+  }
 
   if ( ASDCP_SUCCESS(result) )
     result = Reader.Seek(0);
+  else
+    DefaultLogSink().Error("OPAtomHeader::InitFromFile, Seek failed\n");
 
   if ( ASDCP_SUCCESS(result) )
     result = Partition::InitFromFile(Reader); // test UL and OP
+  else
+    DefaultLogSink().Error("OPAtomHeader::InitFromFile, Partition::InitFromFile failed\n");
 
   if ( ASDCP_FAILURE(result) )
     return result;
@@ -770,7 +782,10 @@ ASDCP::MXF::OPAtomHeader::InitFromFile(const Kumu::FileReader& Reader)
       result = Reader.Read(m_Buffer.Data(), m_Buffer.Capacity(), &read_count);
 
       if ( ASDCP_FAILURE(result) )
-	return result;
+        {
+	  DefaultLogSink().Error("OPAtomHeader::InitFromFile, Read failed\n");
+	  return result;
+        }
 
       if ( read_count != m_Buffer.Capacity() )
 	{
@@ -1034,17 +1049,21 @@ ASDCP::MXF::OPAtomIndexFooter::InitFromFile(const Kumu::FileReader& Reader)
 {
   Result_t result = Partition::InitFromFile(Reader); // test UL and OP
 
-  // slurp up the remainder of the footer
-  ui32_t read_count;
+	// slurp up the remainder of the footer
+	ui32_t read_count = 0;
 
-  if ( ASDCP_SUCCESS(result) )
+	if ( ASDCP_SUCCESS(result) )
     {
-      assert (IndexByteCount <= 0xFFFFFFFFL);
-      result = m_Buffer.Capacity((ui32_t) IndexByteCount);
+		assert (IndexByteCount <= 0xFFFFFFFFL);
+		// At this point, m_Buffer may not have been initialized
+		// so it's capacity is zero and data pointer is NULL
+		// However, if IndexByteCount is zero then the capacity
+		// doesn't change and the data pointer is not set.
+		result = m_Buffer.Capacity((ui32_t) IndexByteCount);
     }
 
-  if ( ASDCP_SUCCESS(result) )
-    result = Reader.Read(m_Buffer.Data(), m_Buffer.Capacity(), &read_count);
+	if ( ASDCP_SUCCESS(result) && m_Buffer.Data() )
+		result = Reader.Read(m_Buffer.Data(), m_Buffer.Capacity(), &read_count);
 
   if ( ASDCP_SUCCESS(result) && read_count != m_Buffer.Capacity() )
     {
@@ -1052,6 +1071,12 @@ ASDCP::MXF::OPAtomIndexFooter::InitFromFile(const Kumu::FileReader& Reader)
 			     read_count, m_Buffer.Capacity());
       return RESULT_FAIL;
     }
+	else if( ASDCP_SUCCESS(result) && !m_Buffer.Data() )
+	{
+		DefaultLogSink().Error( "Buffer for footer partition not created: IndexByteCount = %u\n",
+								IndexByteCount );
+		return RESULT_FAIL;
+	}
 
   if ( ASDCP_SUCCESS(result) )
     result = InitFromBuffer(m_Buffer.RoData(), m_Buffer.Capacity());

@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_PCM.cpp
-    \version $Id: AS_DCP_PCM.cpp,v 1.36 2012/02/07 18:54:25 jhurst Exp $       
+    \version $Id: AS_DCP_PCM.cpp,v 1.38 2013/02/08 19:11:58 jhurst Exp $       
     \brief   AS-DCP library, PCM essence reader and writer implementation
 */
 
@@ -41,7 +41,7 @@ static std::string SOUND_DEF_LABEL = "Sound Track";
 
 //
 Result_t
-PCM_ADesc_to_MD(PCM::AudioDescriptor& ADesc, MXF::WaveAudioDescriptor* ADescObj)
+ASDCP::PCM_ADesc_to_MD(PCM::AudioDescriptor& ADesc, MXF::WaveAudioDescriptor* ADescObj)
 {
   ASDCP_TEST_NULL(ADescObj);
   ADescObj->SampleRate = ADesc.EditRate;
@@ -84,7 +84,7 @@ PCM_ADesc_to_MD(PCM::AudioDescriptor& ADesc, MXF::WaveAudioDescriptor* ADescObj)
 
 //
 ASDCP::Result_t
-MD_to_PCM_ADesc(MXF::WaveAudioDescriptor* ADescObj, PCM::AudioDescriptor& ADesc)
+ASDCP::MD_to_PCM_ADesc(MXF::WaveAudioDescriptor* ADescObj, PCM::AudioDescriptor& ADesc)
 {
   ASDCP_TEST_NULL(ADescObj);
   ADesc.EditRate = ADescObj->SampleRate;
@@ -134,6 +134,35 @@ ASDCP::PCM::operator << (std::ostream& strm, const AudioDescriptor& ADesc)
   strm << "            AvgBps: " << (unsigned) ADesc.AvgBps << std::endl;
   strm << "     LinkedTrackID: " << (unsigned) ADesc.LinkedTrackID << std::endl;
   strm << " ContainerDuration: " << (unsigned) ADesc.ContainerDuration << std::endl;
+  strm << "     ChannelFormat: ";
+  switch (ADesc.ChannelFormat)
+  {
+    case CF_NONE:
+    default:
+      strm << "No Channel Format";
+      break;
+
+    case CF_CFG_1:
+      strm << "Config 1 (5.1 with optional HI/VI)";
+      break;
+
+    case CF_CFG_2:
+      strm << "Config 2 (5.1 + center surround with optional HI/VI)";
+      break;
+
+    case CF_CFG_3:
+      strm << "Config 3 (7.1 with optional HI/VI)";
+      break;
+
+    case CF_CFG_4:
+      strm << "Config 4";
+      break;
+
+    case CF_CFG_5:
+      strm << "Config 5 (7.1 DS with optional HI/VI)";
+      break;
+  }
+  strm << std::endl;
 
   return strm;
 }
@@ -154,7 +183,8 @@ ASDCP::PCM::AudioDescriptorDump(const AudioDescriptor& ADesc, FILE* stream)
         BlockAlign: %u\n\
             AvgBps: %u\n\
      LinkedTrackID: %u\n\
- ContainerDuration: %u\n",
+ ContainerDuration: %u\n\
+     ChannelFormat: %u\n",
 	  ADesc.EditRate.Numerator, ADesc.EditRate.Denominator,
 	  ADesc.AudioSamplingRate.Numerator, ADesc.AudioSamplingRate.Denominator,
 	  ADesc.Locked,
@@ -163,7 +193,8 @@ ASDCP::PCM::AudioDescriptorDump(const AudioDescriptor& ADesc, FILE* stream)
 	  ADesc.BlockAlign,
 	  ADesc.AvgBps,
 	  ADesc.LinkedTrackID,
-	  ADesc.ContainerDuration
+	  ADesc.ContainerDuration,
+          ADesc.ChannelFormat
 	  );
 }
 
@@ -196,7 +227,7 @@ calc_CBR_frame_size(ASDCP::WriterInfo& Info, const ASDCP::PCM::AudioDescriptor& 
 //------------------------------------------------------------------------------------------
 
 
-class ASDCP::PCM::MXFReader::h__Reader : public ASDCP::h__Reader
+class ASDCP::PCM::MXFReader::h__Reader : public ASDCP::h__ASDCPReader
 {
   ASDCP_NO_COPY_CONSTRUCT(h__Reader);
   h__Reader();
@@ -204,7 +235,7 @@ class ASDCP::PCM::MXFReader::h__Reader : public ASDCP::h__Reader
 public:
   AudioDescriptor m_ADesc;
 
-  h__Reader(const Dictionary& d) : ASDCP::h__Reader(d) {}
+  h__Reader(const Dictionary& d) : ASDCP::h__ASDCPReader(d) {}
   ~h__Reader() {}
   Result_t    OpenRead(const char*);
   Result_t    ReadFrame(ui32_t, FrameBuffer&, AESDecContext*, HMACContext*);
@@ -239,6 +270,10 @@ ASDCP::PCM::MXFReader::h__Reader::OpenRead(const char* filename)
        && m_ADesc.EditRate != EditRate_96
        && m_ADesc.EditRate != EditRate_100
        && m_ADesc.EditRate != EditRate_120
+       && m_ADesc.EditRate != EditRate_16
+       && m_ADesc.EditRate != EditRate_18
+       && m_ADesc.EditRate != EditRate_20
+       && m_ADesc.EditRate != EditRate_22
        && m_ADesc.EditRate != EditRate_23_98 )
     {
       DefaultLogSink().Error("PCM file EditRate is not a supported value: %d/%d\n", // lu
@@ -252,6 +287,7 @@ ASDCP::PCM::MXFReader::h__Reader::OpenRead(const char* filename)
 	}
       else
 	{
+      DefaultLogSink().Error("PCM EditRate not in expected value range.\n");
 	  // or we just drop the hammer
 	  return RESULT_FORMAT;
 	}
@@ -365,6 +401,12 @@ ASDCP::PCM::MXFReader::ReadFrame(ui32_t FrameNum, FrameBuffer& FrameBuf,
   return RESULT_INIT;
 }
 
+
+ASDCP::Result_t
+ASDCP::PCM::MXFReader::LocateFrame(ui32_t FrameNum, Kumu::fpos_t& streamOffset, i8_t& temporalOffset, i8_t& keyFrameOffset) const
+{
+    return m_Reader->LocateFrame(FrameNum, streamOffset, temporalOffset, keyFrameOffset);
+}
 
 // Fill the struct with the values from the file's header.
 // Returns RESULT_INIT if the file is not open.
@@ -488,6 +530,10 @@ ASDCP::PCM::MXFWriter::h__Writer::SetSourceStream(const AudioDescriptor& ADesc)
        && ADesc.EditRate != EditRate_96
        && ADesc.EditRate != EditRate_100
        && ADesc.EditRate != EditRate_120
+       && ADesc.EditRate != EditRate_16
+       && ADesc.EditRate != EditRate_18
+       && ADesc.EditRate != EditRate_20
+       && ADesc.EditRate != EditRate_22
        && ADesc.EditRate != EditRate_23_98 )
     {
       DefaultLogSink().Error("AudioDescriptor.EditRate is not a supported value: %d/%d\n",
@@ -516,7 +562,14 @@ ASDCP::PCM::MXFWriter::h__Writer::SetSourceStream(const AudioDescriptor& ADesc)
 
   if ( ASDCP_SUCCESS(result) )
     {
-      ui32_t TCFrameRate = ( m_ADesc.EditRate == EditRate_23_98  ) ? 24 : m_ADesc.EditRate.Numerator;
+      ui32_t TCFrameRate = m_ADesc.EditRate.Numerator;
+
+      if ( m_ADesc.EditRate == EditRate_23_98  )
+	TCFrameRate = 24;
+      else if ( m_ADesc.EditRate == EditRate_18  )
+	TCFrameRate = 18;
+      else if ( m_ADesc.EditRate == EditRate_22  )
+	TCFrameRate = 22;
       
       result = WriteMXFHeader(PCM_PACKAGE_LABEL, UL(m_Dict->ul(MDD_WAVWrapping)),
 			      SOUND_DEF_LABEL, UL(m_EssenceUL), UL(m_Dict->ul(MDD_SoundDataDef)),

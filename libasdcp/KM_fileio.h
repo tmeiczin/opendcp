@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_fileio.h
-    \version $Id: KM_fileio.h,v 1.17 2009/06/22 05:49:02 jhurst Exp $
+    \version $Id: KM_fileio.h,v 1.18 2013/02/08 19:11:58 jhurst Exp $
     \brief   portable file i/o
   */
 
@@ -133,6 +133,7 @@ namespace Kumu
   bool        PathIsFile(const std::string& Path); // true if the path exists in the filesystem and is a file
   bool        PathIsDirectory(const std::string& Path); // true if the path exists in the filesystem and is a directory
   fsize_t     FileSize(const std::string& Path); // returns the size of a regular file, 0 for a directory or device
+  std::string PathCwd();
   bool        PathsAreEquivalent(const std::string& lhs, const std::string& rhs); // true if paths point to the same filesystem entry
 
   // Returns free space and total space available for the given path
@@ -148,6 +149,7 @@ namespace Kumu
   std::string PathMakeAbsolute(const std::string& Path, char separator = '/'); // compute position of relative path using getcwd()
   std::string PathMakeLocal(const std::string& Path, const std::string& Parent); // remove Parent from front of Path, if it exists
   std::string PathMakeCanonical(const std::string& Path, char separator = '/'); // remove '.' and '..'
+  bool        PathResolveLinks(const std::string& link_path, std::string& resolved_path, char separator = '/');
 
   // common operations
   std::string PathBasename(const std::string& Path, char separator = '/'); // returns right-most path element (list back())

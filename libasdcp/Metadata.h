@@ -889,6 +889,55 @@ namespace ASDCP
       virtual Result_t WriteToBuffer(ASDCP::FrameBuffer&);
 	};
 
+      //
+     class DCDataDescriptor : public GenericDataEssenceDescriptor
+	{
+	  DCDataDescriptor();
+
+	public:
+	  const Dictionary*& m_Dict;
+
+      DCDataDescriptor(const Dictionary*& d);
+      DCDataDescriptor(const DCDataDescriptor& rhs);
+      virtual ~DCDataDescriptor() {}
+
+      const DCDataDescriptor& operator=(const DCDataDescriptor& rhs) { Copy(rhs); return *this; }
+      virtual void Copy(const DCDataDescriptor& rhs);
+      virtual const char* HasName() { return "DCDataDescriptor"; }
+      virtual Result_t InitFromTLVSet(TLVReader& TLVSet);
+      virtual Result_t WriteToTLVSet(TLVWriter& TLVSet);
+      virtual void     Dump(FILE* = 0);
+      virtual Result_t InitFromBuffer(const byte_t* p, ui32_t l);
+      virtual Result_t WriteToBuffer(ASDCP::FrameBuffer&);
+	};
+
+      //
+      class DolbyAtmosSubDescriptor : public InterchangeObject
+	{
+	  DolbyAtmosSubDescriptor();
+
+	public:
+	  const Dictionary*& m_Dict;
+        UUID AtmosID;
+        ui32_t FirstFrame;
+        ui16_t MaxChannelCount;
+        ui16_t MaxObjectCount;
+        ui8_t AtmosVersion;
+
+      DolbyAtmosSubDescriptor(const Dictionary*& d);
+      DolbyAtmosSubDescriptor(const DolbyAtmosSubDescriptor& rhs);
+      virtual ~DolbyAtmosSubDescriptor() {}
+
+      const DolbyAtmosSubDescriptor& operator=(const DolbyAtmosSubDescriptor& rhs) { Copy(rhs); return *this; }
+      virtual void Copy(const DolbyAtmosSubDescriptor& rhs);
+      virtual const char* HasName() { return "DolbyAtmosSubDescriptor"; }
+      virtual Result_t InitFromTLVSet(TLVReader& TLVSet);
+      virtual Result_t WriteToTLVSet(TLVWriter& TLVSet);
+      virtual void     Dump(FILE* = 0);
+      virtual Result_t InitFromBuffer(const byte_t* p, ui32_t l);
+      virtual Result_t WriteToBuffer(ASDCP::FrameBuffer&);
+	};
+
     } // namespace MXF
 } // namespace ASDCP
 

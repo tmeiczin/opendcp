@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2004-2011, John Hurst
+Copyright (c) 2004-2012, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_fileio.cpp
-    \version $Id: KM_fileio.cpp,v 1.31 2011/03/08 19:03:47 jhurst Exp $
+    \version $Id: KM_fileio.cpp,v 1.32 2013/02/08 19:11:58 jhurst Exp $
     \brief   portable file i/o
   */
 
@@ -69,31 +69,6 @@ struct iovec {
 #include <sys/uio.h>
 typedef struct stat     fstat_t;
 #endif
-
-//
-static void
-split(const std::string& str, char separator, std::list<std::string>& components)
-{
-  const char* pstr = str.c_str();
-  const char* r = strchr(pstr, separator);
-
-  while ( r != 0 )
-    {
-      assert(r >= pstr);
-      if ( r > pstr )
-	{
-	  std::string tmp_str;
-	  tmp_str.assign(pstr, (r - pstr));
-	  components.push_back(tmp_str);
-	}
-
-      pstr = r + 1;
-      r = strchr(pstr, separator);
-    }
-
-  if( strlen(pstr) > 0 )
-    components.push_back(std::string(pstr));
-}
 
 
 //
@@ -216,61 +191,55 @@ Kumu::FileSize(const std::string& pathname)
 }
 
 //
-static PathCompList_t&
-s_PathMakeCanonical(PathCompList_t& CList, bool is_absolute)
+static void
+make_canonical_list(const PathCompList_t& in_list, PathCompList_t& out_list)
 {
-  PathCompList_t::iterator ci, ri; // component and removal iterators
-
-  for ( ci = CList.begin(); ci != CList.end(); ci++ )
+  PathCompList_t::const_iterator i;
+  for ( i = in_list.begin(); i != in_list.end(); ++i )
     {
-      if ( *ci == "." && ( CList.size() > 1 || is_absolute ) )
-        {
-          ri = ci++;
-          CList.erase(ri);
-        }
-      else if ( *ci == ".." && ci != CList.begin() )
+      if ( *i == ".." )
 	{
-	  ri = ci;
-	  ri--;
-	      
-	  if ( *ri != ".." )
+	  if ( ! out_list.empty() )
 	    {
-	      CList.erase(ri);
-	      ri = ci++;
-	      CList.erase(ri);
-            }
-        }
+	      out_list.pop_back();
+	    }
+	}
+      else if ( *i != "." )
+	{
+	  out_list.push_back(*i);
+	}
     }
-
-  return CList;
 }
 
 //
 std::string
 Kumu::PathMakeCanonical(const std::string& Path, char separator)
 {
-  PathCompList_t CList;
+  PathCompList_t in_list, out_list;
   bool is_absolute = PathIsAbsolute(Path, separator);
-  s_PathMakeCanonical(PathToComponents(Path, CList, separator), is_absolute);
+  PathToComponents(Path, in_list, separator);
+  make_canonical_list(in_list, out_list);
 
   if ( is_absolute )
-    return ComponentsToAbsolutePath(CList, separator);
+    return ComponentsToAbsolutePath(out_list, separator);
 
-  return ComponentsToPath(CList, separator);
+  return ComponentsToPath(out_list, separator);
 }
 
 //
 bool
 Kumu::PathsAreEquivalent(const std::string& lhs, const std::string& rhs)
 {
-  return PathMakeCanonical(lhs) == PathMakeCanonical(rhs);
+  return PathMakeAbsolute(lhs) == PathMakeAbsolute(rhs);
 }
 
 //
 Kumu::PathCompList_t&
 Kumu::PathToComponents(const std::string& Path, PathCompList_t& CList, char separator)
 {
-  split(Path, separator, CList);
+  std::string s;
+  s = separator;
+  CList = km_token_split(Path, s);
   return CList;
 }
 
@@ -334,18 +303,8 @@ Kumu::PathIsAbsolute(const std::string& Path, char separator)
 
 //
 std::string
-Kumu::PathMakeAbsolute(const std::string& Path, char separator)
+Kumu::PathCwd()
 {
-  if ( Path.empty() )
-    {
-      std::string out_path;
-      out_path = separator;
-      return out_path;
-    }
-
-  if ( PathIsAbsolute(Path, separator) )
-    return Path;
-
   char cwd_buf [MaxFilePath];
   if ( _getcwd(cwd_buf, MaxFilePath) == 0 )
     {
@@ -353,11 +312,28 @@ Kumu::PathMakeAbsolute(const std::string& Path, char separator)
       return "";
     }
 
-  PathCompList_t CList;
-  PathToComponents(cwd_buf, CList);
-  CList.push_back(Path);
+  return cwd_buf;
+}
 
-  return ComponentsToAbsolutePath(s_PathMakeCanonical(CList, true), separator);
+//
+std::string
+Kumu::PathMakeAbsolute(const std::string& Path, char separator)
+{
+  if ( Path.empty() )
+    {
+      std::string tmpstr;
+      tmpstr = separator;
+      return tmpstr;
+    }
+
+  if ( PathIsAbsolute(Path, separator) )
+    return PathMakeCanonical(Path);
+
+  PathCompList_t in_list, out_list;
+  PathToComponents(PathJoin(PathCwd(), Path), in_list);
+  make_canonical_list(in_list, out_list);
+
+  return ComponentsToAbsolutePath(out_list);
 }
 
 //
@@ -454,6 +430,69 @@ Kumu::PathJoin(const std::string& Path1, const std::string& Path2,
 {
   return Path1 + separator + Path2 + separator + Path3 + separator + Path4;
 }
+
+#ifndef KM_WIN32
+// returns false if link cannot be read
+//
+bool
+Kumu::PathResolveLinks(const std::string& link_path, std::string& resolved_path, char separator)
+{
+  PathCompList_t in_list, out_list;
+  PathToComponents(PathMakeCanonical(link_path), in_list, separator);
+  PathCompList_t::iterator i;
+  char link_buf[MaxFilePath];
+
+  for ( i = in_list.begin(); i != in_list.end(); ++i )
+    {
+      assert ( *i != ".." && *i != "." );
+      out_list.push_back(*i);
+
+      for (;;)
+	{
+	  std::string next_link = ComponentsToAbsolutePath(out_list, separator);
+	  ssize_t link_size = readlink(next_link.c_str(), link_buf, MaxFilePath);
+
+	  if ( link_size == -1 )
+	    {
+	      if ( errno == EINVAL )
+		break;
+
+	      DefaultLogSink().Error("%s: readlink: %s\n", next_link.c_str(), strerror(errno));
+	      return false;
+	    }
+	  
+	  assert(link_size < MaxFilePath);
+	  link_buf[link_size] = 0;
+	  std::string tmp_path;
+	  out_list.clear();
+
+	  if ( PathIsAbsolute(link_buf) )
+	    {
+	      tmp_path = link_buf;
+	    }
+	  else
+	    {
+	      tmp_path = PathJoin(PathDirname(next_link), link_buf);
+	    }
+
+	  PathToComponents(PathMakeCanonical(tmp_path), out_list, separator);
+	}
+    }
+
+  resolved_path = ComponentsToAbsolutePath(out_list, separator);
+  return true;
+}
+
+#else // KM_WIN32
+// TODO: is there a reasonable equivalent to be written for win32?
+//
+bool
+Kumu::PathResolveLinks(const std::string& link_path, std::string& resolved_path, char separator)
+{
+  resolved_path = link_path;
+  return true;
+}
+#endif
 
 //
 Kumu::PathList_t&
@@ -1520,7 +1559,7 @@ h__DeletePath(const std::string& pathname)
 Result_t
 Kumu::DeletePath(const std::string& pathname)
 {
-  std::string c_pathname = PathMakeAbsolute(PathMakeCanonical(pathname));
+  std::string c_pathname = PathMakeCanonical(PathMakeAbsolute(pathname));
   DefaultLogSink().Debug("DeletePath (%s) c(%s)\n", pathname.c_str(), c_pathname.c_str());
   return h__DeletePath(c_pathname);
 }

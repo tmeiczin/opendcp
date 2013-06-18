@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MXFTypes.h
-    \version $Id: MXFTypes.h,v 1.29 2012/02/21 02:09:31 jhurst Exp $
+    \version $Id: MXFTypes.h,v 1.30 2012/03/15 17:54:15 jhurst Exp $
     \brief   MXF objects
 */
 
@@ -99,7 +99,7 @@ namespace ASDCP
 	{
 	public:
 	  Batch() {}
-	  ~Batch() {}
+	  virtual ~Batch() {}
 
 	  //
 	  virtual bool Unarchive(Kumu::MemIOReader* Reader) {
@@ -181,7 +181,7 @@ namespace ASDCP
 	{
 	public:
 	  Array() {}
-	  ~Array() {}
+	  virtual ~Array() {}
 
 	  //
 	  virtual bool Unarchive(Kumu::MemIOReader* Reader)

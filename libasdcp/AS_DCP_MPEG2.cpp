@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_MPEG2.cpp
-    \version $Id: AS_DCP_MPEG2.cpp,v 1.34 2012/02/07 18:54:24 jhurst Exp $       
+    \version $Id: AS_DCP_MPEG2.cpp,v 1.35 2013/02/08 19:11:58 jhurst Exp $       
     \brief   AS-DCP library, MPEG2 essence reader and writer implementation
 */
 
@@ -160,7 +160,7 @@ ASDCP::MPEG2::VideoDescriptorDump(const VideoDescriptor& VDesc, FILE* stream)
 //
 // hidden, internal implementation of MPEG2 reader
 
-class ASDCP::MPEG2::MXFReader::h__Reader : public ASDCP::h__Reader
+class ASDCP::MPEG2::MXFReader::h__Reader : public ASDCP::h__ASDCPReader
 {
   ASDCP_NO_COPY_CONSTRUCT(h__Reader);
   h__Reader();
@@ -168,7 +168,7 @@ class ASDCP::MPEG2::MXFReader::h__Reader : public ASDCP::h__Reader
 public:
   VideoDescriptor m_VDesc;        // video parameter list
 
-  h__Reader(const Dictionary& d) : ASDCP::h__Reader(d) {}
+  h__Reader(const Dictionary& d) : ASDCP::h__ASDCPReader(d) {}
   ~h__Reader() {}
   Result_t    OpenRead(const char*);
   Result_t    ReadFrame(ui32_t, FrameBuffer&, AESDecContext*, HMACContext*);
@@ -333,6 +333,8 @@ ASDCP::MPEG2::MXFReader::MXFReader()
 
 ASDCP::MPEG2::MXFReader::~MXFReader()
 {
+  if ( m_Reader && m_Reader->m_File.IsOpen() )
+    m_Reader->Close();
 }
 
 // Warning: direct manipulation of MXF structures can interfere
@@ -384,6 +386,13 @@ ASDCP::MPEG2::MXFReader::ReadFrame(ui32_t FrameNum, FrameBuffer& FrameBuf,
   return RESULT_INIT;
 }
 
+
+//
+ASDCP::Result_t
+ASDCP::MPEG2::MXFReader::LocateFrame(ui32_t FrameNum, Kumu::fpos_t& streamOffset, i8_t& temporalOffset, i8_t& keyFrameOffset) const
+{
+    return m_Reader->LocateFrame(FrameNum, streamOffset, temporalOffset, keyFrameOffset);
+}
 
 //
 ASDCP::Result_t

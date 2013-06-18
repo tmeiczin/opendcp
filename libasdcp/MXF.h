@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MXF.h
-    \version $Id: MXF.h,v 1.42 2012/03/05 13:11:47 jhurst Exp $
+    \version $Id: MXF.h,v 1.43 2012/03/16 00:28:23 jhurst Exp $
     \brief   MXF objects
 */
 
@@ -39,6 +39,8 @@ namespace ASDCP
   namespace MXF
     {
       class InterchangeObject;
+
+      const ui32_t kl_length = ASDCP::SMPTE_UL_LENGTH + ASDCP::MXF_BER_LENGTH;
 
       //
       typedef ASDCP::MXF::InterchangeObject* (*MXFObjectFactory_t)(const Dictionary*&);
@@ -114,8 +116,20 @@ namespace ASDCP
 	  Partition();
 
 	protected:
-	  class h__PacketList;
-	  mem_ptr<h__PacketList> m_PacketList;
+	  class PacketList
+	  {
+	  public:
+	    std::list<InterchangeObject*> m_List;
+	    std::map<UUID, InterchangeObject*> m_Map;
+
+	    ~PacketList();
+	    void AddPacket(InterchangeObject* ThePacket); // takes ownership
+	    Result_t GetMDObjectByID(const UUID& ObjectID, InterchangeObject** Object);
+	    Result_t GetMDObjectByType(const byte_t* ObjectID, InterchangeObject** Object);
+	    Result_t GetMDObjectsByType(const byte_t* ObjectID, std::list<InterchangeObject*>& ObjectList);
+	  };
+
+	  mem_ptr<PacketList> m_PacketList;
 
 	public:
 	  const Dictionary*& m_Dict;

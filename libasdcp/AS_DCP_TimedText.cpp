@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_TimedText.cpp
-    \version $Id: AS_DCP_TimedText.cpp,v 1.26 2012/02/07 18:54:25 jhurst Exp $       
+    \version $Id: AS_DCP_TimedText.cpp,v 1.28 2013/02/08 19:11:58 jhurst Exp $       
     \brief   AS-DCP library, PCM essence reader and writer implementation
 */
 
@@ -92,7 +92,7 @@ ASDCP::TimedText::DescriptorDump(ASDCP::TimedText::TimedTextDescriptor const& TD
   fprintf(stream, "ContainerDuration: %u\n",    TDesc.ContainerDuration);
   fprintf(stream, "          AssetID: %s\n",    TmpID.EncodeHex(buf, 64));
   fprintf(stream, "    NamespaceName: %s\n",    TDesc.NamespaceName.c_str());
-  fprintf(stream, "    ResourceCount: %d\n",   TDesc.ResourceList.size());
+  fprintf(stream, "    ResourceCount: %zu\n",   TDesc.ResourceList.size());
 
   TimedText::ResourceList_t::const_iterator ri;
   for ( ri = TDesc.ResourceList.begin() ; ri != TDesc.ResourceList.end(); ri++ )
@@ -123,7 +123,7 @@ ASDCP::TimedText::FrameBuffer::Dump(FILE* stream, ui32_t dump_len) const
 
 typedef std::map<UUID, UUID> ResourceMap_t;
 
-class ASDCP::TimedText::MXFReader::h__Reader : public ASDCP::h__Reader
+class ASDCP::TimedText::MXFReader::h__Reader : public ASDCP::h__ASDCPReader
 {
   MXF::TimedTextDescriptor* m_EssenceDescriptor;
   ResourceMap_t             m_ResourceMap;
@@ -133,7 +133,7 @@ class ASDCP::TimedText::MXFReader::h__Reader : public ASDCP::h__Reader
 public:
   TimedTextDescriptor m_TDesc;    
 
-  h__Reader(const Dictionary& d) : ASDCP::h__Reader(d), m_EssenceDescriptor(0) {
+  h__Reader(const Dictionary& d) : ASDCP::h__ASDCPReader(d), m_EssenceDescriptor(0) {
     memset(&m_TDesc.AssetID, 0, UUIDlen);
   }
 
@@ -271,12 +271,12 @@ ASDCP::TimedText::MXFReader::h__Reader::ReadAncillaryResource(const byte_t* uuid
     {
       Array<RIP::Pair>::const_iterator pi;
       RIP::Pair TmpPair;
-      ui32_t sequence = 1;
+      ui32_t sequence = 0;
 
       // Look up the partition start in the RIP using the SID.
       // Count the sequence length in because this is the sequence
       // value needed to  complete the HMAC.
-      for ( pi = m_HeaderPart.m_RIP.PairArray.begin(); pi != m_HeaderPart.m_RIP.PairArray.end(); pi++, sequence++ )
+      for ( pi = m_HeaderPart.m_RIP.PairArray.begin(); pi != m_HeaderPart.m_RIP.PairArray.end(); ++pi, ++sequence )
 	{
 	  if ( (*pi).BodySID == DescObject->EssenceStreamID )
 	    {
@@ -320,7 +320,7 @@ ASDCP::TimedText::MXFReader::h__Reader::ReadAncillaryResource(const byte_t* uuid
 	      // read the essence packet
 	      assert(m_Dict);
 	      if( ASDCP_SUCCESS(result) )
-		result = ReadEKLVPacket(0, 1, FrameBuf, m_Dict->ul(MDD_GenericStream_DataElement), Ctx, HMAC);
+		result = ReadEKLVPacket(0, sequence, FrameBuf, m_Dict->ul(MDD_GenericStream_DataElement), Ctx, HMAC);
 	    }
 	}
     }
@@ -567,7 +567,7 @@ ASDCP::TimedText::MXFWriter::h__Writer::SetSourceStream(ASDCP::TimedText::TimedT
     {
       InitHeader();
       AddDMSegment(m_TDesc.EditRate, 24, TIMED_TEXT_DEF_LABEL,
-		   UL(m_Dict->ul(MDD_PictureDataDef)), TIMED_TEXT_PACKAGE_LABEL);
+		   UL(m_Dict->ul(MDD_DataDataDef)), TIMED_TEXT_PACKAGE_LABEL);
 
       AddEssenceDescriptor(UL(m_Dict->ul(MDD_TimedTextWrapping)));
 

@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    KM_xml.cpp
-    \version $Id: KM_xml.cpp,v 1.19 2011/12/01 18:42:39 jhurst Exp $
+    \version $Id: KM_xml.cpp,v 1.20 2012/06/14 00:52:58 jhurst Exp $
     \brief   XML writer
 */
 
@@ -531,10 +531,10 @@ Kumu::XMLElement::ParseString(const char* document, ui32_t doc_len)
 
   if ( ! XML_Parse(Parser, document, doc_len, 1) )
     {
-      XML_ParserFree(Parser);
       DefaultLogSink().Error("XML Parse error on line %d: %s\n",
 			     XML_GetCurrentLineNumber(Parser),
 			     XML_ErrorString(XML_GetErrorCode(Parser)));
+      XML_ParserFree(Parser);
       return false;
     }
 

@@ -37,6 +37,7 @@ using Kumu::DefaultLogSink;
 using namespace ASDCP;
 using namespace ASDCP::PCM;
 using namespace ASDCP::Wav;
+using namespace ASDCP::RF64;
 
 
 //------------------------------------------------------------------------------------------
@@ -47,8 +48,8 @@ class ASDCP::PCM::WAVParser::h__WAVParser
   Kumu::FileReader m_FileReader;
   bool             m_EOF;
   ui32_t           m_DataStart;
-  ui32_t           m_DataLength;
-  ui32_t           m_ReadCount;
+  ui64_t           m_DataLength;
+  ui64_t           m_ReadCount;
   ui32_t           m_FrameBufferSize;
   ui32_t           m_FramesRead;
   Rational         m_PictureRate;
@@ -129,6 +130,22 @@ ASDCP::PCM::WAVParser::h__WAVParser::OpenRead(const char* filename, const Ration
 	      m_ADesc.ChannelFormat = PCM::CF_NONE;
 	      Reset();
 	    }
+      else
+        {
+          SimpleRF64Header RF64Header;
+          m_FileReader.Seek(0);
+          result = RF64Header.ReadFromFile(m_FileReader, &m_DataStart);
+
+          if ( ASDCP_SUCCESS(result) )
+            {
+                RF64Header.FillADesc(m_ADesc, PictureRate);
+                m_FrameBufferSize = ASDCP::PCM::CalcFrameBufferSize(m_ADesc);
+                m_DataLength = RF64Header.data_len;
+                m_ADesc.ContainerDuration = m_DataLength / m_FrameBufferSize;
+                m_ADesc.ChannelFormat = PCM::CF_NONE;
+                Reset();
+            }
+        }
 	}
     }
 

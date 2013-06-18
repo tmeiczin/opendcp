@@ -118,6 +118,45 @@ namespace ASDCP
 	};
 
     } // namespace Wav
+
+  namespace RF64
+    {
+      const fourcc FCC_RF64("RF64");
+      const fourcc FCC_ds64("ds64");
+
+
+      static const ui32_t MAX_RIFF_LEN = 0xFFFFFFFF;
+      static const ui32_t DS64_HEADER_LEN = 28;
+      static const ui32_t SIMPLE_RF64_HEADER_LEN = 80;
+      //
+      class SimpleRF64Header
+	{
+	public:
+	  ui16_t	format;
+	  ui16_t	nchannels;
+	  ui32_t	samplespersec;
+	  ui32_t	avgbps;
+	  ui16_t	blockalign;
+	  ui16_t	bitspersample;
+	  ui64_t	data_len;
+
+	  SimpleRF64Header() :
+	    format(0), nchannels(0), samplespersec(0), avgbps(0),
+	    blockalign(0), bitspersample(0), data_len(0) {}
+
+	  SimpleRF64Header(ASDCP::PCM::AudioDescriptor& ADesc);
+
+	  Result_t  ReadFromBuffer(const byte_t* buf, ui32_t buf_len, ui32_t* data_start);
+	  Result_t  ReadFromFile(const Kumu::FileReader& InFile, ui32_t* data_start);
+	  Result_t  WriteToFile(Kumu::FileWriter& OutFile) const;
+	  void      FillADesc(ASDCP::PCM::AudioDescriptor& ADesc, Rational PictureRate) const;
+
+    private:
+      static const ui64_t SAMPLE_COUNT = 0;
+      static const ui32_t TABLE_LEN = 0;
+	};
+
+    } // namespace RF64
 } // namespace ASDCP
 
 #endif // _WAV_H_

@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_util.cpp
-    \version $Id: KM_util.cpp,v 1.40 2012/02/22 19:20:33 jhurst Exp $
+    \version $Id: KM_util.cpp,v 1.43 2013/02/08 19:11:58 jhurst Exp $
     \brief   Utility functions
   */
 
@@ -812,7 +812,7 @@ Kumu::Timestamp::EncodeString(char* str_buf, ui32_t buf_len) const
   return str_buf;
 }
 
-//
+// ^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?(?:([+-]\d{2}):(\d{2}))?)?$
 bool
 Kumu::Timestamp::DecodeString(const char* datestr)
 {
@@ -825,6 +825,9 @@ Kumu::Timestamp::DecodeString(const char* datestr)
 
   ui32_t char_count = 10;
   TAI::caltime YMDhms;
+  YMDhms.hour = 0;
+  YMDhms.minute = 0;
+  YMDhms.second = 0;
   YMDhms.offset = 0;
   YMDhms.date.year = atoi(datestr);
   YMDhms.date.month = atoi(datestr + 5);
@@ -953,6 +956,15 @@ Kumu::Timestamp::GetCTime() const
 {
   return m_Timestamp.x - ui64_C(4611686018427387914);
 }
+
+//
+void
+Kumu::Timestamp::SetCTime(const ui64_t& ctime)
+{
+  m_Timestamp.x = ctime + ui64_C(4611686018427387914);
+}
+
+
 
 
 //------------------------------------------------------------------------------------------
@@ -1117,6 +1129,64 @@ Kumu::ByteString::Append(const byte_t* buf, ui32_t buf_len)
   return result;
 }
 
+//------------------------------------------------------------------------------------------
+
+//
+const char*
+Kumu::km_strnstr(const char *s, const char *find, size_t slen)
+{
+  char c, sc;
+  size_t len;
+
+  if ( ( c = *find++ ) != '\0' )
+    {
+      len = strlen(find);
+      do
+	{
+	  do
+	    {
+	      if ( slen-- < 1 || ( sc = *s++ ) == '\0' )
+		return 0;
+	    }
+	  while ( sc != c );
+
+	  if ( len > slen )
+	    return 0;
+	}
+      while ( strncmp(s, find, len) != 0 );
+      --s;
+    }
+
+  return s;
+}
+
+//
+std::list<std::string>
+Kumu::km_token_split(const std::string& str, const std::string& separator)
+{
+  std::list<std::string> components;
+  const char* pstr = str.c_str();
+  const char* r = strstr(pstr, separator.c_str());
+
+  while ( r != 0 )
+    {
+      assert(r >= pstr);
+      if ( r > pstr )
+	{
+	  std::string tmp_str;
+	  tmp_str.assign(pstr, r - pstr);
+	  components.push_back(tmp_str);
+	}
+
+      pstr = r + separator.size();
+      r = strstr(pstr, separator.c_str());
+    }
+      
+  if( strlen(pstr) > 0 )
+    components.push_back(std::string(pstr));
+
+  return components;
+}
 
 //
 // end KM_util.cpp

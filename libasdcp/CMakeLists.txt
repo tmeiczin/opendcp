@@ -43,11 +43,18 @@ SET(KUMU_SRC_FILES
 SET(ASDCP_SRC_FILES
     AS_DCP.cpp
     AS_DCP_AES.cpp
+    AS_DCP_ATMOS.cpp
+    AS_DCP_DCData.cpp
     AS_DCP_JP2K.cpp
     AS_DCP_MPEG2.cpp
     AS_DCP_MXF.cpp
     AS_DCP_PCM.cpp
     AS_DCP_TimedText.cpp
+    AtmosSyncChannel_Generator.cpp
+    AtmosSyncChannel_Mixer.cpp
+    CRC16.c
+    DCData_ByteStream_Parser.cpp
+    DCData_Sequence_Parser.cpp
     Dict.cpp
     h__Reader.cpp
     h__Writer.cpp
@@ -63,8 +70,11 @@ SET(ASDCP_SRC_FILES
     MXF.cpp
     MXFTypes.cpp
     PCM_Parser.cpp
+    PCMDataProviders.cpp
     PCMParserList.cpp
+    SyncEncoder.c
     TimedText_Parser.cpp
+    UUIDInformation.c
     Wav.cpp
 )
 #-------------------------------------------------------------------------------

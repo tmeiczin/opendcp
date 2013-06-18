@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2003-2012, John Hurst
+Copyright (c) 2003-2013, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP.h
-    \version $Id: AS_DCP.h,v 1.43 2012/02/02 01:58:43 jhurst Exp $       
+    \version $Id: AS_DCP.h,v 1.44 2013/02/08 19:11:58 jhurst Exp $
     \brief   AS-DCP library, public interface
 
 The asdcplib library is a set of file access objects that offer simplified
@@ -87,6 +87,7 @@ This project depends upon the following libraries:
 #define _AS_DCP_H_
 
 #include <KM_error.h>
+#include <KM_fileio.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <math.h>
@@ -203,13 +204,15 @@ namespace ASDCP {
   // The file accessors in this library implement a bounded set of essence types.
   // This list will be expanded when support for new types is added to the library.
   enum EssenceType_t {
-    ESS_UNKNOWN,     // the file is not a supported AS-DCP essence container
-    ESS_MPEG2_VES,   // the file contains an MPEG video elementary stream
-    ESS_JPEG_2000,   // the file contains one or more JPEG 2000 codestreams
-    ESS_PCM_24b_48k, // the file contains one or more PCM audio pairs
-    ESS_PCM_24b_96k, // the file contains one or more PCM audio pairs
-    ESS_TIMED_TEXT,  // the file contains an XML timed text document and one or more resources
-    ESS_JPEG_2000_S, // the file contains one or more JPEG 2000 codestream pairs (stereoscopic)
+    ESS_UNKNOWN,              // the file is not a supported AS-DCP essence container
+    ESS_MPEG2_VES,            // the file contains an MPEG video elementary stream
+    ESS_JPEG_2000,            // the file contains one or more JPEG 2000 codestreams
+    ESS_PCM_24b_48k,          // the file contains one or more PCM audio pairs
+    ESS_PCM_24b_96k,          // the file contains one or more PCM audio pairs
+    ESS_TIMED_TEXT,           // the file contains an XML timed text document and one or more resources
+    ESS_JPEG_2000_S,          // the file contains one or more JPEG 2000 codestream pairs (stereoscopic)
+    ESS_DCDATA_UNKNOWN,       // the file contains one or more D-Cinema Data bytestreams
+    ESS_DCDATA_DOLBY_ATMOS,   // the file contains one or more DolbyATMOS bytestreams
   };
 
   // Determine the type of essence contained in the given MXF file. RESULT_OK
@@ -253,7 +256,7 @@ namespace ASDCP {
       if ( Numerator == rhs.Numerator && Denominator < rhs.Denominator )    return true;
       return false;
     }
- 
+
     inline bool operator>(const Rational& rhs) {
       if ( Numerator > rhs.Numerator )     return true;
       if ( Numerator == rhs.Numerator && Denominator > rhs.Denominator )     return true;
@@ -278,6 +281,15 @@ namespace ASDCP {
   const Rational EditRate_96 = Rational(96,1);
   const Rational EditRate_100 = Rational(100,1);
   const Rational EditRate_120 = Rational(120,1);
+
+  // Archival frame rates, see ST 428-21
+  // These rates are new and not supported by all systems. Do not assume that
+  // a package made using one of these rates will work just anywhere!
+  const Rational EditRate_16 = Rational(16,1);
+  const Rational EditRate_18 = Rational(200,11); // 18.182
+  const Rational EditRate_20 = Rational(20,1);
+  const Rational EditRate_22 = Rational(240,11); // 21.818
+
 
   // Non-reference counting container for internal member objects.
   // Please do not use this class for any other purpose.
@@ -356,7 +368,7 @@ namespace ASDCP {
       static byte_t default_ProductUUID_Data[UUIDlen] = {
 	0x43, 0x05, 0x9a, 0x1d, 0x04, 0x32, 0x41, 0x01,
 	0xb8, 0x3f, 0x73, 0x68, 0x15, 0xac, 0xf3, 0x1d };
-      
+
       memcpy(ProductUUID, default_ProductUUID_Data, UUIDlen);
       memset(AssetUUID, 0, UUIDlen);
       memset(ContextID, 0, UUIDlen);
@@ -398,7 +410,7 @@ namespace ASDCP {
       // Initializes Rijndael CBC encryption context.
       // Returns error if the key argument is NULL.
       Result_t InitKey(const byte_t* key);
-      
+
       // Initializes 16 byte CBC Initialization Vector. This operation may be performed
       // any number of times for a given key.
       // Returns error if the i_vec argument is NULL.
@@ -592,22 +604,22 @@ namespace ASDCP {
       // MPEG2VideoDescriptor object.
       struct VideoDescriptor
 	{
-	  Rational EditRate;                // 
-	  ui32_t   FrameRate;               // 
-	  Rational SampleRate;              // 
-	  ui8_t    FrameLayout;             // 
-	  ui32_t   StoredWidth;             // 
-	  ui32_t   StoredHeight;            // 
-	  Rational AspectRatio;             // 
-	  ui32_t   ComponentDepth;          // 
-	  ui32_t   HorizontalSubsampling;   // 
-	  ui32_t   VerticalSubsampling;     // 
-	  ui8_t    ColorSiting;             // 
-	  ui8_t    CodedContentType;        // 
-	  bool     LowDelay;                // 
-	  ui32_t   BitRate;                 // 
-	  ui8_t    ProfileAndLevel;         // 
-	  ui32_t   ContainerDuration;       // 
+	  Rational EditRate;                //
+	  ui32_t   FrameRate;               //
+	  Rational SampleRate;              //
+	  ui8_t    FrameLayout;             //
+	  ui32_t   StoredWidth;             //
+	  ui32_t   StoredHeight;            //
+	  Rational AspectRatio;             //
+	  ui32_t   ComponentDepth;          //
+	  ui32_t   HorizontalSubsampling;   //
+	  ui32_t   VerticalSubsampling;     //
+	  ui8_t    ColorSiting;             //
+	  ui8_t    CodedContentType;        //
+	  bool     LowDelay;                //
+	  ui32_t   BitRate;                 //
+	  ui8_t    ProfileAndLevel;         //
+	  ui32_t   ContainerDuration;       //
       };
 
       // Print VideoDescriptor to std::ostream
@@ -637,7 +649,7 @@ namespace ASDCP {
 	    {
 	      Capacity(size);
 	    }
-	    
+
 	  virtual ~FrameBuffer() {}
 
 	  // Sets the MPEG frame type of the picture data in the frame buffer.
@@ -778,6 +790,12 @@ namespace ASDCP {
 	  // out of range, or if optional decrypt or HAMC operations fail.
 	  Result_t ReadFrame(ui32_t frame_number, FrameBuffer&, AESDecContext* = 0, HMACContext* = 0) const;
 
+	  // Using the index table read from the footer partition, lookup the frame number
+	  // and return the offset into the file at which to read that frame of essence.
+	  // Returns RESULT_INIT if the file is not open, and RESULT_RANGE if the frame number is
+	  // out of range.
+	  Result_t LocateFrame(ui32_t FrameNum, Kumu::fpos_t& streamOffset, i8_t& temporalOffset, i8_t& keyFrameOffset) const;
+
 	  // Calculates the first frame in transport order of the GOP in which the requested
 	  // frame is located.  Calls ReadFrame() to fetch the frame at the calculated position.
 	  // Returns RESULT_INIT if the file is not open.
@@ -827,12 +845,12 @@ namespace ASDCP {
 	{
 	  Rational EditRate;         // rate of frame wrapping
 	  Rational AudioSamplingRate;  // rate of audio sample
-	  ui32_t   Locked;             // 
+	  ui32_t   Locked;             //
 	  ui32_t   ChannelCount;       // number of channels
 	  ui32_t   QuantizationBits;   // number of bits per single-channel sample
 	  ui32_t   BlockAlign;         // number of bytes ber sample, all channels
-	  ui32_t   AvgBps;             // 
-	  ui32_t   LinkedTrackID;      // 
+	  ui32_t   AvgBps;             //
+	  ui32_t   LinkedTrackID;      //
 	  ui32_t   ContainerDuration;  // number of frames
 	  ChannelFormat_t ChannelFormat; // audio channel arrangement
       };
@@ -868,7 +886,7 @@ namespace ASDCP {
 	  FrameBuffer() {}
 	  FrameBuffer(ui32_t size) { Capacity(size); }
 	  virtual ~FrameBuffer() {}
-	
+
 	  // Print debugging information to stream (stderr default)
 	  void Dump(FILE* = 0, ui32_t dump_bytes = 0) const;
 	};
@@ -977,6 +995,12 @@ namespace ASDCP {
 	  // out of range, or if optional decrypt or HAMC operations fail.
 	  Result_t ReadFrame(ui32_t frame_number, FrameBuffer&, AESDecContext* = 0, HMACContext* = 0) const;
 
+	  // Using the index table read from the footer partition, lookup the frame number
+	  // and return the offset into the file at which to read that frame of essence.
+	  // Returns RESULT_INIT if the file is not open, and RESULT_RANGE if the frame number is
+	  // out of range.
+	  Result_t LocateFrame(ui32_t FrameNum, Kumu::fpos_t& streamOffset, i8_t& temporalOffset, i8_t& keyFrameOffset) const;
+
 	  // Print debugging information to stream
 	  void     DumpHeaderMetadata(FILE* = 0) const;
 	  void     DumpIndex(FILE* = 0) const;
@@ -1009,7 +1033,7 @@ namespace ASDCP {
 	  ui8_t  NumberOfLayers[sizeof(ui16_t)];
 	  ui8_t  MultiCompTransform;
 	} SGcod;
-	
+
 	struct
 	{
 	  ui8_t  DecompositionLevels;
@@ -1064,7 +1088,7 @@ namespace ASDCP {
 	  FrameBuffer() {}
 	  FrameBuffer(ui32_t size) { Capacity(size); }
 	  virtual ~FrameBuffer() {}
-	
+
 	  // Print debugging information to stream (stderr default)
 	  void Dump(FILE* = 0, ui32_t dump_bytes = 0) const;
 	};
@@ -1116,7 +1140,7 @@ namespace ASDCP {
 	  // alphabetically by filename. The parser will automatically parse enough data
 	  // from the first file to provide a complete set of stream metadata for the
 	  // MXFWriter below.  If the "pedantic" parameter is given and is true, the
-	  // parser will check the metadata for each codestream and fail if a 
+	  // parser will check the metadata for each codestream and fail if a
 	  // mismatch is detected.
 	  Result_t OpenRead(const char* filename, bool pedantic = false) const;
 
@@ -1125,7 +1149,7 @@ namespace ASDCP {
 	  // picture. The parser will automatically parse enough data
 	  // from the first file to provide a complete set of stream metadata for the
 	  // MXFWriter below.  If the "pedantic" parameter is given and is true, the
-	  // parser will check the metadata for each codestream and fail if a 
+	  // parser will check the metadata for each codestream and fail if a
 	  // mismatch is detected.
 	  Result_t OpenRead(const std::list<std::string>& file_list, bool pedantic = false) const;
 
@@ -1218,6 +1242,12 @@ namespace ASDCP {
 	  // out of range, or if optional decrypt or HAMC operations fail.
 	  Result_t ReadFrame(ui32_t frame_number, FrameBuffer&, AESDecContext* = 0, HMACContext* = 0) const;
 
+	  // Using the index table read from the footer partition, lookup the frame number
+	  // and return the offset into the file at which to read that frame of essence.
+	  // Returns RESULT_INIT if the file is not open, and RESULT_FRAME if the frame number is
+	  // out of range.
+	  Result_t LocateFrame(ui32_t FrameNum, Kumu::fpos_t& streamOffset, i8_t& temporalOffset, i8_t& keyFrameOffset) const;
+
 	  // Print debugging information to stream
 	  void     DumpHeaderMetadata(FILE* = 0) const;
 	  void     DumpIndex(FILE* = 0) const;
@@ -1232,7 +1262,7 @@ namespace ASDCP {
 	SP_LEFT,
 	SP_RIGHT
       };
-      
+
       struct SFrameBuffer
       {
 	JP2K::FrameBuffer Left;
@@ -1335,6 +1365,12 @@ namespace ASDCP {
 	  Result_t ReadFrame(ui32_t frame_number, StereoscopicPhase_t phase,
 			     FrameBuffer&, AESDecContext* = 0, HMACContext* = 0) const;
 
+	  // Using the index table read from the footer partition, lookup the frame number
+	  // and return the offset into the file at which to read that frame of essence.
+	  // Returns RESULT_INIT if the file is not open, and RESULT_FRAME if the frame number is
+	  // out of range.
+	  Result_t LocateFrame(ui32_t FrameNum, Kumu::fpos_t& streamOffset, i8_t& temporalOffset, i8_t& keyFrameOffset) const;
+
 	  // Print debugging information to stream
 	  void     DumpHeaderMetadata(FILE* = 0) const;
 	  void     DumpIndex(FILE* = 0) const;
@@ -1350,7 +1386,7 @@ namespace ASDCP {
       struct TimedTextResourceDescriptor
       {
 	byte_t      ResourceID[UUIDlen];
-	MIMEType_t  Type;
+          MIMEType_t  Type;
 
         TimedTextResourceDescriptor() : Type(MT_BIN) {}
       };
@@ -1359,7 +1395,7 @@ namespace ASDCP {
 
       struct TimedTextDescriptor
       {
-	Rational       EditRate;                // 
+	Rational       EditRate;                //
 	ui32_t         ContainerDuration;
 	byte_t         AssetID[UUIDlen];
 	std::string    NamespaceName;
@@ -1387,7 +1423,7 @@ namespace ASDCP {
 	FrameBuffer() { memset(m_AssetID, 0, UUIDlen); }
 	FrameBuffer(ui32_t size) { Capacity(size); memset(m_AssetID, 0, UUIDlen); }
 	virtual ~FrameBuffer() {}
-        
+
 	inline const byte_t* AssetID() const { return m_AssetID; }
 	inline void          AssetID(const byte_t* buf) { memcpy(m_AssetID, buf, UUIDlen); }
 	inline const char*   MIMEType() const { return m_MIMEType.c_str(); }
@@ -1544,6 +1580,290 @@ namespace ASDCP {
 	  void     DumpIndex(FILE* = 0) const;
 	};
     } // namespace TimedText
+
+  //---------------------------------------------------------------------------------
+  //
+  namespace DCData
+  {
+    struct DCDataDescriptor
+    {
+      Rational EditRate;                 // Sample rate
+      ui32_t   ContainerDuration;          // number of frames
+      byte_t   AssetID[UUIDlen];           // The UUID for the DCData track
+      byte_t   DataEssenceCoding[UUIDlen]; // The coding for the data carried
+    };
+
+    // Print DCDataDescriptor to std::ostream
+    std::ostream& operator << (std::ostream& strm, const DCDataDescriptor& ddesc);
+    // Print debugging information to stream (stderr default)
+    void DCDataDescriptorDump(const DCDataDescriptor&, FILE* = 0);
+
+    //
+    class FrameBuffer : public ASDCP::FrameBuffer
+	{
+     public:
+	  FrameBuffer() {}
+	  FrameBuffer(ui32_t size) { Capacity(size); }
+	  virtual ~FrameBuffer() {}
+
+	  // Print debugging information to stream (stderr default)
+	  void Dump(FILE* = 0, ui32_t dump_bytes = 0) const;
+	};
+
+    // An object which opens and reads a DC Data file.  The file is expected
+    // to contain exactly one complete frame of DC data essence as an unwrapped (raw)
+    // byte stream.
+    class BytestreamParser
+	{
+	  class h__BytestreamParser;
+	  mem_ptr<h__BytestreamParser> m_Parser;
+	  ASDCP_NO_COPY_CONSTRUCT(BytestreamParser);
+
+     public:
+	  BytestreamParser();
+	  virtual ~BytestreamParser();
+
+	  // Opens a file for reading, parses enough data to provide a complete
+      // set of stream metadata for the MXFWriter below.
+	  // The frame buffer's PlaintextOffset parameter will be set to the first
+	  // byte of the data segment. Set this value to zero if you want
+	  // encrypted headers.
+	  Result_t OpenReadFrame(const char* filename, FrameBuffer&) const;
+
+	  // Fill a DCDataDescriptor struct with the values from the file's bytestream.
+	  // Returns RESULT_INIT if the file is not open.
+	  Result_t FillDCDataDescriptor(DCDataDescriptor&) const;
+	};
+
+    // An object which reads a sequence of files containing DC Data.
+    class SequenceParser
+	{
+	  class h__SequenceParser;
+	  mem_ptr<h__SequenceParser> m_Parser;
+	  ASDCP_NO_COPY_CONSTRUCT(SequenceParser);
+
+     public:
+	  SequenceParser();
+	  virtual ~SequenceParser();
+
+	  // Opens a directory for reading.  The directory is expected to contain one or
+	  // more files, each containing the bytestream for exactly one frame. The files
+      // must be named such that the frames are in temporal order when sorted
+	  // alphabetically by filename.
+	  Result_t OpenRead(const char* filename) const;
+
+	  // Opens a file sequence for reading.  The sequence is expected to contain one or
+	  // more filenames, each naming a file containing the bytestream for exactly one
+	  // frame.
+	  Result_t OpenRead(const std::list<std::string>& file_list) const;
+
+	  // Fill a DCDataDescriptor struct with default values.
+	  // Returns RESULT_INIT if the directory is not open.
+	  Result_t FillDCDataDescriptor(DCDataDescriptor&) const;
+
+	  // Rewind the directory to the beginning.
+	  Result_t Reset() const;
+
+	  // Reads the next sequential frame in the directory and places it in the
+	  // frame buffer. Fails if the buffer is too small or the direcdtory
+	  // contains no more files.
+	  // The frame buffer's PlaintextOffset parameter will be set to the first
+	  // byte of the data segment. Set this value to zero if you want
+	  // encrypted headers.
+	  Result_t ReadFrame(FrameBuffer&) const;
+	};
+
+    //
+    class MXFWriter
+	{
+	  class h__Writer;
+	  mem_ptr<h__Writer> m_Writer;
+	  ASDCP_NO_COPY_CONSTRUCT(MXFWriter);
+
+     public:
+	  MXFWriter();
+	  virtual ~MXFWriter();
+
+	  // Warning: direct manipulation of MXF structures can interfere
+	  // with the normal operation of the wrapper.  Caveat emptor!
+	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+
+	  // Open the file for writing. The file must not exist. Returns error if
+	  // the operation cannot be completed or if nonsensical data is discovered
+	  // in the essence descriptor.
+	  Result_t OpenWrite(const char* filename, const WriterInfo&,
+			     const DCDataDescriptor&, ui32_t HeaderSize = 16384);
+
+	  // Writes a frame of essence to the MXF file. If the optional AESEncContext
+	  // argument is present, the essence is encrypted prior to writing.
+	  // Fails if the file is not open, is finalized, or an operating system
+	  // error occurs.
+	  Result_t WriteFrame(const FrameBuffer&, AESEncContext* = 0, HMACContext* = 0);
+
+	  // Closes the MXF file, writing the index and revised header.
+	  Result_t Finalize();
+	};
+
+    //
+    class MXFReader
+	{
+	  class h__Reader;
+	  mem_ptr<h__Reader> m_Reader;
+	  ASDCP_NO_COPY_CONSTRUCT(MXFReader);
+
+     public:
+	  MXFReader();
+	  virtual ~MXFReader();
+
+	  // Warning: direct manipulation of MXF structures can interfere
+	  // with the normal operation of the wrapper.  Caveat emptor!
+	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+
+	  // Open the file for reading. The file must exist. Returns error if the
+	  // operation cannot be completed.
+	  Result_t OpenRead(const char* filename) const;
+
+	  // Returns RESULT_INIT if the file is not open.
+	  Result_t Close() const;
+
+	  // Fill a DCDataDescriptor struct with the values from the file's header.
+	  // Returns RESULT_INIT if the file is not open.
+	  Result_t FillDCDataDescriptor(DCDataDescriptor&) const;
+
+	  // Fill a WriterInfo struct with the values from the file's header.
+	  // Returns RESULT_INIT if the file is not open.
+	  Result_t FillWriterInfo(WriterInfo&) const;
+
+	  // Reads a frame of essence from the MXF file. If the optional AESEncContext
+	  // argument is present, the essence is decrypted after reading. If the MXF
+	  // file is encrypted and the AESDecContext argument is NULL, the frame buffer
+	  // will contain the ciphertext frame data. If the HMACContext argument is
+	  // not NULL, the HMAC will be calculated (if the file supports it).
+	  // Returns RESULT_INIT if the file is not open, failure if the frame number is
+	  // out of range, or if optional decrypt or HAMC operations fail.
+	  Result_t ReadFrame(ui32_t frame_number, FrameBuffer&, AESDecContext* = 0, HMACContext* = 0) const;
+
+	  // Using the index table read from the footer partition, lookup the frame number
+	  // and return the offset into the file at which to read that frame of essence.
+	  // Returns RESULT_INIT if the file is not open, and RESULT_RANGE if the frame number is
+	  // out of range.
+	  Result_t LocateFrame(ui32_t FrameNum, Kumu::fpos_t& streamOffset, i8_t& temporalOffset, i8_t& keyFrameOffset) const;
+
+	  // Print debugging information to stream
+	  void     DumpHeaderMetadata(FILE* = 0) const;
+	  void     DumpIndex(FILE* = 0) const;
+	};
+
+  } // namespace DCData
+
+  //---------------------------------------------------------------------------------
+  //
+  namespace ATMOS
+  {
+    struct AtmosDescriptor : public DCData::DCDataDescriptor
+    {
+      ui32_t FirstFrame;       // Frame number of the frame to align with the FFOA of the picture track
+      ui16_t MaxChannelCount;  // Max number of channels in bitstream
+      ui16_t MaxObjectCount;   // Max number of objects in bitstream
+      byte_t AtmosID[UUIDlen]; // UUID of Atmos Project
+      ui8_t  AtmosVersion;     // ATMOS Coder Version used to create bitstream
+    };
+
+    // Print AtmosDescriptor to std::ostream
+    std::ostream& operator << (std::ostream& strm, const AtmosDescriptor& adesc);
+    // Print debugging information to stream (stderr default)
+    void AtmosDescriptorDump(const AtmosDescriptor&, FILE* = 0);
+    // Determine if a file is a raw atmos file
+    bool IsDolbyAtmos(const char* filename);
+
+    //
+    class MXFWriter
+	{
+
+      class h__Writer;
+	  mem_ptr<h__Writer> m_Writer;
+	  ASDCP_NO_COPY_CONSTRUCT(MXFWriter);
+
+     public:
+	  MXFWriter();
+	  virtual ~MXFWriter();
+
+	  // Warning: direct manipulation of MXF structures can interfere
+	  // with the normal operation of the wrapper.  Caveat emptor!
+	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+
+	  // Open the file for writing. The file must not exist. Returns error if
+	  // the operation cannot be completed or if nonsensical data is discovered
+	  // in the essence descriptor.
+	  Result_t OpenWrite(const char* filename, const WriterInfo&,
+			     const AtmosDescriptor&, ui32_t HeaderSize = 16384);
+
+	  // Writes a frame of essence to the MXF file. If the optional AESEncContext
+	  // argument is present, the essence is encrypted prior to writing.
+	  // Fails if the file is not open, is finalized, or an operating system
+	  // error occurs.
+      Result_t WriteFrame(const DCData::FrameBuffer&, AESEncContext* = 0, HMACContext* = 0);
+
+	  // Closes the MXF file, writing the index and revised header.
+	  Result_t Finalize();
+	};
+
+    //
+    class MXFReader
+	{
+      class h__Reader;
+	  mem_ptr<h__Reader> m_Reader;
+	  ASDCP_NO_COPY_CONSTRUCT(MXFReader);
+
+     public:
+	  MXFReader();
+	  virtual ~MXFReader();
+
+	  // Warning: direct manipulation of MXF structures can interfere
+	  // with the normal operation of the wrapper.  Caveat emptor!
+	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+
+	  // Open the file for reading. The file must exist. Returns error if the
+	  // operation cannot be completed.
+	  Result_t OpenRead(const char* filename) const;
+
+	  // Returns RESULT_INIT if the file is not open.
+	  Result_t Close() const;
+
+	  // Fill an AtmosDescriptor struct with the values from the file's header.
+	  // Returns RESULT_INIT if the file is not open.
+	  Result_t FillAtmosDescriptor(AtmosDescriptor&) const;
+
+	  // Fill a WriterInfo struct with the values from the file's header.
+	  // Returns RESULT_INIT if the file is not open.
+	  Result_t FillWriterInfo(WriterInfo&) const;
+
+	  // Reads a frame of essence from the MXF file. If the optional AESEncContext
+	  // argument is present, the essence is decrypted after reading. If the MXF
+	  // file is encrypted and the AESDecContext argument is NULL, the frame buffer
+	  // will contain the ciphertext frame data. If the HMACContext argument is
+	  // not NULL, the HMAC will be calculated (if the file supports it).
+	  // Returns RESULT_INIT if the file is not open, failure if the frame number is
+	  // out of range, or if optional decrypt or HAMC operations fail.
+	  Result_t ReadFrame(ui32_t frame_number, DCData::FrameBuffer&, AESDecContext* = 0, HMACContext* = 0) const;
+
+	  // Using the index table read from the footer partition, lookup the frame number
+	  // and return the offset into the file at which to read that frame of essence.
+	  // Returns RESULT_INIT if the file is not open, and RESULT_RANGE if the frame number is
+	  // out of range.
+	  Result_t LocateFrame(ui32_t FrameNum, Kumu::fpos_t& streamOffset, i8_t& temporalOffset, i8_t& keyFrameOffset) const;
+
+	  // Print debugging information to stream
+	  void     DumpHeaderMetadata(FILE* = 0) const;
+	  void     DumpIndex(FILE* = 0) const;
+	};
+
+  } // namespace ATMOS
+
 
 
 } // namespace ASDCP

@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    h__Writer.cpp
-    \version $Id: h__Writer.cpp,v 1.51 2012/02/07 18:54:25 jhurst Exp $
+    \version $Id: h__Writer.cpp,v 1.53 2012/03/16 00:28:23 jhurst Exp $
     \brief   MXF file writer base class
 */
 
@@ -40,31 +40,6 @@ using namespace ASDCP::MXF;
 #define ASDCP_BUILD_NUMBER 0x6A68
 #endif
 
-
-static std::vector<int>
-version_split(const char* str)
-{
-  std::vector<int> result;
-
-  const char* pstr = str;
-  const char* r = strchr(pstr, '.');
-
-  while ( r != 0 )
-    {
-      assert(r >= pstr);
-      if ( r > pstr )
-	result.push_back(atoi(pstr));
-
-      pstr = r + 1;
-      r = strchr(pstr, '.');
-    }
-
-  if( strlen(pstr) > 0 )
-    result.push_back(atoi(pstr));
-
-  assert(result.size() == 3);
-  return result;
-}
 
 
 //
@@ -83,8 +58,8 @@ ASDCP::h__Writer::~h__Writer()
 //
 // add DMS CryptographicFramework entry to source package
 void
-AddDMScrypt(Partition& HeaderPart, SourcePackage& Package,
-	    WriterInfo& Descr, const UL& WrappingUL, const Dictionary*& Dict)
+ASDCP::AddDMScrypt(Partition& HeaderPart, SourcePackage& Package,
+		   WriterInfo& Descr, const UL& WrappingUL, const Dictionary*& Dict)
 {
   assert(Dict);
   // Essence Track

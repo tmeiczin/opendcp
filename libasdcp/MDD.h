@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2006-2012, John Hurst
+Copyright (c) 2006-2013, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -290,46 +290,72 @@ namespace ASDCP {
         MDD_CryptographicContext_CipherAlgorithm,  // 252
         MDD_CryptographicContext_MICAlgorithm,  // 253
         MDD_CryptographicContext_CryptographicKeyID,  // 254
-	MDD_TimedTextWrapping, // 255
-	MDD_TimedTextEssence, // 256
-	MDD_TimedTextDescriptor, // 257
-	MDD_TimedTextDescriptor_ResourceID, // 258
-	MDD_TimedTextDescriptor_UCSEncoding, // 259
-	MDD_TimedTextDescriptor_NamespaceURI, // 260
-	MDD_TimedTextResourceSubDescriptor, // 261
-	MDD_TimedTextResourceSubDescriptor_AncillaryResourceID, // 262
-	MDD_TimedTextResourceSubDescriptor_MIMEMediaType, // 263
-	MDD_TimedTextResourceSubDescriptor_EssenceStreamID_DEPRECATED, // 264
-	MDD_GenericStreamPartition, // 265
-	MDD_DMSegment_DataDefinition_DEPRECATED, // 266
-	MDD_DMSegment_Duration_DEPRECATED, // 267
-	MDD_DMSegment_TrackIDList, // 268
-	MDD_StereoscopicPictureSubDescriptor, // 269
+        MDD_TimedTextWrapping, // 255
+        MDD_TimedTextEssence, // 256
+        MDD_TimedTextDescriptor, // 257
+        MDD_TimedTextDescriptor_ResourceID, // 258
+        MDD_TimedTextDescriptor_UCSEncoding, // 259
+        MDD_TimedTextDescriptor_NamespaceURI, // 260
+        MDD_TimedTextResourceSubDescriptor, // 261
+        MDD_TimedTextResourceSubDescriptor_AncillaryResourceID, // 262
+        MDD_TimedTextResourceSubDescriptor_MIMEMediaType, // 263
+        MDD_TimedTextResourceSubDescriptor_EssenceStreamID_DEPRECATED, // 264
+        MDD_GenericStreamPartition, // 265
+        MDD_DMSegment_DataDefinition_DEPRECATED, // 266
+        MDD_DMSegment_Duration_DEPRECATED, // 267
+        MDD_DMSegment_TrackIDList, // 268
+        MDD_StereoscopicPictureSubDescriptor, // 269
         MDD_WaveAudioDescriptor_ChannelAssignment,  // 270
-	MDD_GenericStream_DataElement, // 271
+        MDD_GenericStream_DataElement, // 271
         MDD_MXFInterop_GenericDescriptor_SubDescriptors,  // 272
-	MDD_Core_BodySID, // 273
-	MDD_Core_IndexSID, // 274
-	MDD_Core_OperationalPattern, // 275
-	MDD_Core_EssenceContainers, // 276
-	MDD_DCAudioChannelCfg_1_5p1, // 277
-	MDD_DCAudioChannelCfg_2_6p1, // 278
-	MDD_DCAudioChannelCfg_3_7p1, // 279
-	MDD_DCAudioChannelCfg_4_WTF, // 280
-	MDD_DCAudioChannelCfg_5_7p1_DS, // 281
-	MDD_MCALabelSubDescriptor, // 282
-	MDD_AudioChannelLabelSubDescriptor, // 283
-	MDD_SoundfieldGroupLabelSubDescriptor, // 284
-	MDD_GroupOfSoundfieldGroupsLabelSubDescriptor, // 285
-	MDD_MCALabelSubDescriptor_MCALabelDictionaryID, // 286
-	MDD_MCALabelSubDescriptor_MCALinkID, // 287
-	MDD_MCALabelSubDescriptor_MCATagSymbol, // 288
-	MDD_MCALabelSubDescriptor_MCATagName, // 289
-	MDD_MCALabelSubDescriptor_MCAChannelID, // 290
-	MDD_MCALabelSubDescriptor_RFC5646SpokenLanguage, // 291
-	MDD_AudioChannelLabelSubDescriptor_SoundfieldGroupLinkID, // 292
-	MDD_SoundfieldGroupLabelSubDescriptor_GroupOfSoundfieldGroupsLinkID, // 293
-	MDD_Max
+        MDD_Core_BodySID, // 273
+        MDD_Core_IndexSID, // 274
+        MDD_Core_OperationalPattern, // 275
+        MDD_Core_EssenceContainers, // 276
+        MDD_DCAudioChannelCfg_1_5p1, // 277
+        MDD_DCAudioChannelCfg_2_6p1, // 278
+        MDD_DCAudioChannelCfg_3_7p1, // 279
+        MDD_DCAudioChannelCfg_4_WTF, // 280
+        MDD_DCAudioChannelCfg_5_7p1_DS, // 281
+        MDD_MCALabelSubDescriptor, // 282
+        MDD_AudioChannelLabelSubDescriptor, // 283
+        MDD_SoundfieldGroupLabelSubDescriptor, // 284
+        MDD_GroupOfSoundfieldGroupsLabelSubDescriptor, // 285
+        MDD_MCALabelSubDescriptor_MCALabelDictionaryID, // 286
+        MDD_MCALabelSubDescriptor_MCALinkID, // 287
+        MDD_MCALabelSubDescriptor_MCATagSymbol, // 288
+        MDD_MCALabelSubDescriptor_MCATagName, // 289
+        MDD_MCALabelSubDescriptor_MCAChannelID, // 290
+        MDD_MCALabelSubDescriptor_RFC5646SpokenLanguage, // 291
+        MDD_AudioChannelLabelSubDescriptor_SoundfieldGroupLinkID, // 292
+        MDD_SoundfieldGroupLabelSubDescriptor_GroupOfSoundfieldGroupsLinkID, // 293
+        MDD_DCDataWrapping, // 294
+        MDD_DCDataEssence, // 295
+        MDD_DCDataDescriptor, // 296
+        MDD_DolbyAtmosSubDescriptor, // 297
+        MDD_DolbyAtmosSubDescriptor_AtmosVersion, // 298
+        MDD_DolbyAtmosSubDescriptor_MaxChannelCount, // 299
+        MDD_DolbyAtmosSubDescriptor_MaxObjectCount, // 300
+        MDD_DolbyAtmosSubDescriptor_AtmosID, // 301
+        MDD_DolbyAtmosSubDescriptor_FirstFrame, // 302
+        MDD_DataDataDef, // 303
+	MDD_DCAudioChannelCfg_MCA, // 304
+	MDD_DCAudioChannel_L, // 305
+	MDD_DCAudioChannel_R, // 306
+	MDD_DCAudioChannel_C, // 307
+	MDD_DCAudioChannel_LFE, // 308
+	MDD_DCAudioChannel_Ls, // 309
+	MDD_DCAudioChannel_Rs, // 310
+	MDD_DCAudioChannel_Lss, // 311
+	MDD_DCAudioChannel_Rss, // 312
+	MDD_DCAudioChannel_Lrs, // 313
+	MDD_DCAudioChannel_Rrs, // 314
+	MDD_DCAudioChannel_Lc, // 315
+	MDD_DCAudioChannel_Rc, // 316
+	MDD_DCAudioChannel_Cs, // 317
+	MDD_DCAudioChannel_HI, // 318
+	MDD_DCAudioChannel_VIN, // 319
+        MDD_Max
 
     }; // enum MDD_t
 
@@ -342,7 +368,7 @@ namespace ASDCP {
     const MDD_t MDD_Preface_EssenceContainers = MDD_Core_EssenceContainers;
     const MDD_t MDD_Preface_OperationalPattern = MDD_Core_OperationalPattern;
     const MDD_t MDD_TimedTextResourceSubDescriptor_EssenceStreamID = MDD_Core_BodySID;
-    
+
 } // namespaceASDCP
 
 

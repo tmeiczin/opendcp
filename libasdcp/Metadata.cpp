@@ -73,6 +73,8 @@ static InterchangeObject* MCALabelSubDescriptor_Factory(const Dictionary*& Dict)
 static InterchangeObject* AudioChannelLabelSubDescriptor_Factory(const Dictionary*& Dict) { return new AudioChannelLabelSubDescriptor(Dict); }
 static InterchangeObject* SoundfieldGroupLabelSubDescriptor_Factory(const Dictionary*& Dict) { return new SoundfieldGroupLabelSubDescriptor(Dict); }
 static InterchangeObject* GroupOfSoundfieldGroupsLabelSubDescriptor_Factory(const Dictionary*& Dict) { return new GroupOfSoundfieldGroupsLabelSubDescriptor(Dict); }
+static InterchangeObject* DCDataDescriptor_Factory(const Dictionary*& Dict) { return new DCDataDescriptor(Dict); }
+static InterchangeObject* DolbyAtmosSubDescriptor_Factory(const Dictionary*& Dict) { return new DolbyAtmosSubDescriptor(Dict); }
 
 
 void
@@ -112,6 +114,8 @@ ASDCP::MXF::Metadata_InitTypes(const Dictionary*& Dict)
   SetObjectFactory(Dict->ul(MDD_AudioChannelLabelSubDescriptor), AudioChannelLabelSubDescriptor_Factory);
   SetObjectFactory(Dict->ul(MDD_SoundfieldGroupLabelSubDescriptor), SoundfieldGroupLabelSubDescriptor_Factory);
   SetObjectFactory(Dict->ul(MDD_GroupOfSoundfieldGroupsLabelSubDescriptor), GroupOfSoundfieldGroupsLabelSubDescriptor_Factory);
+  SetObjectFactory(Dict->ul(MDD_DCDataDescriptor), DCDataDescriptor_Factory);
+  SetObjectFactory(Dict->ul(MDD_DolbyAtmosSubDescriptor), DolbyAtmosSubDescriptor_Factory);
 }
 
 //------------------------------------------------------------------------------------------
@@ -2887,6 +2891,170 @@ GroupOfSoundfieldGroupsLabelSubDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buf
 {
   return InterchangeObject::WriteToBuffer(Buffer);
 }
+
+//------------------------------------------------------------------------------------------
+// DCDataDescriptor
+
+//
+
+DCDataDescriptor::DCDataDescriptor(const Dictionary*& d) : GenericDataEssenceDescriptor(d), m_Dict(d)
+{
+  assert(m_Dict);
+  m_UL = m_Dict->ul(MDD_DCDataDescriptor);
+}
+
+DCDataDescriptor::DCDataDescriptor(const DCDataDescriptor& rhs) : GenericDataEssenceDescriptor(rhs.m_Dict), m_Dict(rhs.m_Dict)
+{
+  assert(m_Dict);
+  m_UL = m_Dict->ul(MDD_DCDataDescriptor);
+  Copy(rhs);
+}
+
+//
+ASDCP::Result_t
+DCDataDescriptor::InitFromTLVSet(TLVReader& TLVSet)
+{
+    // NOTE (this function can be removed if no attributes are defined for this descriptor)
+    assert(m_Dict);
+    Result_t result = GenericDataEssenceDescriptor::InitFromTLVSet(TLVSet);
+    return result;
+}
+
+//
+ASDCP::Result_t
+DCDataDescriptor::WriteToTLVSet(TLVWriter& TLVSet)
+{
+  // NOTE (this function can be removed if no attributes are defined for this descriptor)
+  assert(m_Dict);
+  Result_t result = GenericDataEssenceDescriptor::WriteToTLVSet(TLVSet);
+  return result;
+}
+
+//
+void
+DCDataDescriptor::Copy(const DCDataDescriptor& rhs)
+{
+  GenericDataEssenceDescriptor::Copy(rhs);
+}
+
+//
+void
+DCDataDescriptor::Dump(FILE* stream)
+{
+  char identbuf[IdentBufferLen];
+  *identbuf = 0;
+
+  if ( stream == 0 )
+    stream = stderr;
+
+  GenericDataEssenceDescriptor::Dump(stream);
+}
+
+//
+ASDCP::Result_t
+DCDataDescriptor::InitFromBuffer(const byte_t* p, ui32_t l)
+{
+  return InterchangeObject::InitFromBuffer(p, l);
+}
+
+//
+ASDCP::Result_t
+DCDataDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
+{
+  return InterchangeObject::WriteToBuffer(Buffer);
+}
+
+//------------------------------------------------------------------------------------------
+// DolbyAtmosSubDescriptor
+
+//
+
+DolbyAtmosSubDescriptor::DolbyAtmosSubDescriptor(const Dictionary*& d) : InterchangeObject(d), m_Dict(d), FirstFrame(0), MaxChannelCount(0), MaxObjectCount(0), AtmosVersion(0)
+{
+  assert(m_Dict);
+  m_UL = m_Dict->ul(MDD_DolbyAtmosSubDescriptor);
+}
+
+DolbyAtmosSubDescriptor::DolbyAtmosSubDescriptor(const DolbyAtmosSubDescriptor& rhs) : InterchangeObject(rhs.m_Dict), m_Dict(rhs.m_Dict)
+{
+  assert(m_Dict);
+  m_UL = m_Dict->ul(MDD_DolbyAtmosSubDescriptor);
+  Copy(rhs);
+}
+
+
+//
+ASDCP::Result_t
+DolbyAtmosSubDescriptor::InitFromTLVSet(TLVReader& TLVSet)
+{
+  assert(m_Dict);
+  Result_t result = InterchangeObject::InitFromTLVSet(TLVSet);
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.ReadObject(OBJ_READ_ARGS(DolbyAtmosSubDescriptor, AtmosID));
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.ReadUi32(OBJ_READ_ARGS(DolbyAtmosSubDescriptor, FirstFrame));
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.ReadUi16(OBJ_READ_ARGS(DolbyAtmosSubDescriptor, MaxChannelCount));
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.ReadUi16(OBJ_READ_ARGS(DolbyAtmosSubDescriptor, MaxObjectCount));
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.ReadUi8(OBJ_READ_ARGS(DolbyAtmosSubDescriptor, AtmosVersion));
+  return result;
+}
+
+//
+ASDCP::Result_t
+DolbyAtmosSubDescriptor::WriteToTLVSet(TLVWriter& TLVSet)
+{
+  assert(m_Dict);
+  Result_t result = InterchangeObject::WriteToTLVSet(TLVSet);
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS(DolbyAtmosSubDescriptor, AtmosID));
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteUi32(OBJ_WRITE_ARGS(DolbyAtmosSubDescriptor, FirstFrame));
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteUi16(OBJ_WRITE_ARGS(DolbyAtmosSubDescriptor, MaxChannelCount));
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteUi16(OBJ_WRITE_ARGS(DolbyAtmosSubDescriptor, MaxObjectCount));
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteUi8(OBJ_WRITE_ARGS(DolbyAtmosSubDescriptor, AtmosVersion));
+  return result;
+}
+
+//
+void
+DolbyAtmosSubDescriptor::Copy(const DolbyAtmosSubDescriptor& rhs)
+{
+  InterchangeObject::Copy(rhs);
+  AtmosID = rhs.AtmosID;
+  FirstFrame = rhs.FirstFrame;
+  MaxChannelCount = rhs.MaxChannelCount;
+  MaxObjectCount = rhs.MaxObjectCount;
+  AtmosVersion = rhs.AtmosVersion;
+}
+
+//
+void
+DolbyAtmosSubDescriptor::Dump(FILE* stream)
+{
+  char identbuf[IdentBufferLen];
+  *identbuf = 0;
+
+  if ( stream == 0 )
+    stream = stderr;
+
+  InterchangeObject::Dump(stream);
+  fprintf(stream, "  %22s = %s\n",  "AtmosID", AtmosID.EncodeString(identbuf, IdentBufferLen));
+  fprintf(stream, "  %22s = %d\n",  "FirstFrame", FirstFrame);
+  fprintf(stream, "  %22s = %d\n",  "MaxChannelCount", MaxChannelCount);
+  fprintf(stream, "  %22s = %d\n",  "MaxObjectCount", MaxObjectCount);
+  fprintf(stream, "  %22s = %d\n",  "AtmosVersion", AtmosVersion);
+}
+
+//
+ASDCP::Result_t
+DolbyAtmosSubDescriptor::InitFromBuffer(const byte_t* p, ui32_t l)
+{
+  return InterchangeObject::InitFromBuffer(p, l);
+}
+
+//
+ASDCP::Result_t
+DolbyAtmosSubDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
+{
+  return InterchangeObject::WriteToBuffer(Buffer);
+}
+
 
 //
 // end Metadata.cpp

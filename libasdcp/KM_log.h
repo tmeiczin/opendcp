@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_log.h
-    \version $Id: KM_log.h,v 1.13 2011/03/05 19:15:35 jhurst Exp $
+    \version $Id: KM_log.h,v 1.14 2012/06/14 00:52:58 jhurst Exp $
     \brief   message logging API
   */
 
@@ -39,6 +39,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdarg.h>
 #include <errno.h>
 #include <iosfwd>
+#include <set>
 
 #define LOG_MSG_IMPL(t) \
   va_list args; \
@@ -149,6 +150,18 @@ namespace Kumu
     protected:
       i32_t m_filter;
       i32_t m_options;
+      Mutex m_lock;
+      std::set<ILogSink*> m_listeners;
+
+      // you must obtain m_lock BEFORE calling this from your own WriteEntry
+      void WriteEntryToListeners(const LogEntry& entry)
+      {
+	std::set<ILogSink*>::iterator i;
+	for ( i = m_listeners.begin(); i != m_listeners.end(); ++i )
+	  (*i)->WriteEntry(entry);
+      }
+
+      KM_NO_COPY_CONSTRUCT(ILogSink);
 
     public:
     ILogSink() : m_filter(LOG_ALLOW_ALL), m_options(LOG_OPTION_NONE) {}
@@ -161,6 +174,19 @@ namespace Kumu
       void  SetOptionFlag(i32_t o) { m_options |= o; }
       void  UnsetOptionFlag(i32_t o) { m_options &= ~o; }
       bool  TestOptionFlag(i32_t o) const  { return ((m_options & o) == o); }
+
+      void AddListener(ILogSink& s) {
+	if ( &s != this )
+	  {
+	    AutoMutex l(m_lock);
+	    m_listeners.insert(&s);
+	  }
+      }
+
+      void DelListener(ILogSink& s) {
+	AutoMutex l(m_lock);
+	m_listeners.erase(&s);
+      }
 
       // library messages
       void Error(const char* fmt, ...)    { LOG_MSG_IMPL(LOG_ERROR); }
@@ -190,51 +216,35 @@ namespace Kumu
   ILogSink& DefaultLogSink();
 
 
-  // Sets a log sink as the default until the object is destroyed.
-  // The original default sink is saved and then restored on delete.
-  class LogSinkContext
-  {
-    KM_NO_COPY_CONSTRUCT(LogSinkContext);
-    LogSinkContext();
-    ILogSink* m_orig;
+  // attach a log sink as a listener until deleted
+  class LogSinkListenContext
+    {
+      ILogSink* m_log_source;
+      ILogSink* m_sink;
+      KM_NO_COPY_CONSTRUCT(LogSinkListenContext);
+      LogSinkListenContext();
 
-  public:
-    LogSinkContext(ILogSink& sink) {
-      m_orig = &DefaultLogSink();
-      SetDefaultLogSink(&sink);
-    }
+    public:
+      LogSinkListenContext(ILogSink& source, ILogSink& sink)
+	{
+	  m_log_source = &source;
+	  m_sink = &sink;
+	  m_log_source->AddListener(*m_sink);
+	}
 
-    ~LogSinkContext() {
-      SetDefaultLogSink(m_orig);
-    }
-  };
+      ~LogSinkListenContext()
+	{
+	  m_log_source->DelListener(*m_sink);
+	}
+    };
+
 
   //------------------------------------------------------------------------------------------
   //
 
-  // write messages to two subordinate log sinks 
-  class TeeLogSink : public ILogSink
-  {
-    KM_NO_COPY_CONSTRUCT(TeeLogSink);
-    TeeLogSink();
-
-    ILogSink& m_a;
-    ILogSink& m_b;
-
-  public:
-    TeeLogSink(ILogSink& a, ILogSink& b) : m_a(a), m_b(b) {}
-    virtual ~TeeLogSink() {}
-
-    void WriteEntry(const LogEntry& Entry) {
-      m_a.WriteEntry(Entry);
-      m_b.WriteEntry(Entry);
-    }
-  };
-
   // collect log messages into the given list, does not test filter
   class EntryListLogSink : public ILogSink
   {
-    Mutex m_Lock;
     LogEntryList& m_Target;
     KM_NO_COPY_CONSTRUCT(EntryListLogSink);
     EntryListLogSink();
@@ -250,7 +260,6 @@ namespace Kumu
   // write messages to a POSIX stdio stream
   class StdioLogSink : public ILogSink
     {
-      Mutex m_Lock;
       FILE* m_stream;
       KM_NO_COPY_CONSTRUCT(StdioLogSink);
 
@@ -266,7 +275,6 @@ namespace Kumu
   // write messages to the Win32 debug stream
   class WinDbgLogSink : public ILogSink
     {
-      Mutex m_Lock;
       KM_NO_COPY_CONSTRUCT(WinDbgLogSink);
 
     public:
@@ -281,7 +289,6 @@ namespace Kumu
   // write messages to a POSIX file descriptor
   class StreamLogSink : public ILogSink
     {
-      Mutex m_Lock;
       int   m_fd;
       KM_NO_COPY_CONSTRUCT(StreamLogSink);
       StreamLogSink();
@@ -296,7 +303,6 @@ namespace Kumu
   // write messages to the syslog facility
   class SyslogLogSink : public ILogSink
     {
-      Mutex m_Lock;
       KM_NO_COPY_CONSTRUCT(SyslogLogSink);
       SyslogLogSink();
   
