@@ -143,14 +143,12 @@ extern "C" int get_file_essence_class(char *filename) {
     Result_t      result = RESULT_OK;
     EssenceType_t essence_type;
 
-    result = ASDCP::EssenceType(filename, essence_type);
+    OPENDCP_LOG(LOG_DEBUG, "Reading file EssenceType: %s", filename);
+    result = ASDCP::RawEssenceType(filename, essence_type);
 
-    /* If type is unknown, try reading raw */
-    if (essence_type == ESS_UNKNOWN) {
-       result = ASDCP::RawEssenceType(filename, essence_type);
-    }
-
-    if (ASDCP_FAILURE(result)) {
+    /* If type is unknown, return */
+    if (ASDCP_FAILURE(result) || essence_type == ESS_UNKNOWN) {
+        OPENDCP_LOG(LOG_DEBUG, "Unable to determine essence type");
         return ACT_UNKNOWN;
     }
 
@@ -497,6 +495,7 @@ int write_j2k_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
         start_frame = 0;
     }
 
+    OPENDCP_LOG(LOG_DEBUG, "j2k_parser.OpenReadFrame(%s)", filelist->files[start_frame]);
     result = j2k_parser.OpenReadFrame(filelist->files[start_frame], frame_buffer);
 
     if (ASDCP_FAILURE(result)) {
