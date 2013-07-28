@@ -786,9 +786,9 @@ int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
     /*  set total audio characteristics */
     for (file_index = 0; file_index < filelist->nfiles; file_index++) {
         audio_desc.ChannelCount += audio_desc_channel[file_index].ChannelCount;
-        audio_desc.BlockAlign   += audio_desc_channel[file_index].BlockAlign;
     }
 
+    audio_desc.BlockAlign = audio_desc.ChannelCount * 24 / 8; 
     audio_desc.EditRate = edit_rate;
     audio_desc.AvgBps   = audio_desc.AvgBps * filelist->nfiles;
 
