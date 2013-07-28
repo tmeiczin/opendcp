@@ -244,7 +244,7 @@ namespace Kumu
       virtual ~ArchivableString() {}
 
       bool   HasValue() const { return ! this->empty(); }
-      ui32_t ArchiveLength() const { sizeof(ui32_t) + static_cast<ui32_t>(this->size()); }
+      ui32_t ArchiveLength() const { return sizeof(ui32_t) + static_cast<ui32_t>(this->size()); }
 
       bool   Archive(MemIOWriter* Writer) const {
 	if ( Writer == 0 ) return false;
