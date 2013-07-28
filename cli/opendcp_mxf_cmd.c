@@ -162,7 +162,7 @@ int main (int argc, char **argv) {
             {"start",          required_argument, 0, 's'},
             {"end",            required_argument, 0, 'd'},
             {"rate",           required_argument, 0, 'r'},
-            {"slideshow",        required_argument, 0, 'p'},
+            {"slideshow",      required_argument, 0, 'p'},
             {"log_level",      required_argument, 0, 'l'},
             {"version",        no_argument,       0, 'v'},
             {0, 0, 0, 0}
@@ -301,6 +301,16 @@ int main (int argc, char **argv) {
         dcp_fatal(opendcp, "No input files located");
     }
 
+    /* Sort files by index, and make sure they're sequential. */
+    if (order_indexed_files(filelist->files, filelist->nfiles) != OPENDCP_NO_ERROR) {
+        dcp_fatal(opendcp, "Could not order image files");
+    }
+
+    int rc = ensure_sequential(filelist->files, filelist->nfiles);
+    if (rc != OPENDCP_NO_ERROR) {
+        OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", filelist->files[rc],filelist->files[rc+1]);
+    }
+
     if (opendcp->mxf.end_frame) {
         if (opendcp->mxf.end_frame > filelist->nfiles) {
             dcp_fatal(opendcp, "End frame is greater than the actual frame count");
@@ -318,7 +328,7 @@ int main (int argc, char **argv) {
     }
 
     if (opendcp->mxf.slide) {
-        opendcp->mxf.duration = opendcp->mxf.duration * opendcp->frame_rate;
+        opendcp->mxf.duration = opendcp->mxf.duration * opendcp->frame_rate * filelist->nfiles;
     } else {
         opendcp->mxf.duration = opendcp->mxf.end_frame - (opendcp->mxf.start_frame-1);
     }
