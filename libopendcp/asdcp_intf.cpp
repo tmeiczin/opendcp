@@ -139,13 +139,18 @@ extern "C" int get_wav_info(const char *filename, int frame_rate, wav_info_t *wa
 }
 
 /* get the essence class of a file */
-extern "C" int get_file_essence_class(char *filename) {
+extern "C" int get_file_essence_class(char *filename, int raw) {
     Result_t      result = RESULT_OK;
     EssenceType_t essence_type;
 
     OPENDCP_LOG(LOG_DEBUG, "Reading file EssenceType: %s", filename);
-    result = ASDCP::RawEssenceType(filename, essence_type);
 
+    if (raw) {
+        result = ASDCP::RawEssenceType(filename, essence_type);
+    } else {
+        result = ASDCP::EssenceType(filename, essence_type);
+    }
+ 
     /* If type is unknown, return */
     if (ASDCP_FAILURE(result) || essence_type == ESS_UNKNOWN) {
         OPENDCP_LOG(LOG_DEBUG, "Unable to determine essence type");
