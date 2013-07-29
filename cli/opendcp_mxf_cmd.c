@@ -343,7 +343,7 @@ int main (int argc, char **argv) {
         opendcp->mxf.file_done.callback  = write_done_cb;
     }
 
-    int class = get_file_essence_class(filelist->files[0]);
+    int class = get_file_essence_class(filelist->files[0], 1);
 
     if (opendcp->log_level>0 && opendcp->log_level<3) { progress_bar(); }
 
