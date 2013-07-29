@@ -70,8 +70,13 @@ IF(ENABLE_XMLSEC AND COMPILE_XMLSEC)
     IF(DOWNLOAD)
         SET(URL http://www.aleksey.com/xmlsec/download)
     ENDIF()
+    IF(WIN32)
+        SET(XURL ${URL}/xmlsec1-1.2.18.tar.gz)
+    ELSE()
+        SET(XURL ${URL}/xmlsec1-1.2.19.tar.gz)
+    ENDIF()
     EXTERNALPROJECT_ADD(06_XMLSEC1
-        URL ${URL}/xmlsec1-1.2.19.tar.gz
+        URL ${XURL}
         BUILD_IN_SOURCE 1
         PATCH_COMMAND patch -d <SOURCE_DIR> -p0 -t -N < ${PROJECT_SOURCE_DIR}/contrib/xmlsec1-1.1.29.patch
         CONFIGURE_COMMAND ${CONFIGURE} ${PREFIX_ARG} ${AUTO_CFLAGS} ${AUTO_CXXFLAGS} ${AUTO_LDFLAGS}
