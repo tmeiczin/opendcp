@@ -290,7 +290,7 @@ void MainWindow::setPictureTrack()
     QFileInfo fi(path);
     lastDir = fi.absolutePath();
 
-    if (get_file_essence_class(path.toUtf8().data()) != ACT_PICTURE) {
+    if (get_file_essence_class(path.toUtf8().data(), 0) != ACT_PICTURE) {
         QMessageBox::critical(this, tr("Not a Picture Track"),
                               tr("The selected file is not a valid MXF picture track."));
     } else {
@@ -319,7 +319,7 @@ void MainWindow::setSoundTrack()
     QFileInfo fi(path);
     lastDir = fi.absolutePath();
 
-    if (get_file_essence_class(path.toUtf8().data()) != ACT_SOUND) {
+    if (get_file_essence_class(path.toUtf8().data(), 0) != ACT_SOUND) {
         QMessageBox::critical(this, tr("Not a Sound Track"),
                              tr("The selected file is not a valid MXF sound track."));
     } else {
@@ -348,7 +348,7 @@ void MainWindow::setSubtitleTrack()
     QFileInfo fi(path);
     lastDir = fi.absolutePath();
 
-    if (get_file_essence_class(path.toUtf8().data()) != ACT_TIMED_TEXT) {
+    if (get_file_essence_class(path.toUtf8().data(), 0) != ACT_TIMED_TEXT) {
         QMessageBox::critical(this, tr("Not a Subtitle Track"),
                               tr("The selected file is not a valid MXF subtitle track."));
     } else {
