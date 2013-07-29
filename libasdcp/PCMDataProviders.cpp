@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    PCMDataProviders.cpp
-    \version $Id: $
+    \version $Id: PCMDataProviders.cpp,v 1.1 2013/04/12 23:39:31 mikey Exp $
     \brief   Implementation of PCM sample data providers for WAV, AtmosSync and Silence.
 */
 

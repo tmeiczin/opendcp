@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    Wav.cpp
-    \version $Id: Wav.cpp,v 1.11 2010/02/16 18:40:57 jhurst Exp $
+    \version $Id: Wav.cpp,v 1.12.2.1 2013/07/10 15:46:18 mikey Exp $
     \brief   Wave file common elements
 */
 
@@ -371,7 +371,8 @@ ASDCP::RF64::SimpleRF64Header::SimpleRF64Header(ASDCP::PCM::AudioDescriptor& ADe
   samplespersec = (ui32_t)ceil(ADesc.AudioSamplingRate.Quotient());
   blockalign = nchannels * ((bitspersample + 7) / 8);
   avgbps = samplespersec * blockalign;
-  data_len = ASDCP::PCM::CalcFrameBufferSize(ADesc) * ADesc.ContainerDuration;
+  cbsize = 0;
+  data_len = static_cast<ui64_t>(ASDCP::PCM::CalcFrameBufferSize(ADesc)) * ADesc.ContainerDuration;
 }
 
 //
@@ -402,7 +403,8 @@ ASDCP::RF64::SimpleRF64Header::WriteToFile(Kumu::FileWriter& OutFile) const
     + sizeof(samplespersec)
     + sizeof(avgbps)
     + sizeof(blockalign)
-    + sizeof(bitspersample);
+    + sizeof(bitspersample)
+    + sizeof(cbsize);
 
   ui32_t write_count = 0;
   ui64_t RIFF_len = data_len + SimpleWavHeaderLength - 8;
@@ -441,6 +443,7 @@ ASDCP::RF64::SimpleRF64Header::WriteToFile(Kumu::FileWriter& OutFile) const
     *((ui32_t*)p) = KM_i32_LE(avgbps); p += 4;
     *((ui16_t*)p) = KM_i16_LE(blockalign); p += 2;
     *((ui16_t*)p) = KM_i16_LE(bitspersample); p += 2;
+    *((ui16_t*)p) = KM_i16_LE(cbsize); p += 2;
     memcpy(p, &Wav::FCC_data, sizeof(fourcc)); p += 4;
     *((ui32_t*)p) = KM_i32_LE(data32_len); p += 4;
     write_count = (p - tmp_header);
@@ -462,6 +465,7 @@ ASDCP::RF64::SimpleRF64Header::WriteToFile(Kumu::FileWriter& OutFile) const
     *((ui32_t*)p) = KM_i32_LE(avgbps); p += 4;
     *((ui16_t*)p) = KM_i16_LE(blockalign); p += 2;
     *((ui16_t*)p) = KM_i16_LE(bitspersample); p += 2;
+    *((ui16_t*)p) = KM_i16_LE(cbsize); p += 2;
     memcpy(p, &Wav::FCC_data, sizeof(fourcc)); p += 4;
     *((ui32_t*)p) = KM_i32_LE(data_len); p += 4;
     write_count = (p - tmp_header);

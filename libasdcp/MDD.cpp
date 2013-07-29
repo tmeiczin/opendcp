@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MDD.[h|cpp]
-    \version $Id: MDD.cpp,v 1.34 2012/02/02 01:58:43 jhurst Exp $
+    \version $Id: MDD.cpp,v 1.35 2013/04/12 23:39:30 mikey Exp $
     \brief   MXF Metadata Dictionary
 */
 //

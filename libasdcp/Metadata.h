@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    Metadata.h
-    \version $Id: Metadata.h,v 1.29 2012/02/21 02:09:31 jhurst Exp $
+    \version $Id: Metadata.h,v 1.30 2013/04/12 23:39:31 mikey Exp $
     \brief   MXF metadata objects
 */
 

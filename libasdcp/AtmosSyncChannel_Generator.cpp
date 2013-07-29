@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AtmosSyncChannel_Generator.cpp
-    \version $Id: $
+    \version $Id: AtmosSyncChannel_Generator.cpp,v 1.1 2013/04/12 23:39:30 mikey Exp $
     \brief   Dolby Atmos sync channel generator implementation
 */
 

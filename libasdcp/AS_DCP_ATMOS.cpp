@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_ATMOS.cpp
-    \version $Id:  $
+    \version $Id: AS_DCP_ATMOS.cpp,v 1.1 2013/04/12 23:39:30 mikey Exp $
     \brief   AS-DCP library, Dolby Atmos essence reader and writer implementation
 */
 

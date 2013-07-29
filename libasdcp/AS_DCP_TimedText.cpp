@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_TimedText.cpp
-    \version $Id: AS_DCP_TimedText.cpp,v 1.28 2013/02/08 19:11:58 jhurst Exp $       
+    \version $Id: AS_DCP_TimedText.cpp,v 1.29 2013/04/12 23:39:30 mikey Exp $       
     \brief   AS-DCP library, PCM essence reader and writer implementation
 */
 

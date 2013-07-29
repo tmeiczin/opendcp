@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    CRC16.c
-    \version $Id: $
+    \version $Id: CRC16.c,v 1.1 2013/04/12 23:39:30 mikey Exp $
     \brief   Implementation of a CRC function
 */
 

@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    Index.cpp
-    \version $Id: Index.cpp,v 1.21 2012/02/03 19:49:56 jhurst Exp $
+    \version $Id: Index.cpp,v 1.22 2013/04/12 23:39:30 mikey Exp $
     \brief   MXF index segment objects
 */
 

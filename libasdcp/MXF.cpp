@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MXF.cpp
-    \version $Id: MXF.cpp,v 1.64 2012/03/16 19:27:45 jhurst Exp $
+    \version $Id: MXF.cpp,v 1.65 2013/04/12 23:39:31 mikey Exp $
     \brief   MXF objects
 */
 

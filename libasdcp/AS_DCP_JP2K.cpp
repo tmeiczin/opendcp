@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_JP2k.cpp
-    \version $Id: AS_DCP_JP2K.cpp,v 1.55 2013/02/08 19:11:58 jhurst Exp $
+    \version $Id: AS_DCP_JP2K.cpp,v 1.56 2013/04/12 23:39:30 mikey Exp $
     \brief   AS-DCP library, JPEG 2000 essence reader and writer implementation
 */
 

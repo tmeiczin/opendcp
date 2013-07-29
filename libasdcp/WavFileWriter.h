@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    WavFileWriter.h
-    \version $Id: WavFileWriter.h,v 1.6 2009/04/09 19:16:49 msheby Exp $
+    \version $Id: WavFileWriter.h,v 1.7 2013/04/12 23:39:31 mikey Exp $
     \brief   demux and write PCM data to WAV file(s)
 */
 
