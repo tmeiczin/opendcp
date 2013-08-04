@@ -59,7 +59,7 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 #--set base compiler flags------------------------------------------------------
 IF(ENABLE_DEBUG)
-    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -g}")
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -g")
 ENDIF()
 SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wall -Wextra -O3 ${OPENMP}")
 SET(CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS})
