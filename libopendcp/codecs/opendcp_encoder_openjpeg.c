@@ -225,6 +225,7 @@ int opendcp_encode_openjpeg(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
         OPENDCP_LOG(LOG_ERROR,"unable to encode jpeg2000 file %s", dfile);
         opj_cio_close(cio);
         opj_destroy_compress(cinfo);
+        opj_image_destroy(opj_image);
         return OPENDCP_ERROR;
     }
 
@@ -236,6 +237,7 @@ int opendcp_encode_openjpeg(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
         OPENDCP_LOG(LOG_ERROR,"unable to write jpeg2000 file %s", dfile);
         opj_cio_close(cio);
         opj_destroy_compress(cinfo);
+        opj_image_destroy(opj_image);
         return OPENDCP_ERROR;
     }
 
@@ -245,6 +247,7 @@ int opendcp_encode_openjpeg(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
     /* free openjpeg structure */
     opj_cio_close(cio);
     opj_destroy_compress(cinfo);
+    opj_image_destroy(opj_image);
 
     /* free user parameters structure */
     if(parameters.cp_comment) free(parameters.cp_comment);
