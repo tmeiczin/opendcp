@@ -121,11 +121,11 @@ void MainWindow::startDcp()
     opendcp_log_init(xmlContext->log_level);
 
     // set XML attribues
-    strcpy(xmlContext->dcp.title, ui->cplTitleEdit->text().toUtf8().constData());
-    strcpy(xmlContext->dcp.annotation, ui->cplAnnotationEdit->text().toUtf8().constData());
-    strcpy(xmlContext->dcp.issuer, ui->cplIssuerEdit->text().toUtf8().constData());
-    strcpy(xmlContext->dcp.kind, ui->cplKindComboBox->currentText().toUtf8().constData());
-    strcpy(xmlContext->dcp.rating, ui->cplRatingComboBox->currentText().toUtf8().constData());
+    strncpy(xmlContext->dcp.title, ui->cplTitleEdit->text().toUtf8().constData(), sizeof(xmlContext->dcp.title));
+    strncpy(xmlContext->dcp.annotation, ui->cplAnnotationEdit->text().toUtf8().constData(), sizeof(xmlContext->dcp.annotation));
+    strncpy(xmlContext->dcp.issuer, ui->cplIssuerEdit->text().toUtf8().constData(), sizeof(xmlContext->dcp.issuer));
+    strncpy(xmlContext->dcp.kind, ui->cplKindComboBox->currentText().toUtf8().constData(), sizeof(xmlContext->dcp.kind));
+    strncpy(xmlContext->dcp.rating, ui->cplRatingComboBox->currentText().toUtf8().constData(), sizeof(xmlContext->dcp.rating));
 
     // check picture track is supplied
     if (ui->reelPictureEdit->text().isEmpty()) {
@@ -168,7 +168,7 @@ void MainWindow::startDcp()
             goto Done;
         }
         //QString digest = xmlCalculateDigestStartThread(xmlContext, asset.filename);
-        sprintf(asset.digest, "%s", digest.toUtf8().data());
+        snprintf(asset.digest, sizeof(asset.digest),"%s", digest.toUtf8().data());
         add_asset_to_reel(xmlContext, &xmlContext->dcp.pkl[0].cpl[0].reel[0], asset);
     }
 
@@ -181,7 +181,7 @@ void MainWindow::startDcp()
                                  tr("Calculate Digest Did Not Complete"));
             goto Done;
         }
-        sprintf(asset.digest, "%s", digest.toUtf8().data());
+        snprintf(asset.digest, sizeof(asset.digest), "%s", digest.toUtf8().data());
         add_asset_to_reel(xmlContext, &xmlContext->dcp.pkl[0].cpl[0].reel[0], asset);
     }
 
@@ -210,15 +210,15 @@ void MainWindow::startDcp()
         goto Done;
     }
 
-    sprintf(xmlContext->dcp.pkl[0].cpl[0].filename,"%s/%s_cpl.xml", path.toUtf8().constData(), xmlContext->dcp.pkl[0].cpl[0].uuid);
-    sprintf(xmlContext->dcp.pkl[0].filename,"%s/%s_pkl.xml", path.toUtf8().constData(), xmlContext->dcp.pkl[0].uuid);
+    snprintf(xmlContext->dcp.pkl[0].cpl[0].filename, sizeof(xmlContext->dcp.pkl[0].cpl[0].filename), "%s/%s_cpl.xml", path.toUtf8().constData(), xmlContext->dcp.pkl[0].cpl[0].uuid);
+    snprintf(xmlContext->dcp.pkl[0].filename, sizeof(xmlContext->dcp.pkl[0].filename), "%s/%s_pkl.xml", path.toUtf8().constData(), xmlContext->dcp.pkl[0].uuid);
 
     if (xmlContext->ns == XML_NS_SMPTE) {
-        sprintf(xmlContext->dcp.assetmap.filename,"%s/ASSETMAP.xml",path.toUtf8().constData());
-        sprintf(xmlContext->dcp.volindex.filename,"%s/VOLINDEX.xml",path.toUtf8().constData());
+        snprintf(xmlContext->dcp.assetmap.filename, sizeof(xmlContext->dcp.assetmap.filename), "%s/ASSETMAP.xml",path.toUtf8().constData());
+        snprintf(xmlContext->dcp.volindex.filename, sizeof(xmlContext->dcp.volindex.filename), "%s/VOLINDEX.xml",path.toUtf8().constData());
     } else {
-        sprintf(xmlContext->dcp.assetmap.filename,"%s/ASSETMAP",path.toUtf8().constData());
-        sprintf(xmlContext->dcp.volindex.filename,"%s/VOLINDEX",path.toUtf8().constData());
+        snprintf(xmlContext->dcp.assetmap.filename, sizeof(xmlContext->dcp.assetmap.filename), "%s/ASSETMAP",path.toUtf8().constData());
+        snprintf(xmlContext->dcp.volindex.filename, sizeof(xmlContext->dcp.volindex.filename), "%s/VOLINDEX",path.toUtf8().constData());
     }
 
     // write XML Files
@@ -295,7 +295,7 @@ void MainWindow::setPictureTrack()
                               tr("The selected file is not a valid MXF picture track."));
     } else {
         ui->reelPictureEdit->setProperty("text", path);
-        strcpy(pictureAsset.filename, ui->reelPictureEdit->text().toUtf8().constData());
+        strncpy(pictureAsset.filename, ui->reelPictureEdit->text().toUtf8().constData(), sizeof(pictureAsset.filename));
         read_asset_info(&pictureAsset);
         ui->reelPictureDurationSpinBox->setMaximum(pictureAsset.intrinsic_duration);
         ui->reelPictureOffsetSpinBox->setMaximum(pictureAsset.intrinsic_duration-1);
@@ -324,7 +324,7 @@ void MainWindow::setSoundTrack()
                              tr("The selected file is not a valid MXF sound track."));
     } else {
         ui->reelSoundEdit->setProperty("text", path);
-        strcpy(soundAsset.filename, ui->reelSoundEdit->text().toUtf8().constData());
+        strncpy(soundAsset.filename, ui->reelSoundEdit->text().toUtf8().constData(), sizeof(soundAsset.filename));
         read_asset_info(&soundAsset);
         ui->reelSoundDurationSpinBox->setValue(soundAsset.duration);
         ui->reelSoundDurationSpinBox->setMaximum(soundAsset.intrinsic_duration);
@@ -353,7 +353,7 @@ void MainWindow::setSubtitleTrack()
                               tr("The selected file is not a valid MXF subtitle track."));
     } else {
         ui->reelSubtitleEdit->setProperty("text", path);
-        strcpy(subtitleAsset.filename, ui->reelSubtitleEdit->text().toUtf8().constData());
+        strncpy(subtitleAsset.filename, ui->reelSubtitleEdit->text().toUtf8().constData(), sizeof(subtitleAsset.filename));
         read_asset_info(&subtitleAsset);
         ui->reelSubtitleDurationSpinBox->setValue(subtitleAsset.duration);
         ui->reelSubtitleDurationSpinBox->setMaximum(subtitleAsset.intrinsic_duration);
