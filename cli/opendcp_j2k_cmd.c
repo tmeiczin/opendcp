@@ -315,6 +315,8 @@ int main (int argc, char **argv) {
                     opendcp->j2k.encoder = OPENDCP_ENCODER_OPENJPEG;
                 } else if (!strcmp(optarg,"kakadu")) {
                     opendcp->j2k.encoder = OPENDCP_ENCODER_KAKADU;
+                } else if (!strcmp(optarg,"remote")) {
+                    opendcp->j2k.encoder = OPENDCP_ENCODER_REMOTE;
                 } else {
                     dcp_fatal(opendcp,"Invalid encoder argument");
                 }
@@ -357,6 +359,8 @@ int main (int argc, char **argv) {
         printf("\nOpenDCP J2K %s %s\n",OPENDCP_VERSION,OPENDCP_COPYRIGHT);
         if (opendcp->j2k.encoder == OPENDCP_ENCODER_KAKADU) {
             printf("  Encoder: Kakadu\n");
+        } else if (opendcp->j2k.encoder == OPENDCP_ENCODER_REMOTE)  {
+            printf("  Encoder: RemoteG\n");
         } else {
             printf("  Encoder: OpenJPEG\n");
         }

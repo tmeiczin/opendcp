@@ -96,6 +96,18 @@ void opendcp_image_free(opendcp_image_t *opendcp_image) {
     }
 }
 
+int opendcp_image_size(opendcp_image_t *opendcp_image) {
+    int i, size;
+
+    size = sizeof(opendcp_image_t);
+
+    for (i = 0; i < opendcp_image->n_components; i++) {
+        size += opendcp_image->w * opendcp_image->h * sizeof(int);
+    }
+
+    return size; 
+}
+
 int read_image(opendcp_image_t **dimage, char *sfile) {
     char *extension;
     int  result;
