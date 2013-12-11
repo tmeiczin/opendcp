@@ -167,7 +167,8 @@ enum XML_NAMESPACE {
 
 enum J2K_ENCODER {
     J2K_OPENJPEG,
-    J2K_KAKADU
+    J2K_KAKADU,
+    J2K_REMOTE,
 };
 
 enum DPX_MODE {

@@ -13,6 +13,7 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/opendcp.h.cmake ${CMAKE_CURRENT_BINAR
 SET(OPENDCP_LIB_SRC
      opendcp_j2k.c
      opendcp_xml.c
+     opendcp_checksum.c
      opendcp_common.c
      opendcp_error.c
      opendcp_log.c
@@ -31,6 +32,7 @@ SET(OPENDCP_CODEC_SRC
      codecs/opendcp_encoder_kakadu.c
      codecs/opendcp_encoder_openjpeg.c
      codecs/opendcp_encoder_tif.c
+     codecs/opendcp_encoder_remote.c
 )
 
 IF(ENABLE_XMLSEC)

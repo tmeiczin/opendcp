@@ -64,6 +64,7 @@ typedef struct {
 
 int  read_image(opendcp_image_t **image, char *file);
 void opendcp_image_free(opendcp_image_t *image);
+int opendcp_image_size(opendcp_image_t *opendcp_image);
 int  opendcp_image_readline(opendcp_image_t *image, int y, unsigned char *data);
 int  rgb_to_xyz(opendcp_image_t *image, int gamma, int method);
 int  resize(opendcp_image_t **image, int profile, int method);
