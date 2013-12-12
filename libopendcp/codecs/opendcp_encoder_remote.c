@@ -14,6 +14,9 @@
 #include <netdb.h>
 #endif
 
+#include "opendcp.h"
+#include "opendcp_image.h"
+
 #define OPENDCP_ERROR 1
 #define OPENDCP_NO_ERROR 0
 
@@ -21,16 +24,6 @@
 #define CHUNK_SIZE 1024
 #define READ_SIZE 512
 #define HEADER_LENGTH 1024
-
-#include "../opendcp_checksum.h"
-#include "opendcp_image.h"
-
-typedef struct {
-    char *host;
-    char *profile;
-    char *port;
-    int bw;
-} opendcp_t;
 
 typedef struct {
     char header[HEADER_LENGTH];
@@ -330,7 +323,7 @@ int opendcp_request_encoded_file(opendcp_t *opendcp, char *file) {
     char       *checksum;
     message_t  message;
 
-    connection = create_connection(opendcp->host, opendcp->port);
+    connection = create_connection(opendcp->remote.host, opendcp->remote.port);
     
     if (connection < 0 ) {
         return OPENDCP_ERROR;
@@ -377,7 +370,7 @@ int opendcp_encode_request(const opendcp_t *opendcp, opendcp_image_t *image) {
     char       *checksum;
     message_t  message;
     
-    connection = create_connection(opendcp->host, opendcp->port);
+    connection = create_connection(opendcp->remote.host, opendcp->remote.port);
     
     if (connection < 0 ) {
         return OPENDCP_ERROR;
@@ -396,7 +389,7 @@ int opendcp_encode_request(const opendcp_t *opendcp, opendcp_image_t *image) {
     //checksum = calculate_checksum(file);
 
     /* build request */
-    snprintf(message.header, sizeof(message.header), ":action=encode_request:length=%d:md5=%s:profile=cinema2k:bw=%d", message.data_length, checksum, opendcp->bw);
+    snprintf(message.header, sizeof(message.header), ":action=encode_request:length=%d:md5=%s:profile=cinema2k:bw=%d", message.data_length, checksum, opendcp->j2k.bw);
 
     /* send encode request */
     send_message(connection, &message);
@@ -423,9 +416,9 @@ int opendcp_encode_remote(opendcp_t *opendcp, opendcp_image_t *simage, char *dfi
     int rc;
     char encoded_file[512];
     
-    opendcp->host = "localhost";
-    opendcp->port = "8080";
-    opendcp->bw = 125;
+    opendcp->remote.host = "localhost";
+    opendcp->remote.port = "8080";
+    opendcp->j2k.bw = 125;
     
     //for (;;) {
     printf("encode request\n");
