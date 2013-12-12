@@ -22,8 +22,6 @@
 #include <KM_memio.h>
 #include <KM_util.h>
 #include <WavFileWriter.h>
-#include <openssl/sha.h>
-
 #include <iostream>
 #include <assert.h>
 
@@ -52,7 +50,7 @@ extern "C" int calculate_digest(opendcp_t *opendcp, const char *filename, char *
     using namespace Kumu;
 
     FileReader    reader;
-    SHA_CTX       sha_context;
+    sha1_t        sha_context;
     ByteString    read_buffer(FILE_READ_SIZE);
     ui32_t        read_length;
     const ui32_t  sha_length = 20;
@@ -61,14 +59,14 @@ extern "C" int calculate_digest(opendcp_t *opendcp, const char *filename, char *
     Result_t      result = RESULT_OK;
 
     result = reader.OpenRead(filename);
-    SHA1_Init(&sha_context);
+    sha1_init(&sha_context);
 
     while (ASDCP_SUCCESS(result)) {
         read_length = 0;
         result = reader.Read(read_buffer.Data(), read_buffer.Capacity(), &read_length);
 
         if (ASDCP_SUCCESS(result)) {
-            SHA1_Update(&sha_context, read_buffer.Data(), read_length);
+            sha1_update(&sha_context, read_buffer.Data(), read_length);
             /* update callback (also check for interrupt) */
             if (opendcp->dcp.sha1_update.callback(opendcp->dcp.sha1_update.argument)) {
                 return OPENDCP_CALC_DIGEST;
@@ -81,7 +79,7 @@ extern "C" int calculate_digest(opendcp_t *opendcp, const char *filename, char *
     }
 
     if (ASDCP_SUCCESS(result)) {
-        SHA1_Final(byte_buffer, &sha_context);
+        sha1_final(byte_buffer, &sha_context);
         sprintf(digest,"%.36s",base64encode(byte_buffer, sha_length, sha_buffer, 64));
     }
 
