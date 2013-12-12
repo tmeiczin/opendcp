@@ -116,41 +116,7 @@ char *substring(const char *str, size_t begin, size_t len) {
     return result;
 }
 
-char *remove_ext(char* mystr, char dot, char sep) {
-    char *retstr, *lastdot, *lastsep;
-
-    if (mystr == NULL) {
-        return NULL;
-    }
-
-    if ((retstr = malloc (strlen (mystr) + 1)) == NULL) {
-        return NULL;
-    }
-
-    strcpy (retstr, mystr);
-    lastdot = strrchr (retstr, dot);
-    lastsep = (sep == 0) ? NULL : strrchr (retstr, sep);
-  
-    // If it has an extension separator.
-    if (lastdot != NULL) {
-        // and it's before the extenstion separator.
-        if (lastsep != NULL) {
-            if (lastsep < lastdot) {
-                *lastdot = '\0';
-            }
-        } else {
-            // Has extension separator with no path separator.
-            *lastdot = '\0';
-        }
-    }
-   
-    // Return the modified string.
-    return retstr;
-}
-
 char *basename_noext(const char *str) {
-    int start, end;
-
     if (str == 0 || strlen(str) == 0) {
         return NULL;
     }
@@ -158,22 +124,7 @@ char *basename_noext(const char *str) {
     char *base = strrchr(str,'/') + 1;
     char *ext  = strrchr(str,'.');
 
-    start = strlen(str)  - strlen(base);
-    end   = strlen(base) - strlen(ext);
-
-    char *substr = substring(str, start, end);
-
-    return(substr);
-}
-
-char *patched_basename_noext(const char *str) {
-    char *noext;
-    noext = remove_ext(str,'.','/');
-    char *base;
-    base = basename(noext);
-    free(noext);
-
-    return(base);
+    return strndup(base, ext - base);
 }
 
 void build_j2k_filename(const char *in, char *path, char *out) {
@@ -183,7 +134,9 @@ void build_j2k_filename(const char *in, char *path, char *out) {
     } else {
         char *base = basename_noext(in);
         sprintf(out, "%s/%s.j2c", path, base);
-        free(base);
+        if (base) {
+            free(base);
+        }
     }
 }
 
