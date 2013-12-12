@@ -349,7 +349,6 @@ typedef struct {
     remote_t        remote;
     mxf_t           mxf;
     dcp_t           dcp;
-
     xml_signature_t xml_signature;
 } opendcp_t;
 
@@ -411,7 +410,7 @@ int convert_to_j2k(opendcp_t *opendcp, char *in_file, char *out_file);
 char *error_string(int error_code);
 
 /* checksum */
-typedef struct MD5Context {
+typedef struct {
     uint32_t buf[4];
     uint32_t bits[2];
     unsigned char in[64];
