@@ -135,7 +135,8 @@ filelist_t *get_filelist(const char *path, const char *filter) {
 
     if (names) {
         while (cnt-->0) {
-            sprintf(filelist->files[cnt],"%s/%s",path,names[cnt]->d_name);
+            OPENDCP_LOG(LOG_DEBUG, "Adding file %s", names[cnt]->d_name);
+            sprintf(filelist->files[cnt], "%s/%s", path,names[cnt]->d_name);
             free(names[cnt]);
         }
        free(names);
