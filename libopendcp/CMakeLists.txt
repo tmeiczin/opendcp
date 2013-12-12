@@ -19,7 +19,6 @@ SET(OPENDCP_LIB_SRC
      opendcp_log.c
      asdcp_intf.cpp
      opendcp_image.c
-     opendcp_checksum.c
 )
 
 SET(OPENDCP_CODEC_SRC
