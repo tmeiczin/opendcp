@@ -30,25 +30,6 @@
 #include "opendcp.h"
 
 
-/*
-char *base64(const unsigned char *data, int length) {
-    int len;
-    char *b_ptr;
-
-    BIO *b64 = BIO_new(BIO_s_mem());
-    BIO *cmd = BIO_new(BIO_f_base64());
-    b64 = BIO_push(cmd, b64);
-
-    BIO_write(b64, data, length);
-    BIO_flush(b64);
-
-    len = BIO_get_mem_data(b64, &b_ptr);
-    b_ptr[len-1] = '\0';
-
-    return b_ptr;
-}
-*/
-
 int get_file_length(char *filename) {
     FILE *fp;
     int file_length;
@@ -79,8 +60,6 @@ int read_file(char *filename, char *buffer, int buffer_size) {
 
     return OPENDCP_NO_ERROR;
 }
-
-
 
 static void print_md5(const unsigned char *digest, int len) {
     int i;
