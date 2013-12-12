@@ -298,8 +298,9 @@ void MainWindow::setPictureTrack()
         strncpy(pictureAsset.filename, ui->reelPictureEdit->text().toUtf8().constData(), sizeof(pictureAsset.filename));
         read_asset_info(&pictureAsset);
         ui->reelPictureDurationSpinBox->setMaximum(pictureAsset.intrinsic_duration);
-        ui->reelPictureOffsetSpinBox->setMaximum(pictureAsset.intrinsic_duration-1);
         ui->reelPictureDurationSpinBox->setValue(pictureAsset.duration);
+        ui->reelPictureOffsetSpinBox->setMaximum(pictureAsset.intrinsic_duration-1);
+        ui->reelPictureOffsetSpinBox->setValue(0);
     }
 
     return;
@@ -326,9 +327,10 @@ void MainWindow::setSoundTrack()
         ui->reelSoundEdit->setProperty("text", path);
         strncpy(soundAsset.filename, ui->reelSoundEdit->text().toUtf8().constData(), sizeof(soundAsset.filename));
         read_asset_info(&soundAsset);
-        ui->reelSoundDurationSpinBox->setValue(soundAsset.duration);
         ui->reelSoundDurationSpinBox->setMaximum(soundAsset.intrinsic_duration);
+        ui->reelSoundDurationSpinBox->setValue(soundAsset.duration);
         ui->reelSoundOffsetSpinBox->setMaximum(soundAsset.intrinsic_duration-1);
+        ui->reelSoundOffsetSpinBox->setValue(0);
     }
 
     return;
@@ -355,9 +357,10 @@ void MainWindow::setSubtitleTrack()
         ui->reelSubtitleEdit->setProperty("text", path);
         strncpy(subtitleAsset.filename, ui->reelSubtitleEdit->text().toUtf8().constData(), sizeof(subtitleAsset.filename));
         read_asset_info(&subtitleAsset);
-        ui->reelSubtitleDurationSpinBox->setValue(subtitleAsset.duration);
         ui->reelSubtitleDurationSpinBox->setMaximum(subtitleAsset.intrinsic_duration);
+        ui->reelSubtitleDurationSpinBox->setValue(subtitleAsset.duration);
         ui->reelSubtitleOffsetSpinBox->setMaximum(subtitleAsset.intrinsic_duration-1);
+        ui->reelSubtitleOffsetSpinBox->setValue(0);
     }
 
     return;
