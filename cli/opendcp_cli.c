@@ -19,6 +19,7 @@
 #include <string.h>
 #ifdef WIN32
 #include "win32/opendcp_win32_dirent.h"
+#include "win32/opendcp_win32_string.h"
 #else
 #include <dirent.h>
 #endif
