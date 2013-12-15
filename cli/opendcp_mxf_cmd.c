@@ -67,6 +67,7 @@ void dcp_usage() {
 filelist_t *get_filelist_3d(char *in_path_left, char *in_path_right) {
     int x = 0;
     int y = 0;
+    int rc;
     filelist_t *left, *right, *filelist;
 
     left  = get_filelist(in_path_left, "j2c,j2k");
@@ -74,6 +75,31 @@ filelist_t *get_filelist_3d(char *in_path_left, char *in_path_right) {
 
     if (left->nfiles != right->nfiles) {
         OPENDCP_LOG(LOG_ERROR, "Mismatching file count for 3D images left: %d right: %d", left->nfiles,right->nfiles);
+        filelist_free(left);
+        filelist_free(right);
+        return NULL;
+    }
+
+    /* Sort files by index, and make sure they're sequential. */
+    if (order_indexed_files(left->files, left->nfiles) != OPENDCP_NO_ERROR ||
+            order_indexed_files(right->files, right->nfiles) != OPENDCP_NO_ERROR) {
+        OPENDCP_LOG(LOG_WARN, "Could not order image files");
+        filelist_free(left);
+        filelist_free(right);
+        return NULL;
+    }
+
+    rc = ensure_sequential(left->files, left->nfiles);
+    if (rc != OPENDCP_NO_ERROR) {
+        OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", left->files[rc], left->files[rc+1]);
+        filelist_free(left);
+        filelist_free(right);
+        return NULL;
+    }
+
+    rc = ensure_sequential(right->files, left->nfiles);
+    if (rc != OPENDCP_NO_ERROR) {
+        OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", right->files[rc], right->files[rc+1]);
         filelist_free(left);
         filelist_free(right);
         return NULL;
@@ -291,6 +317,16 @@ int main (int argc, char **argv) {
         filelist = get_filelist_3d(in_path_left, in_path_right);
     } else {
         filelist = get_filelist(in_path, "j2c,j2k,wav");
+
+        /* Sort files by index, and make sure they're sequential. */
+        if (order_indexed_files(filelist->files, filelist->nfiles) != OPENDCP_NO_ERROR) {
+            dcp_fatal(opendcp, "Could not order image files");
+        }
+
+        int rc = ensure_sequential(filelist->files, filelist->nfiles);
+        if (rc != OPENDCP_NO_ERROR) {
+            OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", filelist->files[rc],filelist->files[rc+1]);
+        }
     }
 
     if (!filelist) {
@@ -299,16 +335,6 @@ int main (int argc, char **argv) {
 
     if (filelist->nfiles < 1) {
         dcp_fatal(opendcp, "No input files located");
-    }
-
-    /* Sort files by index, and make sure they're sequential. */
-    if (order_indexed_files(filelist->files, filelist->nfiles) != OPENDCP_NO_ERROR) {
-        dcp_fatal(opendcp, "Could not order image files");
-    }
-
-    int rc = ensure_sequential(filelist->files, filelist->nfiles);
-    if (rc != OPENDCP_NO_ERROR) {
-        OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", filelist->files[rc],filelist->files[rc+1]);
     }
 
     if (opendcp->mxf.end_frame) {
