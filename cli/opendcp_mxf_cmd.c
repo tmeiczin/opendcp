@@ -337,6 +337,16 @@ int main (int argc, char **argv) {
         dcp_fatal(opendcp, "No input files located");
     }
 
+    #ifdef _WIN32
+    /* check for non-ascii filenames under windows */
+    for (c = 0; c < filelist->nfiles; c++) {
+        if (is_filename_ascii(filelist->files[c]) !=0) {
+             OPENDCP_LOG(LOG_ERROR, "Filename %s contains non-ascii characters, skipping", filelist->files[c]);
+             dcp_fatal("Filenames cannot contain non-ascii characters");
+        }
+    }
+    #endif
+
     if (opendcp->mxf.end_frame) {
         if (opendcp->mxf.end_frame > filelist->nfiles) {
             dcp_fatal(opendcp, "End frame is greater than the actual frame count");

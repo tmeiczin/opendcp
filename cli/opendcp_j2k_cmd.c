@@ -457,6 +457,15 @@ int main (int argc, char **argv) {
     #pragma omp parallel for private(c)
     for (c=opendcp->j2k.start_frame-1;c<opendcp->j2k.end_frame;c++) {
         #pragma omp flush(SIGINT_received)
+
+        /* check for non-ascii filenames under windows */
+        #ifdef _WIN32
+        if (is_filename_ascii(filelist->files[c]) !=0) {
+             OPENDCP_LOG(LOG_WARN, "Filename %s contains non-ascii characters, skipping", filelist->files[c]);
+             continue;
+        }
+        #endif
+
         char out[MAX_FILENAME_LENGTH];
         build_j2k_filename(filelist->files[c], out_path, out);
         if (!SIGINT_received) {

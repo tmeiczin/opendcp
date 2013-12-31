@@ -101,6 +101,20 @@ char *base64(const unsigned char *data, int length) {
 }
 */
 
+int is_filename_ascii(const char *s) {
+    int i, len;
+
+    len = strlen(s);
+
+    for (i=0; i<len; i++) {
+        if (isascii(s[i]) !=0) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
 int strcasefind(const char *s, const char *find) {
     char c, sc;
     size_t len;
