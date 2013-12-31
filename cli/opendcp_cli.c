@@ -87,7 +87,8 @@ int file_selector(const char *filename, const char *filter) {
 filelist_t *get_filelist(const char *path, const char *filter) {
     DIR *d;
     struct stat st_in;
-    struct dirent *de, **names=0, **tmp;
+    struct dirent *de;
+    char **names=0, **tmp;
     size_t cnt=0, len=0;
     filelist_t *filelist;
 
@@ -99,7 +100,7 @@ filelist_t *get_filelist(const char *path, const char *filter) {
     if (!S_ISDIR(st_in.st_mode)) {
         OPENDCP_LOG(LOG_DEBUG, "single file mode");
         filelist = filelist_alloc(1);
-        sprintf(filelist->files[0],"%s",path);
+        sprintf(filelist->files[0], "%s", path);
         return filelist;
     }
 
@@ -123,11 +124,12 @@ filelist_t *get_filelist(const char *path, const char *filter) {
             }
             names = tmp;
         }
-        names[cnt] = malloc(de->d_reclen);
+        names[cnt] = malloc(strlen(de->d_name) + 1);
         if (!names[cnt]) {
             break;
         }
-        memcpy(names[cnt++], de, de->d_reclen);
+        strncpy(names[cnt++], de->d_name, strlen(de->d_name));
+        OPENDCP_LOG(LOG_DEBUG, "Found %s", de->d_name);
     }
     closedir(d);
 
@@ -135,9 +137,9 @@ filelist_t *get_filelist(const char *path, const char *filter) {
     filelist = filelist_alloc(cnt);
 
     if (names) {
-        while (cnt-->0) {
-            OPENDCP_LOG(LOG_DEBUG, "Adding file %s", names[cnt]->d_name);
-            sprintf(filelist->files[cnt], "%s/%s", path,names[cnt]->d_name);
+        while (cnt-- > 0) {
+            OPENDCP_LOG(LOG_DEBUG, "Adding file %s", names[cnt]);
+            sprintf(filelist->files[cnt], "%s/%s", path, names[cnt]);
             free(names[cnt]);
         }
        free(names);

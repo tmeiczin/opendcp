@@ -32,6 +32,9 @@
 #define DIRENT_H_INCLUDED
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <stdlib.h>
+#include <unistd.h>
 /* find out platform */
 #if defined(MSDOS)                             /* MS-DOS */
 #elif defined(__MSDOS__)                       /* Turbo C/Borland */
