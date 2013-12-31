@@ -62,6 +62,7 @@ int opendcp_decode_tif(opendcp_image_t **image_ptr, const char *sfile) {
     unsigned int i,index;
     opendcp_image_t *image = 00;
 
+    TIFFSetWarningHandler(NULL);
     memset(&tif, 0, sizeof(tiff_image_t));
 
     /* open tiff using filename or file descriptor */
