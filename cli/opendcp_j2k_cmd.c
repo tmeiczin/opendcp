@@ -163,7 +163,7 @@ void progress_bar(int val, int total) {
 #else
     int nthreads = 1;
 #endif
-    printf("  JPEG2000 Conversion (%d thread",nthreads);
+    printf("  JPEG2000 Conversion (%d thread", nthreads);
     if (nthreads > 1) {
         printf("s");
     }
@@ -175,7 +175,7 @@ void progress_bar(int val, int total) {
             printf(" ");
         }
     }
-    printf("] 100%% [%d/%d]\r",val,total);
+    printf("] 100%% [%d/%d]\r", val, total);
     fflush(stdout);
 }
 
@@ -271,23 +271,23 @@ int main (int argc, char **argv) {
                 opendcp->j2k.start_frame = atoi(optarg);
                 break;
             case 'g':
-                if (!strcmp(optarg,"linear")) {
+                if (!strcmp(optarg, "linear")) {
                     opendcp->j2k.dpx = DPX_LINEAR;
-                } else if (!strcmp(optarg,"film")) {
+                } else if (!strcmp(optarg, "film")) {
                     opendcp->j2k.dpx = DPX_FILM;
-                } else if (!strcmp(optarg,"video")) {
+                } else if (!strcmp(optarg, "video")) {
                     opendcp->j2k.dpx = DPX_VIDEO;
                 } else {
-                    dcp_fatal(opendcp,"Invalid DPX argument");
+                    dcp_fatal(opendcp, "Invalid DPX argument");
                 }
                 break;
             case 'p':
-                if (!strcmp(optarg,"cinema2k")) {
+                if (!strcmp(optarg, "cinema2k")) {
                     opendcp->cinema_profile = DCP_CINEMA2K;
-                } else if (!strcmp(optarg,"cinema4k")) {
+                } else if (!strcmp(optarg, "cinema4k")) {
                     opendcp->cinema_profile = DCP_CINEMA4K;
                 } else {
-                    dcp_fatal(opendcp,"Invalid profile argument");
+                    dcp_fatal(opendcp, "Invalid profile argument");
                 }
                 break;
             case 'i':
@@ -306,14 +306,14 @@ int main (int argc, char **argv) {
                 opendcp->frame_rate = atoi(optarg);
                 break;
             case 'e':
-                if (!strcmp(optarg,"openjpeg")) {
+                if (!strcmp(optarg, "openjpeg")) {
                     opendcp->j2k.encoder = OPENDCP_ENCODER_OPENJPEG;
-                } else if (!strcmp(optarg,"kakadu")) {
+                } else if (!strcmp(optarg, "kakadu")) {
                     opendcp->j2k.encoder = OPENDCP_ENCODER_KAKADU;
-                } else if (!strcmp(optarg,"remote")) {
+                } else if (!strcmp(optarg, "remote")) {
                     opendcp->j2k.encoder = OPENDCP_ENCODER_REMOTE;
                 } else {
-                    dcp_fatal(opendcp,"Invalid encoder argument");
+                    dcp_fatal(opendcp, "Invalid encoder argument");
                 }
                 break;
             case 'b':
@@ -347,11 +347,11 @@ int main (int argc, char **argv) {
     opendcp_log_init(opendcp->log_level);
 
     if (opendcp_encoder_enable("j2c", NULL, opendcp->j2k.encoder)) {
-        dcp_fatal(opendcp,"Could not enabled encoder");
+        dcp_fatal(opendcp, "Could not enabled encoder");
     }
 
     if (opendcp->log_level > 0) {
-        printf("\nOpenDCP J2K %s %s\n",OPENDCP_VERSION,OPENDCP_COPYRIGHT);
+        printf("\nOpenDCP J2K %s %s\n", OPENDCP_VERSION, OPENDCP_COPYRIGHT);
         if (opendcp->j2k.encoder == OPENDCP_ENCODER_KAKADU) {
             printf("  Encoder: Kakadu\n");
         } else if (opendcp->j2k.encoder == OPENDCP_ENCODER_REMOTE)  {
@@ -363,52 +363,52 @@ int main (int argc, char **argv) {
 
     /* cinema profile check */
     if (opendcp->cinema_profile != DCP_CINEMA4K && opendcp->cinema_profile != DCP_CINEMA2K) {
-        dcp_fatal(opendcp,"Invalid profile argument, must be cinema2k or cinema4k");
+        dcp_fatal(opendcp, "Invalid profile argument, must be cinema2k or cinema4k");
     }
 
     /* end frame check */
     if (opendcp->j2k.end_frame < 0) {
-        dcp_fatal(opendcp,"End frame  must be greater than 0");
+        dcp_fatal(opendcp, "End frame  must be greater than 0");
     }
 
     /* start frame check */
     if (opendcp->j2k.start_frame < 1) {
-        dcp_fatal(opendcp,"Start frame must be greater than 0");
+        dcp_fatal(opendcp, "Start frame must be greater than 0");
     }
 
     /* frame rate check */
     if (opendcp->frame_rate > 60 || opendcp->frame_rate < 1 ) {
-        dcp_fatal(opendcp,"Invalid frame rate. Must be between 1 and 60.");
+        dcp_fatal(opendcp, "Invalid frame rate. Must be between 1 and 60.");
     }
 
     /* encoder check */
     if (opendcp->j2k.encoder == OPENDCP_ENCODER_KAKADU) {
         result = system("kdu_compress -u >/dev/null 2>&1");
         if (result>>8 != 0) {
-            dcp_fatal(opendcp,"kdu_compress was not found. Either add to path or remove -e 1 flag");
+            dcp_fatal(opendcp, "kdu_compress was not found. Either add to path or remove -e 1 flag");
         }
     }
 
     /* bandwidth check */
     if (opendcp->j2k.bw < 10 || opendcp->j2k.bw > 250) {
-        dcp_fatal(opendcp,"Bandwidth must be between 10 and 250, but %d was specified", opendcp->j2k.bw);
+        dcp_fatal(opendcp, "Bandwidth must be between 10 and 250, but %d was specified", opendcp->j2k.bw);
     } else {
         opendcp->j2k.bw *= 1000000;
     }
 
     /* input path check */
     if (in_path == NULL) {
-        dcp_fatal(opendcp,"Missing input file");
+        dcp_fatal(opendcp, "Missing input file");
     }
 
     /* output path check */
     if (out_path == NULL) {
-        dcp_fatal(opendcp,"Missing output file");
+        dcp_fatal(opendcp, "Missing output file");
     }
 
     /* make sure path modes are ok */
     if (is_dir(in_path) && !is_dir(out_path)) {
-        dcp_fatal(opendcp,"Input is a directory, so output must also be a directory");
+        dcp_fatal(opendcp, "Input is a directory, so output must also be a directory");
     }
 
     /* get file list */
@@ -416,13 +416,13 @@ int main (int argc, char **argv) {
     filelist = get_filelist(in_path, "bmp,dpx,tif,tiff,j2k,j2c,jp2,jpf");
 
     if (filelist == NULL || filelist->nfiles < 1) {
-        dcp_fatal(opendcp,"No input files located");
+        dcp_fatal(opendcp, "No input files located");
     }
 
     /* end frame check */
     if (opendcp->j2k.end_frame) {
         if (opendcp->j2k.end_frame > filelist->nfiles) {
-            dcp_fatal(opendcp,"End frame is greater than the actual frame count");
+            dcp_fatal(opendcp, "End frame is greater than the actual frame count");
         }
     } else {
         opendcp->j2k.end_frame = filelist->nfiles;
@@ -455,7 +455,7 @@ int main (int argc, char **argv) {
     count = opendcp->j2k.start_frame;
 
     #pragma omp parallel for private(c)
-    for (c=opendcp->j2k.start_frame-1;c<opendcp->j2k.end_frame;c++) {
+    for (c=opendcp->j2k.start_frame-1; c<opendcp->j2k.end_frame; c++) {
         #pragma omp flush(SIGINT_received)
 
         /* check for non-ascii filenames under windows */
@@ -482,7 +482,7 @@ int main (int argc, char **argv) {
 
             if (result == OPENDCP_ERROR) {
                 OPENDCP_LOG(LOG_ERROR, "JPEG2000 conversion %s failed", filelist->files[c]);
-                dcp_fatal(opendcp,"Exiting...");
+                dcp_fatal(opendcp, "Exiting...");
             } else {
                 OPENDCP_LOG(LOG_INFO, "JPEG2000 conversion %s complete", filelist->files[c]);
             }

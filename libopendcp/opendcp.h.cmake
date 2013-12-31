@@ -429,6 +429,7 @@ void sha1_init(sha1_t *context);
 void sha1_update(sha1_t *context, const unsigned char *data, uint32_t len);
 void sha1_final(unsigned char digest[20], sha1_t *context);
 void base64_encode(const unsigned char *src, int src_len, char *dst);
+int  is_filename_ascii(const char *s);
 
 #ifdef __cplusplus
 }

@@ -162,7 +162,7 @@ int main (int argc, char **argv) {
     char *out_path = NULL;
     filelist_t *filelist;
 
-    if ( argc <= 1 ) {
+    if (argc <= 1) {
         dcp_usage();
     }
 
@@ -223,7 +223,7 @@ int main (int argc, char **argv) {
             case 'd':
                opendcp->mxf.end_frame = atoi(optarg);
                if (opendcp->mxf.end_frame < 1) {
-                   dcp_fatal(opendcp,"End frame  must be greater than 0");
+                   dcp_fatal(opendcp, "End frame  must be greater than 0");
                }
             break;
 
@@ -231,24 +231,24 @@ int main (int argc, char **argv) {
                opendcp->mxf.slide = 1;
                opendcp->mxf.duration = atoi(optarg);
                if (opendcp->mxf.duration < 1) {
-                   dcp_fatal(opendcp,"Slide duration  must be greater than 0");
+                   dcp_fatal(opendcp, "Slide duration  must be greater than 0");
                }
             break;
 
             case 's':
                opendcp->mxf.start_frame = atoi(optarg);
                if (opendcp->mxf.start_frame < 1) {
-                   dcp_fatal(opendcp,"Start frame must be greater than 0");
+                   dcp_fatal(opendcp, "Start frame must be greater than 0");
                }
             break;
 
             case 'n':
-               if (!strcmp(optarg,"smpte")) {
+               if (!strcmp(optarg, "smpte")) {
                    opendcp->ns = XML_NS_SMPTE;
                } else if (!strcmp(optarg,"interop")) {
                    opendcp->ns = XML_NS_INTEROP;
                } else {
-                   dcp_fatal(opendcp,"Invalid profile argument, must be smpte or interop");
+                   dcp_fatal(opendcp, "Invalid profile argument, must be smpte or interop");
                }
             break;
 
@@ -342,7 +342,7 @@ int main (int argc, char **argv) {
     for (c = 0; c < filelist->nfiles; c++) {
         if (is_filename_ascii(filelist->files[c]) !=0) {
              OPENDCP_LOG(LOG_ERROR, "Filename %s contains non-ascii characters, skipping", filelist->files[c]);
-             dcp_fatal("Filenames cannot contain non-ascii characters");
+             dcp_fatal(opendcp, "Filenames cannot contain non-ascii characters");
         }
     }
     #endif
