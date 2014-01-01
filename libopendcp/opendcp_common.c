@@ -107,7 +107,7 @@ int is_filename_ascii(const char *s) {
     len = strlen(s);
 
     for (i=0; i<len; i++) {
-        if (isascii(s[i]) !=0) {
+        if (isascii(s[i]) == 0) {
             return 0;
         }
     }

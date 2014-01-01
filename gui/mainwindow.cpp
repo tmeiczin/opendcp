@@ -207,6 +207,12 @@ void MainWindow::getPath(QWidget *w)
         return;
     }
 
+    if (is_filename_ascii(path.toUtf8().data()) == 0) {
+        QMessageBox::critical(this, tr("Invalid Characters in path/filename"),
+                             tr("Unicode is not supported. Filenames must contain only ASCII characters."));
+        return;
+    }
+
     w->setProperty("text", path);
 
     QFileInfo fi(path);
@@ -219,6 +225,11 @@ filelist_t *MainWindow::QStringToFilelist(QFileInfoList list)
     filelist_t *fileList = filelist_alloc(list.size());
 
     while (!list.isEmpty()) {
+        if (is_filename_ascii(list.takeFirst().absoluteFilePath().toUtf8().data()) == 0) {
+            QMessageBox::critical(this, tr("Invalid Characters in filename"),
+                                 tr("Unicode is not supported. Filenames must contain only ASCII characters."));
+            return NULL;
+        }
         sprintf(fileList->files[i++],"%s",list.takeFirst().absoluteFilePath().toUtf8().data());
     }
 
@@ -233,6 +244,12 @@ int MainWindow::checkFileSequence(QFileInfoList list)
     int     result = OPENDCP_NO_ERROR;
 
     filelist_t *fileList = QStringToFilelist(list);
+
+    if (fileList == NULL) {
+        filelist_free(fileList);
+        return OPENDCP_ERROR;
+    }
+
     if (order_indexed_files(fileList->files, fileList->nfiles) != OPENDCP_NO_ERROR) {
         if (QMessageBox::question(this, tr("Could not order files"), msg, QMessageBox::No,QMessageBox::Yes) == QMessageBox::No) {
             filelist_free(fileList);
