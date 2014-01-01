@@ -460,7 +460,7 @@ int main (int argc, char **argv) {
 
         /* check for non-ascii filenames under windows */
         #ifdef _WIN32
-        if (is_filename_ascii(filelist->files[c]) !=0) {
+        if (is_filename_ascii(filelist->files[c]) == 0) {
              OPENDCP_LOG(LOG_WARN, "Filename %s contains non-ascii characters, skipping", filelist->files[c]);
              continue;
         }

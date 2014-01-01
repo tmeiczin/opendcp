@@ -340,7 +340,7 @@ int main (int argc, char **argv) {
     #ifdef _WIN32
     /* check for non-ascii filenames under windows */
     for (c = 0; c < filelist->nfiles; c++) {
-        if (is_filename_ascii(filelist->files[c]) !=0) {
+        if (is_filename_ascii(filelist->files[c]) == 0) {
              OPENDCP_LOG(LOG_ERROR, "Filename %s contains non-ascii characters, skipping", filelist->files[c]);
              dcp_fatal(opendcp, "Filenames cannot contain non-ascii characters");
         }
