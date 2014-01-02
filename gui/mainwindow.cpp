@@ -225,12 +225,12 @@ filelist_t *MainWindow::QStringToFilelist(QFileInfoList list)
     filelist_t *fileList = filelist_alloc(list.size());
 
     while (!list.isEmpty()) {
-        if (is_filename_ascii(list.takeFirst().absoluteFilePath().toUtf8().data()) == 0) {
+        sprintf(fileList->files[i++],"%s",list.takeFirst().absoluteFilePath().toUtf8().data());
+        if (is_filename_ascii(fileList->files[i-1]) == 0) {
             QMessageBox::critical(this, tr("Invalid Characters in filename"),
                                  tr("Unicode is not supported. Filenames must contain only ASCII characters."));
             return NULL;
         }
-        sprintf(fileList->files[i++],"%s",list.takeFirst().absoluteFilePath().toUtf8().data());
     }
 
     return fileList;
