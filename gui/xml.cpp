@@ -194,6 +194,7 @@ void MainWindow::startDcp()
                                  tr("Calculate Digest Did Not Complete"));
             goto Done;
         }
+        snprintf(asset.digest, sizeof(asset.digest), "%s", digest.toUtf8().data());
         add_asset_to_reel(xmlContext, &xmlContext->dcp.pkl[0].cpl[0].reel[0], asset);
     }
 
