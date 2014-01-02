@@ -25,6 +25,37 @@
 #define READ_SIZE 512
 #define HEADER_LENGTH 1024
 
+char* itoa(int value, char* result, int base) {
+    if (base < 2 || base > 36) { 
+        *result = '\0';
+        return result;
+    }
+    
+    char* ptr = result, *ptr1 = result, tmp_char;
+    int tmp_value;
+    
+    do {
+        tmp_value = value;
+        value /= base;
+        *ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz" [35 + (tmp_value - value * base)];
+    } while ( value );
+    
+    // Apply negative sign
+    if (tmp_value < 0) {
+        *ptr++ = '-';
+    }
+
+    *ptr-- = '\0';
+
+    while(ptr1 < ptr) {
+        tmp_char = *ptr;
+        *ptr--= *ptr1;
+        *ptr1++ = tmp_char;
+    }
+
+    return result;
+}
+
 typedef struct {
     char header[HEADER_LENGTH];
     int  data_length;
@@ -227,6 +258,7 @@ char *read_response(int sock) {
 int create_connection(const char *host, const char *port) {
     struct addrinfo hints, *server;
     int sockfd, rc;
+    char port_s[5];
     
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_INET;
@@ -367,7 +399,7 @@ int opendcp_request_encoded_file(opendcp_t *opendcp, char *file) {
 
 int opendcp_encode_request(const opendcp_t *opendcp, opendcp_image_t *image) {
     int        connection;
-    char       *checksum;
+    char       *checksum = NULL;
     message_t  message;
     
     connection = create_connection(opendcp->remote.host, opendcp->remote.port);

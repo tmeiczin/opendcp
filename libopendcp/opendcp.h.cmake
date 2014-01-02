@@ -288,7 +288,7 @@ typedef struct {
 typedef struct {
     int            id;
     char           *host;
-    int            port;
+    char           *port;
 } remote_t;
 
 typedef struct {
