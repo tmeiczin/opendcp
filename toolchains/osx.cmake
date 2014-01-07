@@ -13,7 +13,9 @@ INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/contrib/include)
 
 SET(LIB_DIR ${PREFIX}/lib)
 
-SET(LIBS ${LIBS} -lz -llzma)
+SET(LIBS ${LIBS} -lz)
+#-- if osx 10.8+ uncomment below --#
+#SET(LIBS ${LIBS} -llzma)
 SET(LIBS ${LIBS} -L${LIB_DIR} -lssl -lcrypto)
 
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/contrib/include/libxml2)

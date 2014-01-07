@@ -13,6 +13,9 @@ ENDIF()
 
 #--package name---------------------------------------------------------------
 IF(WIN32)
+    IF(TARGET_ARCH STREQUAL "i686")
+        SET(TARGET_ARCH i386)
+    ENDIF()
     STRING(TOLOWER "${PACKAGE_NAME}-${OPENDCP_VERSION}-${CMAKE_SYSTEM_NAME}.${TARGET_ARCH}.exe" PACKAGE_FILE_NAME)
     SET(SYSTEM_STRING "Windows ${ARCH_STRING}")
     SET(LABELS "Type-Installer, Featured, OpSys-Windows")
