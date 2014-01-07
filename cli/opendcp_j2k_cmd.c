@@ -401,9 +401,17 @@ int main (int argc, char **argv) {
         dcp_fatal(opendcp, "Missing input file");
     }
 
+    if (in_path[strlen(in_path) - 1] == '/') {
+        in_path[strlen(in_path) - 1] = '\0';
+    }
+
     /* output path check */
     if (out_path == NULL) {
         dcp_fatal(opendcp, "Missing output file");
+    }
+
+    if (out_path[strlen(out_path) - 1] == '/') {
+        out_path[strlen(out_path) - 1] = '\0';
     }
 
     /* make sure path modes are ok */
