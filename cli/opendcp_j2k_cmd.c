@@ -88,6 +88,7 @@ void dcp_usage() {
     fprintf(fp,"       -d | --end                         - end frame\n");
     fprintf(fp,"       -v | --version                     - show version\n");
     fprintf(fp,"       -m | --tmp_dir                     - sets temporary directory (usually tmpfs one) to save there temporary tiffs for Kakadu");
+    fprintf(fp,"       -f | --calculate                   - Calculate RGB->XYZ values instead of using LUT");
     fprintf(fp,"\n\n");
     fprintf(fp,"^ Kakadu requires you to download and have the kdu_compress utility in your path.\n");
     fprintf(fp,"  You must agree to the Kakadu non-commerical licensing terms and assume all respsonsibility of its use.\n");
@@ -225,6 +226,7 @@ int main (int argc, char **argv) {
             {"input",          required_argument, 0, 'i'},
             {"output",         required_argument, 0, 'o'},
             {"bw",             required_argument, 0, 'b'},
+            {"calculate",      required_argument, 0, 'f'},
             {"dpx ",           required_argument, 0, 'g'},
             {"rate",           required_argument, 0, 'r'},
             {"profile",        required_argument, 0, 'p'},
@@ -246,7 +248,7 @@ int main (int argc, char **argv) {
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "b:c:d:e:g:i:l:m:o:p:r:s:t:w:3hnvxz",
+        c = getopt_long (argc, argv, "b:c:d:e:g:i:l:m:o:p:r:s:t:w:3fhnvxz",
                          long_options, &option_index);
 
         /* Detect the end of the options. */
@@ -269,6 +271,9 @@ int main (int argc, char **argv) {
                 break;
             case 's':
                 opendcp->j2k.start_frame = atoi(optarg);
+                break;
+            case 'f':
+                opendcp->j2k.xyz_method = 1;
                 break;
             case 'g':
                 if (!strcmp(optarg, "linear")) {
