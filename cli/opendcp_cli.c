@@ -89,6 +89,7 @@ filelist_t *get_filelist(const char *path, const char *filter) {
     struct stat st_in;
     struct dirent *de;
     char **names=0, **tmp;
+
     size_t cnt=0, len=0;
     filelist_t *filelist;
 
@@ -128,7 +129,7 @@ filelist_t *get_filelist(const char *path, const char *filter) {
         if (!names[cnt]) {
             break;
         }
-        strncpy(names[cnt++], de->d_name, strlen(de->d_name));
+        strcpy(names[cnt++], de->d_name);
         OPENDCP_LOG(LOG_DEBUG, "Found %s", de->d_name);
     }
     closedir(d);
