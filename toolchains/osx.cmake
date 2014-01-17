@@ -7,6 +7,15 @@ SET(AUTO_CXXFLAGS "CXXFLAGS=${OSXMIN} ${OSXSDK} -Wl,-search_paths_first")
 SET(AUTO_LDFLAGS "LDFLAGS=-Wl,-search_paths_first")
 #-------------------------------------------------------------------------------
 
+#--gett osx version-------------------------------------------------------------
+EXEC_PROGRAM(uname ARGS -v  OUTPUT_VARIABLE DARWIN_VERSION)
+STRING(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
+IF (DARWIN_VERSION GREATER 8)
+  SET(LZMA 1)
+ENDIF ()
+#-------------------------------------------------------------------------------
+
+
 #--set os specifc linking mode--------------------------------------------------
 SET(DOWNLOAD ON)
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/contrib/include)
@@ -15,7 +24,9 @@ SET(LIB_DIR ${PREFIX}/lib)
 
 SET(LIBS ${LIBS} -lz)
 #-- if osx 10.8+ uncomment below --#
-#SET(LIBS ${LIBS} -llzma)
+IF (LZMA)
+    SET(LIBS ${LIBS} -llzma)
+ENDIF()
 SET(LIBS ${LIBS} -L${LIB_DIR} -lssl -lcrypto)
 
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/contrib/include/libxml2)
