@@ -39,7 +39,7 @@ def defines():
 def enums():
     f = " = 0"
     t = "enum COLOR_PROFILE_ENUM {\n"
-    for c in color_spaces:
+    for c in color_spaces_in:
         t += "    CP_%s%s,\n" % (c['id'].upper(), f)
         f = ''
     t += "    CP_MAX\n"
@@ -47,7 +47,7 @@ def enums():
 
     f = " = 0"
     t += "enum LUT_IN_ENUM {\n"
-    for c in color_spaces:
+    for c in color_spaces_in:
         t += "    LI_%s%s,\n" % (c['id'].upper(), f)
         f = ''
     t += "    LI_MAX\n"
@@ -64,25 +64,26 @@ def enums():
     return t
 
 def gamma():
-    l = len(color_spaces)
+    l = len(color_spaces_in)
 
     t = "static float GAMMA[%d] = {\n" % (l)
     for i in range(0, l):
-        c = color_spaces[i]
+        c = color_spaces_in[i]
         t += "     %f,    /* %-8.8s */\n" % (c['gamma'], c['id'].upper())
     t += "};"
 
     return t
     
 def color_matrix():
-    l = len(color_spaces)
+    l = len(color_spaces_in)
 
     t = "static float color_matrix[%d][3][3] = {\n" % (l)
     for i in range(0, l):
-        t += "    /* %s */\n" % (color_spaces[i]['id'].upper())
-        t += "    {{%s},\n" % (", ".join(str(i) for i in color_spaces[i]['matrix'][0]))
-        t += "     {%s},\n" % (", ".join(str(i) for i in color_spaces[i]['matrix'][1]))
-        t += "     {%s}},\n" % (", ".join(str(i) for i in color_spaces[i]['matrix'][2]))
+        c = color_spaces_in[i]
+        t += "    /* %s */\n" % (c['id'].upper())
+        t += "    {{%s},\n" % (", ".join(str(i) for i in c['matrix'][0]))
+        t += "     {%s},\n" % (", ".join(str(i) for i in c['matrix'][1]))
+        t += "     {%s}},\n" % (", ".join(str(i) for i in c['matrix'][2]))
         if i < l - 1:
             t += "\n"
     t += "};"
@@ -95,7 +96,7 @@ def footer():
     return t
 
 def test(source):
-    for c in color_spaces:
+    for c in color_spaces_in:
        if c['id'] == source:
            print "found %s" % (c['id'])
            f = 'calculate_'+c['id']
@@ -105,6 +106,7 @@ def test(source):
 
     for i in range(0, BIT_LENGTH):
         r = g = b = eval(f)(i)
+
         p = float(i) / (BIT_LENGTH - 1.0)
         if p > 0.08125:
            n = "*"
@@ -119,8 +121,7 @@ def test(source):
         y = int(((yn*DCI_COEFFICENT) ** (1/DCI_GAMMA)) * (BIT_LENGTH - 1.0))
         z = int(((zn*DCI_COEFFICENT) ** (1/DCI_GAMMA)) * (BIT_LENGTH - 1.0)) 
 
-        print "%d, %f" % (i, yn)
-        #print "%d, %d, %d | %f, %f, %f | %f, %f, %f | %f, %f, %f | %d, %d, %d | %s" % (i,i,i,p,p,p,r,g,b,xn,yn,zn,x,y,z,n)
+        print "%d, %d, %d | %f, %f, %f | %f, %f, %f | %f, %f, %f | %d, %d, %d | %s" % (i,i,i,p,p,p,r,g,b,xn,yn,zn,x,y,z,n)
 
 def generate_lut_in(lut):
     t = ''
@@ -167,8 +168,11 @@ def generate_lut_out(lut):
 
     return t
 
-def calculate_srgb(i):
+def calculate_srgb(i, complex=False):
     p = float(i) / (BIT_LENGTH - 1.0)
+    
+    if not complex:
+        return p**SRGB_GAMMA
 
     if p > 0.04045:
         v = ((p+0.055)/1.055)**SRGB_GAMMA
@@ -177,14 +181,11 @@ def calculate_srgb(i):
 
     return v
 
-def calculate_dci(i):
-    p = float(i) / (BIT_LENGTH - 1.0) / DCI_COEFFICENT
-    v = p ** DCI_GAMMA
-
-    return v
-
-def calculate_rec709(i):
+def calculate_rec709(i, complex=False):
     p = float(i) / (BIT_LENGTH - 1.0) 
+
+    if not complex:
+        return p**REC709_GAMMA
 
     if p > 0.08125:
         v = ((p+0.099)/1.099)**REC709_GAMMA
@@ -193,16 +194,28 @@ def calculate_rec709(i):
 
     return v
 
+def calculate_p3(i, complex=False):
+    p = float(i) / (BIT_LENGTH - 1.0)
+
+    return p**DCI_GAMMA
+
+def calculate_dci(i, complex=False):
+    p = float(i) / (BIT_LENGTH - 1.0) / DCI_COEFFICENT
+    v = p ** 1/DCI_GAMMA
+
+    return v
+
 def lut_in():
     t = "static float lut_in[LI_MAX][COLOR_DEPTH+1] = {\n"
-    for i in range(0, len(color_spaces)):
+    for i in range(0, len(color_spaces_in)):
+        c = color_spaces_in[i]
         t += "    // Bit Depth:       %s\n" % (BIT_DEPTH)
-        t += "    // Reference White: %s\n" % (color_spaces[i]['id'].upper())
-        t += "    // Gamma:           %s\n" % (color_spaces[i]['gamma'])
+        t += "    // Reference White: %s\n" % (c['id'].upper())
+        t += "    // Gamma:           %s\n" % (c['gamma'])
         t += "    {\n";
-        t += generate_lut_in(color_spaces[i]['id'])
+        t += generate_lut_in(c['id'])
         t += "    },\n"
-        if i < len(color_spaces) - 1:
+        if i < len(color_spaces_in) - 1:
             t += "\n"
     t += "};"
 
@@ -220,7 +233,7 @@ def lut_out():
 
     return t
 
-color_spaces = [
+color_spaces_in = [
                 { 
                  'id':     'srgb',
                  'gamma':  2.4,
@@ -233,6 +246,12 @@ color_spaces = [
                  'matrix': [[0.4123907993, 0.3575843394, 0.1804807884],
                             [0.2126390059, 0.7151686778, 0.0721923154],
                             [0.0193308187, 0.1191947798, 0.9505321522]]},
+                {
+                 'id':     'p3',
+                 'gamma':  2.6,
+                 'matrix': [[0.4451698156, 0.2771344092, 0.1722826698],
+                            [0.2094916779, 0.7215952542, 0.0689130679],
+                            [0.0000000000, 0.0470605601, 0.9073553944]]},
                ]
 
 color_spaces_out = [
@@ -242,6 +261,12 @@ color_spaces_out = [
                     'matrix': [[0.4123907993, 0.3575843394, 0.1804807884],
                                [0.2126390059, 0.7151686778, 0.0721923154],
                                [0.0193308187, 0.1191947798, 0.9505321522]]},
+                    {
+                    'id':    'srgb',
+                    'gamma': 1/2.4,
+                    'matrix': [[ 3.2404542, -1.5371385, -0.4985314],
+                               [-0.9692660,  1.8760108,  0.0415560],
+                               [ 0.0556434, -0.2040259,  1.0572252]]},
                    ]
 
 BIT_DEPTH       = 12 
