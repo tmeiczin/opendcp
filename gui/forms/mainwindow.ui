@@ -939,6 +939,21 @@
               <string notr="true">Rec. 709</string>
              </property>
             </item>
+            <item>
+             <property name="text">
+              <string notr="true">P3</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string notr="true">sRGB Complex</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string notr="true">Rec. 709 Complex</string>
+             </property>
+            </item>
            </widget>
            <widget class="QCheckBox" name="xyzCheckBox">
             <property name="geometry">

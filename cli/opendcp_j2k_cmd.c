@@ -82,7 +82,7 @@ void dcp_usage() {
     fprintf(fp,"       -n | --no_overwrite                - do not overwrite existing jpeg2000 files\n");
     fprintf(fp,"       -l | --log_level <level>           - sets the log level 0:Quiet, 1:Error, 2:Warn (default),  3:Info, 4:Debug\n");
     fprintf(fp,"       -h | --help                        - show help\n");
-    fprintf(fp,"       -c | --lut                         - select color conversion LUT, 0:srgb, 1:rec709, 2:P3\n");
+    fprintf(fp,"       -c | --colorspace <color>          - select source colorpsace: (srgb, rec709, p3, srgb_complex, rec709_complex)\n");
     fprintf(fp,"       -z | --resize                      - resize image to DCI compliant resolution\n");
     fprintf(fp,"       -s | --start                       - start frame\n");
     fprintf(fp,"       -d | --end                         - end frame\n");
@@ -227,6 +227,7 @@ int main (int argc, char **argv) {
             {"output",         required_argument, 0, 'o'},
             {"bw",             required_argument, 0, 'b'},
             {"calculate",      required_argument, 0, 'f'},
+            {"colorspace",     required_argument, 0, 'c'},
             {"dpx ",           required_argument, 0, 'g'},
             {"rate",           required_argument, 0, 'r'},
             {"profile",        required_argument, 0, 'p'},
@@ -241,7 +242,6 @@ int main (int argc, char **argv) {
             {"version",        no_argument,       0, 'v'},
             {"resize",         no_argument,       0, 'z'},
             {"tmp_dir",        required_argument, 0, 'm'},
-            {"lut",            required_argument, 0, 'c'},
             {0, 0, 0, 0}
         };
 
@@ -266,49 +266,30 @@ int main (int argc, char **argv) {
             case '3':
                 opendcp->stereoscopic = 1;
                 break;
+            case 'b':
+                opendcp->j2k.bw = atoi(optarg);
+                break;
+            case 'c':
+                if (!strcmp(optarg, "srgb")) {
+                    opendcp->j2k.lut = CP_SRGB;
+                } else if (!strcmp(optarg, "rec709")) {
+                    opendcp->j2k.lut = CP_REC709;
+                } else if (!strcmp(optarg, "p3")) {
+                    opendcp->j2k.lut = CP_P3;
+                } else if (!strcmp(optarg, "srgb_complex")) {
+                    opendcp->j2k.lut = CP_SRGB_COMPLEX;
+                } else if (!strcmp(optarg, "rec709_complex")) {
+                    opendcp->j2k.lut = CP_REC709_COMPLEX;
+                } else {
+                    fprintf(stderr, "Invalid colorspace argument\n");
+                    exit(1);
+                }
+                break;
             case 'd':
                 opendcp->j2k.end_frame = strtol(optarg, NULL, 10);
                 break;
-            case 's':
-                opendcp->j2k.start_frame = atoi(optarg);
-                break;
             case 'f':
                 opendcp->j2k.xyz_method = 1;
-                break;
-            case 'g':
-                if (!strcmp(optarg, "linear")) {
-                    opendcp->j2k.dpx = DPX_LINEAR;
-                } else if (!strcmp(optarg, "film")) {
-                    opendcp->j2k.dpx = DPX_FILM;
-                } else if (!strcmp(optarg, "video")) {
-                    opendcp->j2k.dpx = DPX_VIDEO;
-                } else {
-                    dcp_fatal(opendcp, "Invalid DPX argument");
-                }
-                break;
-            case 'p':
-                if (!strcmp(optarg, "cinema2k")) {
-                    opendcp->cinema_profile = DCP_CINEMA2K;
-                } else if (!strcmp(optarg, "cinema4k")) {
-                    opendcp->cinema_profile = DCP_CINEMA4K;
-                } else {
-                    dcp_fatal(opendcp, "Invalid profile argument");
-                }
-                break;
-            case 'i':
-                in_path = optarg;
-                break;
-            case 'l':
-                opendcp->log_level = atoi(optarg);
-                break;
-            case 'o':
-                out_path = optarg;
-                break;
-            case 'h':
-                 dcp_usage();
-                 break;
-            case 'r':
-                opendcp->frame_rate = atoi(optarg);
                 break;
             case 'e':
                 if (!strcmp(optarg, "openjpeg")) {
@@ -318,11 +299,55 @@ int main (int argc, char **argv) {
                 } else if (!strcmp(optarg, "remote")) {
                     opendcp->j2k.encoder = OPENDCP_ENCODER_REMOTE;
                 } else {
-                    dcp_fatal(opendcp, "Invalid encoder argument");
+                    fprintf(stderr, "Invalid encoder argument\n");
+                    exit(1);
                 }
                 break;
-            case 'b':
-                opendcp->j2k.bw = atoi(optarg);
+            case 'g':
+                if (!strcmp(optarg, "linear")) {
+                    opendcp->j2k.dpx = DPX_LINEAR;
+                } else if (!strcmp(optarg, "film")) {
+                    opendcp->j2k.dpx = DPX_FILM;
+                } else if (!strcmp(optarg, "video")) {
+                    opendcp->j2k.dpx = DPX_VIDEO;
+                } else {
+                    fprintf(stderr, "Invalid dpx argument\n");
+                    exit(1);
+                }
+                break;
+            case 'h':
+                 dcp_usage();
+                 break;
+            case 'i':
+                in_path = optarg;
+                break;
+            case 'l':
+                opendcp->log_level = atoi(optarg);
+                break;
+            case 'm':
+                opendcp->tmp_path = optarg;
+                break;
+            case 'o':
+                out_path = optarg;
+                break;
+            case 'n':
+                opendcp->j2k.no_overwrite = 1;
+                break;
+            case 'p':
+                if (!strcmp(optarg, "cinema2k")) {
+                    opendcp->cinema_profile = DCP_CINEMA2K;
+                } else if (!strcmp(optarg, "cinema4k")) {
+                    opendcp->cinema_profile = DCP_CINEMA4K;
+                } else {
+                    fprintf(stderr, "Invalid cinema profile argument\n");
+                    exit(1);
+                }
+                break;
+            case 'r':
+                opendcp->frame_rate = atoi(optarg);
+                break;
+            case 's':
+                opendcp->j2k.start_frame = atoi(optarg);
                 break;
             case 't':
                 opendcp->threads = atoi(optarg);
@@ -330,17 +355,8 @@ int main (int argc, char **argv) {
             case 'x':
                 opendcp->j2k.xyz = 0;
                 break;
-            case 'n':
-                opendcp->j2k.no_overwrite = 1;
-                break;
             case 'v':
                 version();
-                break;
-            case 'm':
-                opendcp->tmp_path = optarg;
-                break;
-            case 'c':
-                opendcp->j2k.lut = atoi(optarg);
                 break;
             case 'z':
                 opendcp->j2k.resize = 1;

@@ -177,6 +177,15 @@ enum DPX_MODE {
     DPX_VIDEO
 };
 
+enum COLOR_PROFILE_ENUM {
+    CP_SRGB = 0,
+    CP_REC709,
+    CP_P3,
+    CP_SRGB_COMPLEX,
+    CP_REC709_COMPLEX,
+    CP_MAX
+};
+
 typedef struct {
     int  (*callback)(void *);
     void  *argument;

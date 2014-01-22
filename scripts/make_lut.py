@@ -38,15 +38,7 @@ def defines():
 
 def enums():
     f = " = 0"
-    t = "enum COLOR_PROFILE_ENUM {\n"
-    for c in color_spaces_in:
-        t += "    CP_%s%s,\n" % (c['id'].upper(), f)
-        f = ''
-    t += "    CP_MAX\n"
-    t += "};\n\n"
-
-    f = " = 0"
-    t += "enum LUT_IN_ENUM {\n"
+    t = "enum LUT_IN_ENUM {\n"
     for c in color_spaces_in:
         t += "    LI_%s%s,\n" % (c['id'].upper(), f)
         f = ''
@@ -181,6 +173,9 @@ def calculate_srgb(i, complex=False):
 
     return v
 
+def calculate_srgb_complex(i):
+    return calculate_srgb(i, complex=True)
+
 def calculate_rec709(i, complex=False):
     p = float(i) / (BIT_LENGTH - 1.0) 
 
@@ -193,6 +188,9 @@ def calculate_rec709(i, complex=False):
         v = p/4.50
 
     return v
+
+def calculate_rec709_complex(i):
+    return calculate_rec709(i, complex=True)
 
 def calculate_p3(i, complex=False):
     p = float(i) / (BIT_LENGTH - 1.0)
@@ -252,6 +250,18 @@ color_spaces_in = [
                  'matrix': [[0.4451698156, 0.2771344092, 0.1722826698],
                             [0.2094916779, 0.7215952542, 0.0689130679],
                             [0.0000000000, 0.0470605601, 0.9073553944]]},
+                {
+                 'id':     'srgb_complex',
+                 'gamma':  2.4,
+                 'matrix': [[0.4124564, 0.3575761, 0.1804375],
+                            [0.2126729, 0.7151522, 0.0721750],
+                            [0.0193339, 0.1191920, 0.9503041]]},
+                {
+                 'id':     'rec709_complex',
+                 'gamma':  1.0/0.45,
+                 'matrix': [[0.4123907993, 0.3575843394, 0.1804807884],
+                            [0.2126390059, 0.7151686778, 0.0721923154],
+                            [0.0193308187, 0.1191947798, 0.9505321522]]},
                ]
 
 color_spaces_out = [

@@ -48,6 +48,7 @@ public slots:
     void j2kCinemaProfileUpdate();
     void j2kUpdateEndSpinBox();
     void j2kSetStereoscopicState();
+    void j2kSetXyzState();
 
     void mxfSetInitialState();
     void mxfStart();

@@ -25,6 +25,11 @@
 #include <stdio.h>
 #include <opendcp.h>
 
+enum J2K_STATE {
+    DISABLED = 0,
+    ENABLED  = 1
+};
+
 void MainWindow::j2kConnectSlots()
 {
     QSignalMapper *j2kInSignalMapper = new QSignalMapper(this);
@@ -34,6 +39,7 @@ void MainWindow::j2kConnectSlots()
     connect(ui->bwSlider,             SIGNAL(valueChanged(int)),        this, SLOT(j2kBwSliderUpdate()));
     connect(ui->encodeButton,         SIGNAL(clicked()),                this, SLOT(j2kStart()));
     connect(ui->profileComboBox,      SIGNAL(currentIndexChanged(int)), this, SLOT(j2kCinemaProfileUpdate()));
+    connect(ui->xyzCheckBox,          SIGNAL(stateChanged(int)),        this, SLOT(j2kSetXyzState()));
 
     // connect j2k input signals
     j2kInSignalMapper->setMapping(ui->inImageLeftButton,  ui->inImageLeftEdit);
@@ -117,6 +123,16 @@ void MainWindow::j2kSetStereoscopicState() {
         ui->outJ2kRightEdit->hide();
         ui->outJ2kRightButton->hide();
         ui->bwSlider->setValue(125);
+    }
+}
+
+void MainWindow::j2kSetXyzState() {
+    int value = ui->xyzCheckBox->checkState();
+    
+    if (value) {
+        ui->colorComboBox->setEnabled(ENABLED);
+    } else {
+        ui->colorComboBox->setEnabled(DISABLED);
     }
 }
 

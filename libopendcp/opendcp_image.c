@@ -148,7 +148,7 @@ int opendcp_image_readline(opendcp_image_t *image, int y, unsigned char *dbuffer
         dbuffer[d+5] = image->component[0].data[i+1];
         dbuffer[d+6] = (image->component[1].data[i+1] >> 4);
         dbuffer[d+7] = ((image->component[1].data[i+1] & 0x0f)<< 4 )|((image->component[2].data[i+1] >> 8)& 0x0f);
-        dbuffer[d+8] = image->component[2].data[i+1];
+     dbuffer[d+8] = image->component[2].data[i+1];
         d+=9;
     }
 
@@ -205,25 +205,61 @@ rgb_pixel_float_t yuv444toRGB888(int y, int cb, int cr) {
 }
 
 /* complex gamma function */
-float complex_gamma(float p, float gamma) {
+float complex_gamma(float p, float gamma, int index) {
     float v;
 
-    if ( p > 0.04045) {
-        v = pow((p+0.055)/1.055,gamma);
+    p = p/COLOR_DEPTH;
+
+    if (index) {
+        if (p > 0.081) {
+            v = pow((p+0.099)/1.099, gamma);
+        } else {
+            v = p/4.5;
+            v = pow((p+0.099)/1.099, gamma);
+        }
     } else {
-        v = p/12.92;
+        if (p > 0.04045) {
+            v = pow((p+0.055)/1.055, gamma);
+        } else {
+            v = p/12.92;
+        }
     }
 
     return v;
+}
+
+int adjust_headroom(int p) {
+    if (p < HEADROOM * 3)  {
+        return  p - HEADROOM;
+    }
+
+    return p;
+}
+
+int dci_transfer(float p) {
+   int v;
+
+   v = (pow((p*DCI_COEFFICENT),DCI_DEGAMMA) * COLOR_DEPTH);
+
+   v -= HEADROOM;
+
+   return v;
+}
+
+int dci_transfer_inverse(float p) {
+    p = p/COLOR_DEPTH;
+   
+    return (pow(p, 1/DCI_GAMMA));
 }
 
 int rgb_to_xyz(opendcp_image_t *image, int index, int method) {
     int result;
 
     if (method) {
-        OPENDCP_LOG(LOG_DEBUG, "rgb_to_xyz_calculate");
+        OPENDCP_LOG(LOG_DEBUG, "rgb_to_xyz_calculate, index: %d", index);
         result = rgb_to_xyz_calculate(image, index);
     } else {
+        OPENDCP_LOG(LOG_DEBUG, "rgb_to_xyz_lut, index: %d", index);
         result = rgb_to_xyz_lut(image, index);
     }
 
@@ -272,23 +308,20 @@ int rgb_to_xyz_calculate(opendcp_image_t *image, int index) {
     xyz_pixel_float_t d;
 
     size = image->w * image->h;
+    OPENDCP_LOG(LOG_DEBUG, "gamma: %f", GAMMA[index]);
 
     for (i=0;i<size;i++) {
-        s.r = complex_gamma(image->component[0].data[i]/(float)COLOR_DEPTH, GAMMA[index]);
-        s.g = complex_gamma(image->component[1].data[i]/(float)COLOR_DEPTH, GAMMA[index]);
-        s.b = complex_gamma(image->component[2].data[i]/(float)COLOR_DEPTH, GAMMA[index]);
-
-        s.r = lut_in[index][image->component[0].data[i]];
-        s.g = lut_in[index][image->component[1].data[i]];
-        s.b = lut_in[index][image->component[2].data[i]];
+        s.r = complex_gamma(image->component[0].data[i], GAMMA[index], index);
+        s.g = complex_gamma(image->component[1].data[i], GAMMA[index], index);
+        s.b = complex_gamma(image->component[2].data[i], GAMMA[index], index);
 
         d.x = ((s.r * color_matrix[index][0][0]) + (s.g * color_matrix[index][0][1]) + (s.b * color_matrix[index][0][2]));
         d.y = ((s.r * color_matrix[index][1][0]) + (s.g * color_matrix[index][1][1]) + (s.b * color_matrix[index][1][2]));
         d.z = ((s.r * color_matrix[index][2][0]) + (s.g * color_matrix[index][2][1]) + (s.b * color_matrix[index][2][2]));
 
-        image->component[0].data[i] = (pow((d.x*DCI_COEFFICENT),DCI_DEGAMMA) * COLOR_DEPTH);
-        image->component[1].data[i] = (pow((d.y*DCI_COEFFICENT),DCI_DEGAMMA) * COLOR_DEPTH);
-        image->component[2].data[i] = (pow((d.z*DCI_COEFFICENT),DCI_DEGAMMA) * COLOR_DEPTH);
+        image->component[0].data[i] = dci_transfer(d.x);
+        image->component[1].data[i] = dci_transfer(d.y);
+        image->component[2].data[i] = dci_transfer(d.z); 
     }
 
     return OPENDCP_NO_ERROR;
