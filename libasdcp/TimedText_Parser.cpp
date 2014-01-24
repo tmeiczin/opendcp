@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_TimedText.cpp
-    \version $Id: TimedText_Parser.cpp,v 1.15 2010/11/15 17:04:13 jhurst Exp $       
+    \version $Id: TimedText_Parser.cpp,v 1.15.2.2 2013/10/18 21:15:00 mikey Exp $       
     \brief   AS-DCP library, PCM essence reader and writer implementation
 */
 
@@ -45,15 +45,15 @@ const char* c_dcst_namespace_name = "http://www.smpte-ra.org/schemas/428-7/2007/
 
 
 
-class FilenameResolver : public ASDCP::TimedText::IResourceResolver
+class LocalFilenameResolver : public ASDCP::TimedText::IResourceResolver
 {
   std::string m_Dirname;
 
-  FilenameResolver();
-  bool operator==(const FilenameResolver&);
+  LocalFilenameResolver();
+  bool operator==(const LocalFilenameResolver&);
 
 public:
-  FilenameResolver(const std::string& dirname)
+  LocalFilenameResolver(const std::string& dirname)
   {
     if ( PathIsDirectory(dirname) )
       {
@@ -109,7 +109,7 @@ public:
   std::string m_Filename;
   std::string m_XMLDoc;
   TimedTextDescriptor  m_TDesc;
-  mem_ptr<FilenameResolver> m_DefaultResolver;
+  mem_ptr<LocalFilenameResolver> m_DefaultResolver;
 
   h__SubtitleParser() : m_Root("**ParserRoot**")
   {
@@ -121,7 +121,7 @@ public:
   TimedText::IResourceResolver* GetDefaultResolver()
   {
     if ( m_DefaultResolver.empty() )
-      m_DefaultResolver = new FilenameResolver(PathDirname(m_Filename));
+      m_DefaultResolver = new LocalFilenameResolver(PathDirname(m_Filename));
     
     return m_DefaultResolver;
   }
@@ -269,6 +269,7 @@ ASDCP::TimedText::DCSubtitleParser::h__SubtitleParser::OpenRead()
   // list of images
   ElementList ImageList;
   m_Root.GetChildrenWithName("Image", ImageList);
+  std::set<Kumu::UUID> visited_items;
 
   for ( Elem_i i = ImageList.begin(); i != ImageList.end(); i++ )
     {
@@ -279,11 +280,15 @@ ASDCP::TimedText::DCSubtitleParser::h__SubtitleParser::OpenRead()
 	  return RESULT_FORMAT;
 	}
 
-      TimedTextResourceDescriptor TmpResource;
-      memcpy(TmpResource.ResourceID, AssetID.Value(), UUIDlen);
-      TmpResource.Type = MT_PNG;
-      m_TDesc.ResourceList.push_back(TmpResource);
-      m_ResourceTypes.insert(ResourceTypeMap_t::value_type(UUID(TmpResource.ResourceID), MT_PNG));
+      if ( visited_items.find(AssetID) == visited_items.end() )
+	{
+	  TimedTextResourceDescriptor TmpResource;
+	  memcpy(TmpResource.ResourceID, AssetID.Value(), UUIDlen);
+	  TmpResource.Type = MT_PNG;
+	  m_TDesc.ResourceList.push_back(TmpResource);
+	  m_ResourceTypes.insert(ResourceTypeMap_t::value_type(UUID(TmpResource.ResourceID), MT_PNG));
+	  visited_items.insert(AssetID);
+	}
     }
 
   // Calculate the timeline duration.

@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP.h
-    \version $Id: AS_DCP.h,v 1.45 2013/04/12 23:39:30 mikey Exp $
+    \version $Id: AS_DCP.h,v 1.45.2.1 2013/12/21 00:13:17 jhurst Exp $
     \brief   AS-DCP library, public interface
 
 The asdcplib library is a set of file access objects that offer simplified
@@ -830,7 +830,8 @@ namespace ASDCP {
       //
       // The channel format should be one of (CF_CFG_1, CF_CFG_2, or CF_CFG_3) for
       // SMPTE 429-2 files. It should normally be CF_NONE for JPEG Interop files, but
-      // the 429-2 may also be used.
+      // the 429-2 labels may also be used.  CF_CFG_6 will be set automatically
+      // when MCA labels are defined.
       //
       enum ChannelFormat_t {
 	CF_NONE,
@@ -839,6 +840,8 @@ namespace ASDCP {
 	CF_CFG_3, // 7.1 (SDDS) with optional HI/VI
 	CF_CFG_4, // Wild Track Format
 	CF_CFG_5, // 7.1 DS with optional HI/VI
+	CF_CFG_6, // ST 377-4 (MCA) labels (see also ASDCP::MXF::decode_mca_string)
+	CF_MAXIMUM
       };
 
       struct AudioDescriptor

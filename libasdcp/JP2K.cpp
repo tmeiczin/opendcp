@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    JP2K.cpp
-    \version $Id: JP2K.cpp,v 1.8 2010/06/17 03:33:17 jhurst Exp $
+    \version $Id: JP2K.cpp,v 1.8.2.1 2013/11/20 18:21:36 mikey Exp $
     \brief   JPEG 2000 parser implementation
 
     This is not a complete implementation of all things JP2K.  There is just enough here to
@@ -142,6 +142,41 @@ ASDCP::JP2K::Accessor::SIZ::Dump(FILE* stream)
 	  fprintf(stream, "%u, %u, %u\n", TmpComp.Ssize, TmpComp.XRsize, TmpComp.YRsize);
 	}
     }
+}
+
+//
+void
+ASDCP::JP2K::Accessor::COD::Dump(FILE* stream)
+{
+  if ( stream == 0 )
+    stream = stderr;
+
+  fprintf(stream, "COD: \n");
+  const char* prog_order_str = "RESERVED";
+  const char* transformations_str = prog_order_str;
+
+  switch ( ProgOrder() )
+    {
+    case 0: prog_order_str = "LRCP"; break;
+    case 1: prog_order_str = "RLCP"; break;
+    case 2: prog_order_str = "RPCL"; break;
+    case 3: prog_order_str = "PCRL"; break;
+    case 4: prog_order_str = "CPRL"; break;
+    }
+
+  switch ( Transformation() )
+    {
+    case 0: transformations_str = "9/7"; break;
+    case 1: transformations_str = "5/3"; break;
+    }
+
+  fprintf(stream, "      ProgOrder: %s\n", prog_order_str);
+  fprintf(stream, "         Layers: %hu\n", Layers());
+  fprintf(stream, "   DecompLevels: %hu\n", DecompLevels());
+  fprintf(stream, " CodeBlockWidth: %d\n", 1 << CodeBlockWidth());
+  fprintf(stream, "CodeBlockHeight: %d\n", 1 << CodeBlockHeight());
+  fprintf(stream, " CodeBlockStyle: %d\n", CodeBlockStyle());
+  fprintf(stream, " Transformation: %s\n", transformations_str);
 }
 
 //

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2012, John Hurst
+Copyright (c) 2005-2013, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MXF.cpp
-    \version $Id: MXF.cpp,v 1.65 2013/04/12 23:39:31 mikey Exp $
+    \version $Id: MXF.cpp,v 1.65.2.3 2013/12/20 19:51:40 jhurst Exp $
     \brief   MXF objects
 */
 
@@ -1508,6 +1508,215 @@ ASDCP::MXF::CreateObject(const Dictionary*& Dict, const UL& label)
   return i->second(Dict);
 }
 
+
+
+//------------------------------------------------------------------------------------------
+
+//
+bool
+ASDCP::MXF::decode_mca_string(const std::string& s, const mca_label_map_t& labels, const Dictionary*& dict, const std::string& language,
+			      InterchangeObject_list_t& descriptor_list, ui32_t& channel_count)
+{
+  std::string symbol_buf;
+  channel_count = 0;
+  ASDCP::MXF::SoundfieldGroupLabelSubDescriptor *current_soundfield = 0;
+  std::string::const_iterator i;
+
+  for ( i = s.begin(); i != s.end(); ++i )
+    {
+      if ( *i == '(' )
+	{
+	  if ( current_soundfield != 0 )
+	    {
+	      DefaultLogSink().Error("Encountered '(', already processing a soundfield group.\n");
+	      return false;
+	    }
+
+	  if ( symbol_buf.empty() )
+	    {
+	      DefaultLogSink().Error("Encountered '(', without leading soundfield group symbol.\n");
+	      return false;
+	    }
+
+	  mca_label_map_t::const_iterator i = labels.find(symbol_buf);
+      
+	  if ( i == labels.end() )
+	    {
+	      DefaultLogSink().Error("Unknown symbol: '%s'\n", symbol_buf.c_str());
+	      return false;
+	    }
+      
+	  if ( i->second.Value()[10] != 2 ) // magic depends on UL "Essence Facet" byte (see ST 428-12)
+	    {
+	      DefaultLogSink().Error("Not a soundfield group symbol: '%s'\n", symbol_buf.c_str());
+	      return false;
+	    }
+
+	  current_soundfield = new ASDCP::MXF::SoundfieldGroupLabelSubDescriptor(dict);
+
+	  GenRandomValue(current_soundfield->InstanceUID);
+	  GenRandomValue(current_soundfield->MCALinkID);
+	  current_soundfield->MCATagSymbol = "sg" + i->first;
+	  current_soundfield->MCATagName = i->first;
+	  current_soundfield->RFC5646SpokenLanguage = language;
+	  current_soundfield->MCALabelDictionaryID = i->second;
+	  descriptor_list.push_back(reinterpret_cast<ASDCP::MXF::InterchangeObject*>(current_soundfield));
+	  symbol_buf.clear();
+	}
+      else if ( *i == ')' )
+	{
+	  if ( current_soundfield == 0 )
+	    {
+	      DefaultLogSink().Error("Encountered ')', not currently processing a soundfield group.\n");
+	      return false;
+	    }
+
+	  if ( symbol_buf.empty() )
+	    {
+	      DefaultLogSink().Error("Soundfield group description contains an empty channel.\n");
+	      return false;
+	    }
+
+	  mca_label_map_t::const_iterator i = labels.find(symbol_buf);
+      
+	  if ( i == labels.end() )
+	    {
+	      DefaultLogSink().Error("Unknown symbol: '%s'\n", symbol_buf.c_str());
+	      return false;
+	    }
+
+	  ASDCP::MXF::AudioChannelLabelSubDescriptor *channel_descr =
+	    new ASDCP::MXF::AudioChannelLabelSubDescriptor(dict);
+
+	  GenRandomValue(channel_descr->InstanceUID);
+	  assert(current_soundfield);
+	  channel_descr->MCALinkID = current_soundfield->MCALinkID;
+	  channel_descr->MCAChannelID = channel_count++;
+	  channel_descr->MCATagSymbol = "ch" + i->first;
+	  channel_descr->MCATagName = i->first;
+	  channel_descr->RFC5646SpokenLanguage = language;
+	  channel_descr->MCALabelDictionaryID = i->second;
+	  descriptor_list.push_back(reinterpret_cast<ASDCP::MXF::InterchangeObject*>(channel_descr));
+	  symbol_buf.clear();
+	  current_soundfield = 0;
+	}
+      else if ( *i == ',' )
+	{
+	  if ( ! symbol_buf.empty() )
+	    {
+	      mca_label_map_t::const_iterator i = labels.find(symbol_buf);
+
+	      if ( i == labels.end() )
+		{
+		  DefaultLogSink().Error("Unknown symbol: '%s'\n", symbol_buf.c_str());
+		  return false;
+		}
+
+	      if ( i->second.Value()[10] != 1 ) // magic depends on UL "Essence Facet" byte (see ST 428-12)
+		{
+		  DefaultLogSink().Error("Not a channel symbol: '%s'\n", symbol_buf.c_str());
+		  return false;
+		}
+
+	      ASDCP::MXF::AudioChannelLabelSubDescriptor *channel_descr =
+		new ASDCP::MXF::AudioChannelLabelSubDescriptor(dict);
+
+	      GenRandomValue(channel_descr->InstanceUID);
+
+	      if ( current_soundfield != 0 )
+		{
+		  channel_descr->MCALinkID = current_soundfield->MCALinkID;
+		}
+
+	      channel_descr->MCAChannelID = channel_count++;
+	      channel_descr->MCATagSymbol = "ch" + i->first;
+	      channel_descr->MCATagName = i->first;
+	      channel_descr->RFC5646SpokenLanguage = language;
+	      channel_descr->MCALabelDictionaryID = i->second;
+	      descriptor_list.push_back(reinterpret_cast<ASDCP::MXF::InterchangeObject*>(channel_descr));
+	      symbol_buf.clear();
+	    }
+	}
+      else if ( isalnum(*i) )
+	{
+	  symbol_buf += *i;
+	}
+      else if ( ! isspace(*i) )
+	{
+	  DefaultLogSink().Error("Unexpected character '%c'.\n", *i);
+	  return false;
+	}
+    }
+
+  if ( ! symbol_buf.empty() )
+    {
+      mca_label_map_t::const_iterator i = labels.find(symbol_buf);
+      
+      if ( i == labels.end() )
+	{
+	  DefaultLogSink().Error("Unknown symbol: '%s'\n", symbol_buf.c_str());
+	  return false;
+	}
+
+      ASDCP::MXF::AudioChannelLabelSubDescriptor *channel_descr =
+	new ASDCP::MXF::AudioChannelLabelSubDescriptor(dict);
+
+      GenRandomValue(channel_descr->InstanceUID);
+
+      if ( current_soundfield != 0 )
+	{
+	  channel_descr->MCALinkID = current_soundfield->MCALinkID;
+	}
+
+      channel_descr->MCAChannelID = channel_count++;
+      channel_descr->MCATagSymbol = "ch" + i->first;
+      channel_descr->MCATagName = i->first;
+      channel_descr->RFC5646SpokenLanguage = language;
+      channel_descr->MCALabelDictionaryID = i->second;
+      descriptor_list.push_back(reinterpret_cast<ASDCP::MXF::InterchangeObject*>(channel_descr));
+    }
+
+  return true;
+}
+
+//
+ASDCP::MXF::ASDCP_MCAConfigParser::ASDCP_MCAConfigParser(const Dictionary*& d) : m_Dict(d), m_ChannelCount(0)
+{
+  m_LabelMap.insert(mca_label_map_t::value_type("L", m_Dict->ul(MDD_DCAudioChannel_L)));
+  m_LabelMap.insert(mca_label_map_t::value_type("R", m_Dict->ul(MDD_DCAudioChannel_R)));
+  m_LabelMap.insert(mca_label_map_t::value_type("C", m_Dict->ul(MDD_DCAudioChannel_C)));
+  m_LabelMap.insert(mca_label_map_t::value_type("LFE", m_Dict->ul(MDD_DCAudioChannel_LFE)));
+  m_LabelMap.insert(mca_label_map_t::value_type("Ls", m_Dict->ul(MDD_DCAudioChannel_Ls)));
+  m_LabelMap.insert(mca_label_map_t::value_type("Rs", m_Dict->ul(MDD_DCAudioChannel_Rs)));
+  m_LabelMap.insert(mca_label_map_t::value_type("Lss", m_Dict->ul(MDD_DCAudioChannel_Lss)));
+  m_LabelMap.insert(mca_label_map_t::value_type("Rss", m_Dict->ul(MDD_DCAudioChannel_Rss)));
+  m_LabelMap.insert(mca_label_map_t::value_type("Lrs", m_Dict->ul(MDD_DCAudioChannel_Lrs)));
+  m_LabelMap.insert(mca_label_map_t::value_type("Rrs", m_Dict->ul(MDD_DCAudioChannel_Rrs)));
+  m_LabelMap.insert(mca_label_map_t::value_type("Lc", m_Dict->ul(MDD_DCAudioChannel_Lc)));
+  m_LabelMap.insert(mca_label_map_t::value_type("Rc", m_Dict->ul(MDD_DCAudioChannel_Rc)));
+  m_LabelMap.insert(mca_label_map_t::value_type("Cs", m_Dict->ul(MDD_DCAudioChannel_Cs)));
+  m_LabelMap.insert(mca_label_map_t::value_type("HI", m_Dict->ul(MDD_DCAudioChannel_HI)));
+  m_LabelMap.insert(mca_label_map_t::value_type("VIN", m_Dict->ul(MDD_DCAudioChannel_VIN)));
+  m_LabelMap.insert(mca_label_map_t::value_type("51", m_Dict->ul(MDD_DCAudioSoundfield_51)));
+  m_LabelMap.insert(mca_label_map_t::value_type("71", m_Dict->ul(MDD_DCAudioSoundfield_71)));
+  m_LabelMap.insert(mca_label_map_t::value_type("SDS", m_Dict->ul(MDD_DCAudioSoundfield_SDS)));
+  m_LabelMap.insert(mca_label_map_t::value_type("61", m_Dict->ul(MDD_DCAudioSoundfield_61)));
+  m_LabelMap.insert(mca_label_map_t::value_type("M", m_Dict->ul(MDD_DCAudioSoundfield_M)));
+}
+
+//
+ui32_t
+ASDCP::MXF::ASDCP_MCAConfigParser::ChannelCount() const
+{
+  return m_ChannelCount;
+}
+
+// 51(L,R,C,LFE,Ls,Rs),HI,VIN
+bool
+ASDCP::MXF::ASDCP_MCAConfigParser::DecodeString(const std::string& s, const std::string& language)
+{
+  return decode_mca_string(s, m_LabelMap, m_Dict, language, *this, m_ChannelCount);
+}
 
 //
 // end MXF.cpp

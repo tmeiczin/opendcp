@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    KM_xml.h
-    \version $Id: KM_xml.h,v 1.8 2011/08/15 23:03:26 jhurst Exp $
+    \version $Id: KM_xml.h,v 1.8.2.1 2013/12/05 18:59:46 mikey Exp $
     \brief   XML writer
 */
 
@@ -112,8 +112,9 @@ namespace Kumu
       XMLElement* AddChildWithContent(const char* name, const std::string& value);
       XMLElement* AddChildWithPrefixedContent(const char* name, const char* prefix, const char* value);
       void        AddComment(const char* value);
-      void        Render(std::string&) const;
-      void        RenderElement(std::string& outbuf, ui32_t depth) const;
+      void        Render(std::string& str) const { Render(str, true); }
+      void        Render(std::string&, const bool& pretty) const;
+      void        RenderElement(std::string& outbuf, const ui32_t& depth, const bool& pretty) const;
 
       // querying
       inline const std::string&   GetBody() const { return m_Body; }

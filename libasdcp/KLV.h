@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    KLV.h
-  \version $Id: KLV.h,v 1.25 2012/02/08 02:59:21 jhurst Exp $
+  \version $Id: KLV.h,v 1.25.2.1 2013/12/21 01:36:19 jhurst Exp $
   \brief   KLV objects
 */
 
@@ -234,10 +234,9 @@ inline const char* ui64sz(ui64_t i, char* buf)
     {
       ASDCP_NO_COPY_CONSTRUCT(KLVFilePacket);
 
-    protected:
+    public:
       ASDCP::FrameBuffer m_Buffer;
 
-    public:
       KLVFilePacket() {}
       virtual ~KLVFilePacket() {}
 

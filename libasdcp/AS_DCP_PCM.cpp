@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_PCM.cpp
-    \version $Id: AS_DCP_PCM.cpp,v 1.39 2013/04/12 23:39:30 mikey Exp $       
+    \version $Id: AS_DCP_PCM.cpp,v 1.39.2.1 2013/12/21 00:13:17 jhurst Exp $       
     \brief   AS-DCP library, PCM essence reader and writer implementation
 */
 
@@ -77,6 +77,10 @@ ASDCP::PCM_ADesc_to_MD(PCM::AudioDescriptor& ADesc, MXF::WaveAudioDescriptor* AD
       case PCM::CF_CFG_5:
 	ADescObj->ChannelAssignment = DefaultSMPTEDict().Type(MDD_DCAudioChannelCfg_5_7p1_DS).ul;
 	break;
+
+      case PCM::CF_CFG_6:
+	ADescObj->ChannelAssignment = DefaultSMPTEDict().Type(MDD_DCAudioChannelCfg_MCA).ul;
+	break;
     }
 
   return RESULT_OK;
@@ -116,6 +120,9 @@ ASDCP::MD_to_PCM_ADesc(MXF::WaveAudioDescriptor* ADescObj, PCM::AudioDescriptor&
 
       else if ( ADescObj->ChannelAssignment == DefaultSMPTEDict().Type(MDD_DCAudioChannelCfg_5_7p1_DS).ul )
 	ADesc.ChannelFormat = PCM::CF_CFG_5;
+
+      else if ( ADescObj->ChannelAssignment == DefaultSMPTEDict().Type(MDD_DCAudioChannelCfg_MCA).ul )
+	ADesc.ChannelFormat = PCM::CF_CFG_6;
     }
 
   return RESULT_OK;
@@ -160,6 +167,10 @@ ASDCP::PCM::operator << (std::ostream& strm, const AudioDescriptor& ADesc)
 
     case CF_CFG_5:
       strm << "Config 5 (7.1 DS with optional HI/VI)";
+      break;
+
+    case CF_CFG_6:
+      strm << "Config 6 (ST 377-1 MCA)";
       break;
   }
   strm << std::endl;

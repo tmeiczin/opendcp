@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MXF.h
-    \version $Id: MXF.h,v 1.43 2012/03/16 00:28:23 jhurst Exp $
+    \version $Id: MXF.h,v 1.43.2.2 2013/12/20 19:42:55 jhurst Exp $
     \brief   MXF objects
 */
 
@@ -33,6 +33,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _MXF_H_
 
 #include "MXFTypes.h"
+#include <algorithm>
+
 
 namespace ASDCP
 {
@@ -242,6 +244,8 @@ namespace ASDCP
 	  virtual void     Dump(FILE* stream = 0);
 	};
 
+      typedef std::list<InterchangeObject*> InterchangeObject_list_t;
+
       //
       class Preface : public InterchangeObject
 	{
@@ -412,6 +416,51 @@ namespace ASDCP
 	  virtual void     SetIndexParamsCBR(IPrimerLookup* lookup, ui32_t size, const Rational& Rate);
 	  virtual void     SetIndexParamsVBR(IPrimerLookup* lookup, const Rational& Rate, Kumu::fpos_t offset);
 	};
+
+      //---------------------------------------------------------------------------------
+      //
+
+      //
+      inline std::string to_lower(std::string str) {
+	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+	return str;
+      }
+
+      // ignore case when searching for audio labels
+      struct ci_comp
+      {
+	inline bool operator()(const std::string& a, const std::string& b) const {
+	  return to_lower(a) < to_lower(b);
+	}
+      };
+
+      //
+      typedef std::map<const std::string, const UL, ci_comp> mca_label_map_t;
+
+
+      //
+      bool decode_mca_string(const std::string& s, const mca_label_map_t& labels,
+			     const Dictionary*& dict, const std::string& language, InterchangeObject_list_t&, ui32_t&);
+
+      //
+      class ASDCP_MCAConfigParser : public InterchangeObject_list_t
+      {
+        KM_NO_COPY_CONSTRUCT(ASDCP_MCAConfigParser);
+        ASDCP_MCAConfigParser();
+
+      protected:
+        mca_label_map_t m_LabelMap;
+        ui32_t m_ChannelCount;
+        const Dictionary*& m_Dict;
+
+        
+      public:
+        ASDCP_MCAConfigParser(const Dictionary*&);
+        bool DecodeString(const std::string& s, const std::string& language = "en");
+	
+        // Valid only after a successful call to DecodeString
+        ui32_t ChannelCount() const;
+      };
 
     } // namespace MXF
 } // namespace ASDCP

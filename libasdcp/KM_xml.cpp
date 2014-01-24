@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    KM_xml.cpp
-    \version $Id: KM_xml.cpp,v 1.20 2012/06/14 00:52:58 jhurst Exp $
+    \version $Id: KM_xml.cpp,v 1.20.2.1 2013/12/05 18:59:46 mikey Exp $
     \brief   XML writer
 */
 
@@ -186,10 +186,10 @@ Kumu::XMLElement::AddComment(const char* value)
 
 //
 void
-Kumu::XMLElement::Render(std::string& outbuf) const
+Kumu::XMLElement::Render(std::string& outbuf, const bool& pretty) const
 {
   outbuf = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-  RenderElement(outbuf, 0);
+  RenderElement(outbuf, 0, pretty);
 }
 
 //
@@ -202,15 +202,18 @@ add_spacer(std::string& outbuf, i32_t depth)
 
 //
 void
-Kumu::XMLElement::RenderElement(std::string& outbuf, ui32_t depth) const
+Kumu::XMLElement::RenderElement(std::string& outbuf, const ui32_t& depth, const bool& pretty) const
 {
-  add_spacer(outbuf, depth);
+  if ( pretty )
+    {
+      add_spacer(outbuf, depth);
+    }
 
   outbuf += "<";
   outbuf += m_Name;
 
   // render attributes
-  for ( Attr_i i = m_AttrList.begin(); i != m_AttrList.end(); i++ )
+  for ( Attr_i i = m_AttrList.begin(); i != m_AttrList.end(); ++i )
     {
       outbuf += " ";
       outbuf += (*i).name;
@@ -228,12 +231,19 @@ Kumu::XMLElement::RenderElement(std::string& outbuf, ui32_t depth) const
 
       // render body
       if ( m_Body.length() > 0 )
-	outbuf += m_Body;
+	{
+	  outbuf += m_Body;
+	}
 
-      for ( Elem_i i = m_ChildList.begin(); i != m_ChildList.end(); i++ )
-	(*i)->RenderElement(outbuf, depth + 1);
+      for ( Elem_i i = m_ChildList.begin(); i != m_ChildList.end(); ++i )
+	{
+	  (*i)->RenderElement(outbuf, depth + 1, pretty);
+	}
 
-      add_spacer(outbuf, depth);
+      if ( pretty )
+	{
+	  add_spacer(outbuf, depth);
+	}
     }
   else if ( m_Body.length() > 0 )
     {
