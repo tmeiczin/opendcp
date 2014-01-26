@@ -49,10 +49,6 @@ SET(OPENDCP_GUI_UI
 SET(OPENDCP_GUI_RES
      ${CMAKE_CURRENT_SOURCE_DIR}/resources/opendcp.qrc
 )
-
-SET(OPENDCP_GUI_RES_CXX
-     ${CMAKE_CURRENT_BINARY_DIR}/opendcp_resources.cpp 
-)
 #-----------------------------------------------------------------------------
 
 #--set language support-------------------------------------------------------
@@ -129,12 +125,7 @@ ENDIF()
 #-----------------------------------------------------------------------------
 
 #--add qt4 src----------------------------------------------------------------
-QT4_ADD_RESOURCES(OPENDCP_GUI_RES_CXX ${OPEDNDCP_GUI_RES})
-ADD_CUSTOM_COMMAND(OUTPUT ${OPENDCP_GUI_RES_CXX}  
-    COMMAND ${QT_RCC_EXECUTABLE}
-    ARGS ${rcc_options} -name ${OPENDCP_GUI_RES_CXX} -o ${OPENDCP_GUI_RES_CXX} ${OPENDCP_GUI_RES} 
-    MAIN_DEPENDENCY ${OPENDCP_GUI_RES} 
-    DEPENDS ${_RC_DEPENDS})
+QT4_ADD_RESOURCES(OPENDCP_GUI_RES_CXX ${OPENDCP_GUI_RES})
 QT4_WRAP_UI(OPENDCP_FORM_H ${OPENDCP_GUI_UI})
 QT4_WRAP_CPP(OPENDCP_MOC_H ${OPENDCP_GUI_H_SRC})
 IF(LANGUAGE_TS_FILES)
