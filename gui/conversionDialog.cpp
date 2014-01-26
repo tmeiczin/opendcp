@@ -16,7 +16,6 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <QDir>
 #include "conversionDialog.h"
 
 enum CONVERSION_STATE {
