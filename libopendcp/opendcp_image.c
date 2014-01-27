@@ -40,8 +40,8 @@ opendcp_image_t *opendcp_image_create(int n_components, int w, int h) {
     image = (opendcp_image_t*) malloc(sizeof(opendcp_image_t));
 
     if (image) {
-        memset(image,0,sizeof(opendcp_image_t));
-        image->component = (opendcp_image_component_t*) malloc(n_components*sizeof(opendcp_image_component_t));
+        memset(image, 0, sizeof(opendcp_image_t));
+        image->component = (opendcp_image_component_t*) malloc(n_components * sizeof(opendcp_image_component_t));
 
         if (!image->component) {
             OPENDCP_LOG(LOG_ERROR, "unable to allocate memory for image components");
@@ -51,9 +51,10 @@ opendcp_image_t *opendcp_image_create(int n_components, int w, int h) {
 
         memset(image->component, 0, n_components * sizeof(opendcp_image_component_t));
 
-        for (x=0; x<n_components; x++) {
+        for (x = 0; x < n_components; x++) {
             image->component[x].component_number = x;
-            image->component[x].data = (int *)malloc((w*h)*sizeof(int));
+            image->component[x].data = (int *)malloc((w * h) * sizeof(int));
+
             if (!image->component[x].data) {
                 OPENDCP_LOG(LOG_ERROR, "unable to allocate memory for image components");
                 opendcp_image_free(image);
@@ -82,16 +83,20 @@ opendcp_image_t *opendcp_image_create(int n_components, int w, int h) {
 /* free opendcp image structure */
 void opendcp_image_free(opendcp_image_t *opendcp_image) {
     int i;
+
     if (opendcp_image) {
         if (opendcp_image->component) {
             for (i = 0; i < opendcp_image->n_components; i++) {
                 opendcp_image_component_t *component = &opendcp_image->component[i];
+
                 if (component->data) {
                     free(component->data);
                 }
             }
+
             free(opendcp_image->component);
         }
+
         free(opendcp_image);
     }
 }
@@ -105,7 +110,7 @@ int opendcp_image_size(opendcp_image_t *opendcp_image) {
         size += opendcp_image->w * opendcp_image->h * sizeof(int);
     }
 
-    return size; 
+    return size;
 }
 
 int read_image(opendcp_image_t **dimage, char *sfile) {
@@ -113,7 +118,7 @@ int read_image(opendcp_image_t **dimage, char *sfile) {
     int  result;
     opendcp_decoder_t *decoder;;
 
-    extension = strrchr(sfile,'.');
+    extension = strrchr(sfile, '.');
     extension++;
 
     decoder = opendcp_decoder_find(NULL, extension, 0);
@@ -135,32 +140,33 @@ int read_image(opendcp_image_t **dimage, char *sfile) {
 }
 
 int opendcp_image_readline(opendcp_image_t *image, int y, unsigned char *dbuffer) {
-    int x,i;
+    int x, i;
     int d = 0;
 
-    for (x = 0; x<image->w; x+=2) {
-        i = (x+y+0) + ((image->w-1)*y);
-        dbuffer[d+0] = (image->component[0].data[i] >> 4);
-        dbuffer[d+1] = ((image->component[0].data[i] & 0x0f) << 4 )|((image->component[1].data[i] >> 8)& 0x0f);
-        dbuffer[d+2] = image->component[1].data[i];
-        dbuffer[d+3] = (image->component[2].data[i] >> 4);
-        dbuffer[d+4] = ((image->component[2].data[i] & 0x0f) << 4 )|((image->component[0].data[i+1] >> 8)& 0x0f);
-        dbuffer[d+5] = image->component[0].data[i+1];
-        dbuffer[d+6] = (image->component[1].data[i+1] >> 4);
-        dbuffer[d+7] = ((image->component[1].data[i+1] & 0x0f)<< 4 )|((image->component[2].data[i+1] >> 8)& 0x0f);
-     dbuffer[d+8] = image->component[2].data[i+1];
-        d+=9;
+    for (x = 0; x < image->w; x += 2) {
+        i = (x + y + 0) + ((image->w - 1) * y);
+        dbuffer[d + 0] = (image->component[0].data[i] >> 4);
+        dbuffer[d + 1] = ((image->component[0].data[i] & 0x0f) << 4 ) | ((image->component[1].data[i] >> 8) & 0x0f);
+        dbuffer[d + 2] = image->component[1].data[i];
+        dbuffer[d + 3] = (image->component[2].data[i] >> 4);
+        dbuffer[d + 4] = ((image->component[2].data[i] & 0x0f) << 4 ) | ((image->component[0].data[i + 1] >> 8) & 0x0f);
+        dbuffer[d + 5] = image->component[0].data[i + 1];
+        dbuffer[d + 6] = (image->component[1].data[i + 1] >> 4);
+        dbuffer[d + 7] = ((image->component[1].data[i + 1] & 0x0f) << 4 ) | ((image->component[2].data[i + 1] >> 8) & 0x0f);
+        dbuffer[d + 8] = image->component[2].data[i + 1];
+        d += 9;
     }
 
     return OPENDCP_NO_ERROR;
 }
 
 int check_image_compliance(int profile, opendcp_image_t *image, char *file) {
-    int          w,h;
+    int          w, h;
     opendcp_image_t *tmp;
 
     if (image == NULL) {
         OPENDCP_LOG(LOG_DEBUG, "reading file %s", file);
+
         if (read_image(&tmp, file) == OPENDCP_NO_ERROR) {
             h = tmp->h;
             w = tmp->w;
@@ -181,12 +187,16 @@ int check_image_compliance(int profile, opendcp_image_t *image, char *file) {
             if (!((w == 2048) | (h == 1080))) {
                 return OPENDCP_ERROR;
             }
-        break;
+
+            break;
+
         case DCP_CINEMA4K:
             if (!((w == 4096) | (h == 2160))) {
                 return OPENDCP_ERROR;
             }
+
             break;
+
         default:
             break;
     }
@@ -197,9 +207,9 @@ int check_image_compliance(int profile, opendcp_image_t *image, char *file) {
 rgb_pixel_float_t yuv444toRGB888(int y, int cb, int cr) {
     rgb_pixel_float_t p;
 
-    p.r = CLIP(y+1.402*(cr-128),255);
-    p.g = CLIP(y-0.344*(cb-128)-0.714*(cr-128),255);
-    p.b = CLIP(y+1.772*(cb-128),255);
+    p.r = CLIP(y + 1.402 * (cr - 128), 255);
+    p.g = CLIP(y - 0.344 * (cb - 128) - 0.714 * (cr - 128), 255);
+    p.b = CLIP(y + 1.772 * (cb - 128), 255);
 
     return(p);
 }
@@ -208,20 +218,20 @@ rgb_pixel_float_t yuv444toRGB888(int y, int cb, int cr) {
 float complex_gamma(float p, float gamma, int index) {
     float v;
 
-    p = p/COLOR_DEPTH;
+    p = p / COLOR_DEPTH;
 
     if (index) {
         if (p > 0.081) {
-            v = pow((p+0.099)/1.099, gamma);
+            v = pow((p + 0.099) / 1.099, gamma);
         } else {
-            v = p/4.5;
-            v = pow((p+0.099)/1.099, gamma);
+            v = p / 4.5;
+            v = pow((p + 0.099) / 1.099, gamma);
         }
     } else {
         if (p > 0.04045) {
-            v = pow((p+0.055)/1.055, gamma);
+            v = pow((p + 0.055) / 1.055, gamma);
         } else {
-            v = p/12.92;
+            v = p / 12.92;
         }
     }
 
@@ -237,19 +247,19 @@ int adjust_headroom(int p) {
 }
 
 int dci_transfer(float p) {
-   int v;
+    int v;
 
-   v = (pow((p*DCI_COEFFICENT),DCI_DEGAMMA) * COLOR_DEPTH);
+    v = (pow((p * DCI_COEFFICENT), DCI_DEGAMMA) * COLOR_DEPTH);
 
-   v -= HEADROOM;
+    v -= HEADROOM;
 
-   return v;
+    return v;
 }
 
 int dci_transfer_inverse(float p) {
-    p = p/COLOR_DEPTH;
-   
-    return (pow(p, 1/DCI_GAMMA));
+    p = p / COLOR_DEPTH;
+
+    return (pow(p, 1 / DCI_GAMMA));
 }
 
 int rgb_to_xyz(opendcp_image_t *image, int index, int method) {
@@ -275,7 +285,7 @@ int rgb_to_xyz_lut(opendcp_image_t *image, int index) {
 
     size = image->w * image->h;
 
-    for (i=0;i<size;i++) {
+    for (i = 0; i < size; i++) {
         /* in gamma lut */
         s.r = lut_in[index][image->component[0].data[i]];
         s.g = lut_in[index][image->component[1].data[i]];
@@ -287,9 +297,9 @@ int rgb_to_xyz_lut(opendcp_image_t *image, int index) {
         d.z = ((s.r * color_matrix[index][2][0]) + (s.g * color_matrix[index][2][1]) + (s.b * color_matrix[index][2][2]));
 
         /* DCI Companding */
-        d.x = d.x * DCI_COEFFICENT * (DCI_LUT_SIZE-1);
-        d.y = d.y * DCI_COEFFICENT * (DCI_LUT_SIZE-1);
-        d.z = d.z * DCI_COEFFICENT * (DCI_LUT_SIZE-1);
+        d.x = d.x * DCI_COEFFICENT * (DCI_LUT_SIZE - 1);
+        d.y = d.y * DCI_COEFFICENT * (DCI_LUT_SIZE - 1);
+        d.z = d.z * DCI_COEFFICENT * (DCI_LUT_SIZE - 1);
 
         /* out gamma lut */
         image->component[0].data[i] = lut_out[LO_DCI][(int)d.x];
@@ -310,7 +320,7 @@ int rgb_to_xyz_calculate(opendcp_image_t *image, int index) {
     size = image->w * image->h;
     OPENDCP_LOG(LOG_DEBUG, "gamma: %f", GAMMA[index]);
 
-    for (i=0;i<size;i++) {
+    for (i = 0; i < size; i++) {
         s.r = complex_gamma(image->component[0].data[i], GAMMA[index], index);
         s.g = complex_gamma(image->component[1].data[i], GAMMA[index], index);
         s.b = complex_gamma(image->component[2].data[i], GAMMA[index], index);
@@ -321,33 +331,33 @@ int rgb_to_xyz_calculate(opendcp_image_t *image, int index) {
 
         image->component[0].data[i] = dci_transfer(d.x);
         image->component[1].data[i] = dci_transfer(d.y);
-        image->component[2].data[i] = dci_transfer(d.z); 
+        image->component[2].data[i] = dci_transfer(d.z);
     }
 
     return OPENDCP_NO_ERROR;
 }
 
 float b_spline(float x) {
-    float c = (float)1/(float)6;
+    float c = (float)1 / (float)6;
 
     if (x > 2.0 || x < -2.0) {
         return 0.0f;
     }
 
     if (x < -1.0) {
-        return(((x+2.0f) * (x+2.0f) * (x+2.0f)) * c);
+        return(((x + 2.0f) * (x + 2.0f) * (x + 2.0f)) * c);
     }
 
     if (x < 0.0) {
-        return(((x+4.0f) * (x) * (-6.0f-3.0f*x)) * c);
+        return(((x + 4.0f) * (x) * (-6.0f - 3.0f * x)) * c);
     }
 
     if (x < 1.0) {
-        return(((x+4.0f) * (x) * (-6.0f+3.0f*x)) * c);
+        return(((x + 4.0f) * (x) * (-6.0f + 3.0f * x)) * c);
     }
 
     if (x < 2.0) {
-        return(((2.0f-x) * (2.0f-x) * (2.0f-x)) * c);
+        return(((2.0f - x) * (2.0f - x) * (2.0f - x)) * c);
     }
 
     return 0;
@@ -358,7 +368,7 @@ static inline rgb_pixel_float_t get_pixel(opendcp_image_t *image, int x, int y) 
     rgb_pixel_float_t p;
     int i;
 
-    i = x + (image->w*y);
+    i = x + (image->w * y);
     //i = (x+y) + ((image->w-1)*y);
 
     p.r = image->component[0].data[i];
@@ -370,7 +380,7 @@ static inline rgb_pixel_float_t get_pixel(opendcp_image_t *image, int x, int y) 
 
 int letterbox(opendcp_image_t **image, int w, int h) {
     int num_components = 3;
-    int x,y;
+    int x, y;
     opendcp_image_t *ptr = *image;
     rgb_pixel_float_t p;
 
@@ -381,13 +391,13 @@ int letterbox(opendcp_image_t **image, int w, int h) {
         return -1;
     }
 
-    for(y=0; y<h; y++) {
-        for(x=0; x<w; x++) {
+    for (y = 0; y < h; y++) {
+        for (x = 0; x < w; x++) {
             p = get_pixel(ptr, x, y);
             d_image->component[0].data[0] = (int)p.r;
             d_image->component[1].data[0] = (int)p.g;
             d_image->component[2].data[0] = (int)p.b;
-         }
+        }
     }
 
 
@@ -402,19 +412,19 @@ int resize(opendcp_image_t **image, int profile, int method) {
     int num_components = 3;
     opendcp_image_t *ptr = *image;
     rgb_pixel_float_t p;
-    int w,h;
+    int w, h;
     float aspect;
 
     /* aspect ratio */
-    aspect = (float)ptr->w/(float)ptr->h;
+    aspect = (float)ptr->w / (float)ptr->h;
 
     /* depending on the aspect ratio, set height or weight priority */
     if (aspect <= 2.10) {
-        w = (ptr->w*MAX_HEIGHT_2K/ptr->h);
+        w = (ptr->w * MAX_HEIGHT_2K / ptr->h);
         h = MAX_HEIGHT_2K;
     } else {
         w = MAX_WIDTH_2K;
-        h = (ptr->h*MAX_WIDTH_2K/ptr->w);
+        h = (ptr->h * MAX_WIDTH_2K / ptr->w);
     }
 
     /* if we overshot width, scale back */
@@ -452,17 +462,18 @@ int resize(opendcp_image_t **image, int profile, int method) {
         tx = (float)ptr->w / w;
         ty = (float)ptr->h / h;
 
-        for(y=0; y<h; y++) {
+        for (y = 0; y < h; y++) {
             dy = y * ty;
-            for(x=0; x<w; x++) {
+
+            for (x = 0; x < w; x++) {
                 dx = x * tx;
                 p = get_pixel(ptr, dx, dy);
-                i = x + (w*y);
+                i = x + (w * y);
                 d_image->component[0].data[i] = (int)p.r;
                 d_image->component[1].data[i] = (int)p.g;
                 d_image->component[2].data[i] = (int)p.b;
-             }
-         }
+            }
+        }
     }
 
     opendcp_image_free(*image);

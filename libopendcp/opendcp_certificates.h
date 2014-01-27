@@ -105,7 +105,7 @@ SbA=\n\
 -----END CERTIFICATE-----\n";
 
 /* OpenDCP private key */
-static const char *opendcp_private_key ="-----BEGIN RSA PRIVATE KEY-----\n\
+static const char *opendcp_private_key = "-----BEGIN RSA PRIVATE KEY-----\n\
 MIIEpQIBAAKCAQEA75E2kzOh/s/ZmdPLiFxx8DOi2QY9cIevKqIMkfSTmYb4FoSD\n\
 yb6fi+2xkZ2xUtIjqiQqhWtWJZjsQvIhxR4VdwT6V33Y0HLCkevbC5B64XYuHUhB\n\
 /xqAP6bc3qkDjUOpjgme60X9Ot35hRUxK7OsozoX2fhjT2e6GH9ddnjmvfGkTzrk\n\

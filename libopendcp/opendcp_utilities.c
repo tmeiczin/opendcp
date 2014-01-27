@@ -64,9 +64,10 @@ int read_file(char *filename, char *buffer, int buffer_size) {
 static void print_md5(const unsigned char *digest, int len) {
     int i;
 
-    for(i = 0; i < len; i++){
+    for (i = 0; i < len; i++) {
         printf ("%02x", digest[i]);
     }
+
     printf("\n");
 
     return;
@@ -94,6 +95,7 @@ int strcasefind(const char *s, const char *find) {
     if ((c = *find++) != 0) {
         c = tolower((unsigned char)c);
         len = strlen(find);
+
         do {
             do {
                 if ((sc = *s++) == 0) {
@@ -101,6 +103,7 @@ int strcasefind(const char *s, const char *find) {
                 }
             } while ((char)tolower((unsigned char)sc) != c);
         } while (strncasecmp(s, find, len) != 0);
+
         s--;
     }
 
@@ -111,9 +114,10 @@ int strcasefind(const char *s, const char *find) {
 static void common_prefix(const char *s1, const char *s2, char *prefix) {
     int i;
 
-    for(i = 0; s1[i] && s2[i] && s1[i] == s2[i]; i++){
+    for (i = 0; s1[i] && s2[i] && s1[i] == s2[i]; i++) {
         prefix[i] = s1[i];
     }
+
     prefix[i] = '\0';
 }
 
@@ -122,7 +126,8 @@ static void prefix_of_all(char *files[], int nfiles, char *prefix) {
     int i;
 
     common_prefix(files[0], files[1], prefix);
-    for(i = 2; i < nfiles; i++){
+
+    for (i = 2; i < nfiles; i++) {
         common_prefix(files[i], prefix, prefix);
     }
 }
@@ -176,8 +181,8 @@ int ensure_sequential(char *files[], int nfiles) {
     prefix_of_all(files, nfiles, prefix_buffer);
     prefix_len = strlen(prefix_buffer);
 
-    for(i = 0; i < nfiles-1; i++) {
-        if (get_index(files[i], prefix_len)+1 != get_index(files[i+1], prefix_len)) {
+    for (i = 0; i < nfiles - 1; i++) {
+        if (get_index(files[i], prefix_len) + 1 != get_index(files[i + 1], prefix_len)) {
             return i;
         }
     }
@@ -210,8 +215,8 @@ int order_indexed_files(char *files[], int nfiles) {
     opendcp_sort_t *fis;
 
     /* A single file is trivially sorted. */
-    if(nfiles < 2) {
-      return OPENDCP_NO_ERROR;
+    if (nfiles < 2) {
+        return OPENDCP_NO_ERROR;
     }
 
     prefix_of_all(files, nfiles, prefix_buffer);
@@ -219,14 +224,16 @@ int order_indexed_files(char *files[], int nfiles) {
 
     /* Create an array of files and their indices to sort. */
     fis = malloc(sizeof(*fis) * nfiles);
-    for(i = 0; i < nfiles; i++) {
+
+    for (i = 0; i < nfiles; i++) {
         fis[i].file  = files[i];
         fis[i].index = get_index(files[i], prefix_len);
     }
+
     qsort(fis, nfiles, sizeof(*fis), file_cmp);
 
     /* Reorder the original file array. */
-    for(i = 0; i < nfiles; i++){
+    for (i = 0; i < nfiles; i++) {
         files[i] = fis[i].file;
     }
 
@@ -250,11 +257,11 @@ filelist_t *filelist_alloc(int nfiles) {
     filelist = malloc(sizeof(filelist_t));
 
     filelist->nfiles = nfiles;
-    filelist->files  = malloc(filelist->nfiles*sizeof(char*));
+    filelist->files  = malloc(filelist->nfiles * sizeof(char*));
 
     if (filelist->nfiles) {
-        for (x=0;x<filelist->nfiles;x++) {
-                filelist->files[x]  = malloc(MAX_FILENAME_LENGTH*sizeof(char));
+        for (x = 0; x < filelist->nfiles; x++) {
+            filelist->files[x]  = malloc(MAX_FILENAME_LENGTH * sizeof(char));
         }
     }
 
@@ -277,9 +284,10 @@ void filelist_free(filelist_t *filelist) {
     }
 
     if (filelist->files) {
-        for (x=0; x<filelist->nfiles; x++) {
+        for (x = 0; x < filelist->nfiles; x++) {
             free(filelist->files[x]);
         }
+
         free(filelist->files);
     }
 
@@ -301,8 +309,8 @@ void get_timestamp(char *timestamp) {
 
     time(&time_ptr);
     time_struct = localtime(&time_ptr);
-    strftime(buffer,30,"%Y-%m-%dT%I:%M:%S+00:00",time_struct);
-    sprintf(timestamp,"%.30s",buffer);
+    strftime(buffer, 30, "%Y-%m-%dT%I:%M:%S+00:00", time_struct);
+    sprintf(timestamp, "%.30s", buffer);
 }
 
 /**
@@ -315,19 +323,22 @@ This function will return the class type of an asset essence.
 */
 int get_asset_type(asset_t asset) {
     switch (asset.essence_type) {
-       case AET_MPEG2_VES:
-       case AET_JPEG_2000:
-       case AET_JPEG_2000_S:
-           return ACT_PICTURE;
-           break;
-       case AET_PCM_24b_48k:
-       case AET_PCM_24b_96k:
-           return ACT_SOUND;
-           break;
-       case AET_TIMED_TEXT:
-           return ACT_TIMED_TEXT;
-           break;
-       default:
-           return ACT_UNKNOWN;
+        case AET_MPEG2_VES:
+        case AET_JPEG_2000:
+        case AET_JPEG_2000_S:
+            return ACT_PICTURE;
+            break;
+
+        case AET_PCM_24b_48k:
+        case AET_PCM_24b_96k:
+            return ACT_SOUND;
+            break;
+
+        case AET_TIMED_TEXT:
+            return ACT_TIMED_TEXT;
+            break;
+
+        default:
+            return ACT_UNKNOWN;
     }
 }

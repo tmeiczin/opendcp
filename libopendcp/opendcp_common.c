@@ -66,10 +66,11 @@ const char *RATING_AGENCY[] = { "none",
                               };
 
 const char *OPENDCP_LOGLEVEL_NAME[] = { "NONE",
-                                          "ERROR",
-                                          "WARN",
-                                          "INFO",
-                                          "DEBUG"};
+                                        "ERROR",
+                                        "WARN",
+                                        "INFO",
+                                        "DEBUG"
+                                      };
 
 void dcp_fatal(opendcp_t *opendcp, char *format, ...) {
     char msg[1024];
@@ -106,7 +107,7 @@ int is_filename_ascii(const char *s) {
 
     len = strlen(s);
 
-    for (i=0; i<len; i++) {
+    for (i = 0; i < len; i++) {
         if (isascii(s[i]) == 0) {
             return 0;
         }
@@ -122,6 +123,7 @@ int strcasefind(const char *s, const char *find) {
     if ((c = *find++) != 0) {
         c = tolower((unsigned char)c);
         len = strlen(find);
+
         do {
             do {
                 if ((sc = *s++) == 0) {
@@ -129,6 +131,7 @@ int strcasefind(const char *s, const char *find) {
                 }
             } while ((char)tolower((unsigned char)sc) != c);
         } while (strncasecmp(s, find, len) != 0);
+
         s--;
     }
 
@@ -139,9 +142,10 @@ int strcasefind(const char *s, const char *find) {
 static void common_prefix(const char *s1, const char *s2, char *prefix) {
     int i;
 
-    for(i = 0; s1[i] && s2[i] && s1[i] == s2[i]; i++){
+    for (i = 0; s1[i] && s2[i] && s1[i] == s2[i]; i++) {
         prefix[i] = s1[i];
     }
+
     prefix[i] = '\0';
 }
 
@@ -150,7 +154,8 @@ static void prefix_of_all(char *files[], int nfiles, char *prefix) {
     int i;
 
     common_prefix(files[0], files[1], prefix);
-    for(i = 2; i < nfiles; i++){
+
+    for (i = 2; i < nfiles; i++) {
         common_prefix(files[i], prefix, prefix);
     }
 }
@@ -204,8 +209,8 @@ int ensure_sequential(char *files[], int nfiles) {
     prefix_of_all(files, nfiles, prefix_buffer);
     prefix_len = strlen(prefix_buffer);
 
-    for(i = 0; i < nfiles-1; i++) {
-        if (get_index(files[i], prefix_len)+1 != get_index(files[i+1], prefix_len)) {
+    for (i = 0; i < nfiles - 1; i++) {
+        if (get_index(files[i], prefix_len) + 1 != get_index(files[i + 1], prefix_len)) {
             return i;
         }
     }
@@ -238,8 +243,8 @@ int order_indexed_files(char *files[], int nfiles) {
     opendcp_sort_t *fis;
 
     /* A single file is trivially sorted. */
-    if(nfiles < 2) {
-      return OPENDCP_NO_ERROR;
+    if (nfiles < 2) {
+        return OPENDCP_NO_ERROR;
     }
 
     prefix_of_all(files, nfiles, prefix_buffer);
@@ -247,14 +252,16 @@ int order_indexed_files(char *files[], int nfiles) {
 
     /* Create an array of files and their indices to sort. */
     fis = malloc(sizeof(*fis) * nfiles);
-    for(i = 0; i < nfiles; i++) {
+
+    for (i = 0; i < nfiles; i++) {
         fis[i].file  = files[i];
         fis[i].index = get_index(files[i], prefix_len);
     }
+
     qsort(fis, nfiles, sizeof(*fis), file_cmp);
 
     /* Reorder the original file array. */
-    for(i = 0; i < nfiles; i++){
+    for (i = 0; i < nfiles; i++) {
         files[i] = fis[i].file;
     }
 
@@ -278,11 +285,11 @@ filelist_t *filelist_alloc(int nfiles) {
     filelist = malloc(sizeof(filelist_t));
 
     filelist->nfiles = nfiles;
-    filelist->files  = malloc(filelist->nfiles*sizeof(char*));
+    filelist->files  = malloc(filelist->nfiles * sizeof(char*));
 
     if (filelist->nfiles) {
-        for (x=0;x<filelist->nfiles;x++) {
-                filelist->files[x]  = malloc(MAX_FILENAME_LENGTH*sizeof(char));
+        for (x = 0; x < filelist->nfiles; x++) {
+            filelist->files[x]  = malloc(MAX_FILENAME_LENGTH * sizeof(char));
         }
     }
 
@@ -305,9 +312,10 @@ void filelist_free(filelist_t *filelist) {
     }
 
     if (filelist->files) {
-        for (x=0; x<filelist->nfiles; x++) {
+        for (x = 0; x < filelist->nfiles; x++) {
             free(filelist->files[x]);
         }
+
         free(filelist->files);
     }
 
@@ -329,8 +337,8 @@ void get_timestamp(char *timestamp) {
 
     time(&time_ptr);
     time_struct = localtime(&time_ptr);
-    strftime(buffer,30,"%Y-%m-%dT%I:%M:%S+00:00",time_struct);
-    sprintf(timestamp,"%.30s",buffer);
+    strftime(buffer, 30, "%Y-%m-%dT%I:%M:%S+00:00", time_struct);
+    sprintf(timestamp, "%.30s", buffer);
 }
 
 /**
@@ -343,20 +351,23 @@ This function will return the class type of an asset essence.
 */
 int get_asset_type(asset_t asset) {
     switch (asset.essence_type) {
-       case AET_MPEG2_VES:
-       case AET_JPEG_2000:
-       case AET_JPEG_2000_S:
-           return ACT_PICTURE;
-           break;
-       case AET_PCM_24b_48k:
-       case AET_PCM_24b_96k:
-           return ACT_SOUND;
-           break;
-       case AET_TIMED_TEXT:
-           return ACT_TIMED_TEXT;
-           break;
-       default:
-           return ACT_UNKNOWN;
+        case AET_MPEG2_VES:
+        case AET_JPEG_2000:
+        case AET_JPEG_2000_S:
+            return ACT_PICTURE;
+            break;
+
+        case AET_PCM_24b_48k:
+        case AET_PCM_24b_96k:
+            return ACT_SOUND;
+            break;
+
+        case AET_TIMED_TEXT:
+            return ACT_TIMED_TEXT;
+            break;
+
+        default:
+            return ACT_UNKNOWN;
     }
 }
 
@@ -383,15 +394,15 @@ opendcp_t *opendcp_create() {
         return NULL;
     }
 
-    memset(opendcp,0,sizeof (opendcp_t));
+    memset(opendcp, 0, sizeof (opendcp_t));
 
     /* initialize opendcp */
     opendcp->log_level = LOG_WARN;
-    sprintf(opendcp->dcp.issuer,"%.80s %.80s",OPENDCP_NAME,OPENDCP_VERSION);
-    sprintf(opendcp->dcp.creator,"%.80s %.80s",OPENDCP_NAME, OPENDCP_VERSION);
-    sprintf(opendcp->dcp.annotation,"%.128s",DCP_ANNOTATION);
-    sprintf(opendcp->dcp.title,"%.80s",DCP_TITLE);
-    sprintf(opendcp->dcp.kind,"%.15s",DCP_KIND);
+    sprintf(opendcp->dcp.issuer, "%.80s %.80s", OPENDCP_NAME, OPENDCP_VERSION);
+    sprintf(opendcp->dcp.creator, "%.80s %.80s", OPENDCP_NAME, OPENDCP_VERSION);
+    sprintf(opendcp->dcp.annotation, "%.128s", DCP_ANNOTATION);
+    sprintf(opendcp->dcp.title, "%.80s", DCP_TITLE);
+    sprintf(opendcp->dcp.kind, "%.15s", DCP_KIND);
     get_timestamp(opendcp->dcp.timestamp);
 
     /* initialize callbacks */
@@ -419,6 +430,7 @@ int opendcp_delete(opendcp_t *opendcp) {
     if ( opendcp != NULL) {
         free(opendcp);
     }
+
     return OPENDCP_NO_ERROR;
 }
 
@@ -445,13 +457,13 @@ void create_pkl(dcp_t dcp, pkl_t *pkl) {
 
     /* Generate UUIDs */
     uuid_random(uuid_s);
-    sprintf(pkl->uuid,"%.36s",uuid_s);
+    sprintf(pkl->uuid, "%.36s", uuid_s);
 
-   /* Generate XML filename */
-    if ( !strcmp(dcp.basename,"") ) {
-        sprintf(pkl->filename,"PKL_%.40s.xml",pkl->uuid);
+    /* Generate XML filename */
+    if ( !strcmp(dcp.basename, "") ) {
+        sprintf(pkl->filename, "PKL_%.40s.xml", pkl->uuid);
     } else {
-        sprintf(pkl->filename,"PKL_%.40s.xml",dcp.basename);
+        sprintf(pkl->filename, "PKL_%.40s.xml", dcp.basename);
     }
 
     return;
@@ -498,7 +510,7 @@ void create_cpl(dcp_t dcp, cpl_t *cpl) {
     cpl->reel_count = 0;
 
     uuid_random(uuid_s);
-    sprintf(cpl->uuid,"%.36s",uuid_s);
+    sprintf(cpl->uuid, "%.36s", uuid_s);
 
     /* Generate XML filename */
     if ( !strcmp(dcp.basename, "") ) {
@@ -541,7 +553,7 @@ void create_reel(dcp_t dcp, reel_t *reel) {
 
     /* Generate UUIDs */
     uuid_random(uuid_s);
-    sprintf(reel->uuid,"%.36s",uuid_s);
+    sprintf(reel->uuid, "%.36s", uuid_s);
 }
 
 int validate_reel(opendcp_t *opendcp, reel_t *reel, int reel_number) {
@@ -553,7 +565,7 @@ int validate_reel(opendcp_t *opendcp, reel_t *reel, int reel_number) {
     /* change reel to 1 based for user */
     reel_number += 1;
 
-    OPENDCP_LOG(LOG_DEBUG,"validate_reel: validating reel %d", reel_number);
+    OPENDCP_LOG(LOG_DEBUG, "validate_reel: validating reel %d", reel_number);
 
     /* check if reel has a picture track */
     if (reel->main_picture.essence_class == ACT_PICTURE) {
@@ -561,10 +573,10 @@ int validate_reel(opendcp_t *opendcp, reel_t *reel, int reel_number) {
     }
 
     if (picture < 1) {
-        OPENDCP_LOG(LOG_ERROR,"Reel %d has no picture track",reel_number);
+        OPENDCP_LOG(LOG_ERROR, "Reel %d has no picture track", reel_number);
         return OPENDCP_NO_PICTURE_TRACK;
     } else if (picture > 1) {
-        OPENDCP_LOG(LOG_ERROR,"Reel %d has multiple picture tracks",reel_number);
+        OPENDCP_LOG(LOG_ERROR, "Reel %d has multiple picture tracks", reel_number);
         return OPENDCP_MULTIPLE_PICTURE_TRACK;
     }
 
@@ -573,6 +585,7 @@ int validate_reel(opendcp_t *opendcp, reel_t *reel, int reel_number) {
     /* check durations */
     if (reel->main_sound.duration && reel->main_sound.duration != d) {
         duration_mismatch = 1;
+
         if (reel->main_sound.duration < d) {
             d = reel->main_sound.duration;
         }
@@ -580,6 +593,7 @@ int validate_reel(opendcp_t *opendcp, reel_t *reel, int reel_number) {
 
     if (reel->main_subtitle.duration && reel->main_subtitle.duration != d) {
         duration_mismatch = 1;
+
         if (reel->main_subtitle.duration < d) {
             d = reel->main_subtitle.duration;
         }
@@ -589,7 +603,7 @@ int validate_reel(opendcp_t *opendcp, reel_t *reel, int reel_number) {
         reel->main_picture.duration = d;
         reel->main_sound.duration = d;
         reel->main_subtitle.duration = d;
-        OPENDCP_LOG(LOG_WARN,"Asset duration mismatch, adjusting all durations to shortest asset duration of %d frames", d);
+        OPENDCP_LOG(LOG_WARN, "Asset duration mismatch, adjusting all durations to shortest asset duration of %d frames", d);
     }
 
     return OPENDCP_NO_ERROR;
@@ -611,32 +625,32 @@ int add_asset(opendcp_t *opendcp, asset_t *asset, char *filename) {
 
     /* check if file exists */
     if ((fp = fopen(filename, "r")) == NULL) {
-        OPENDCP_LOG(LOG_ERROR,"add_asset: Could not open file: %s",filename);
+        OPENDCP_LOG(LOG_ERROR, "add_asset: Could not open file: %s", filename);
         return OPENDCP_FILEOPEN;
     } else {
         fclose (fp);
     }
 
-    sprintf(asset->filename,"%s",filename);
-    sprintf(asset->annotation,"%s",basename(filename));
+    sprintf(asset->filename, "%s", filename);
+    sprintf(asset->annotation, "%s", basename(filename));
 
     /* get file size */
     stat(filename, &st);
-    sprintf(asset->size,"%"PRIu64, st.st_size);
+    sprintf(asset->size, "%"PRIu64, st.st_size);
 
     /* read asset information */
-    OPENDCP_LOG(LOG_DEBUG,"add_asset: Reading %s asset information",filename);
+    OPENDCP_LOG(LOG_DEBUG, "add_asset: Reading %s asset information", filename);
 
     result = read_asset_info(asset);
 
     if (result == OPENDCP_ERROR) {
-        OPENDCP_LOG(LOG_ERROR,"%s is not a proper essence file",filename);
+        OPENDCP_LOG(LOG_ERROR, "%s is not a proper essence file", filename);
         return OPENDCP_INVALID_TRACK_TYPE;
     }
 
     /* force aspect ratio, if specified */
-    if (strcmp(opendcp->dcp.aspect_ratio,"") ) {
-        sprintf(asset->aspect_ratio,"%s",opendcp->dcp.aspect_ratio);
+    if (strcmp(opendcp->dcp.aspect_ratio, "") ) {
+        sprintf(asset->aspect_ratio, "%s", opendcp->dcp.aspect_ratio);
     }
 
     /* Set duration, if specified */
@@ -644,7 +658,7 @@ int add_asset(opendcp_t *opendcp, asset_t *asset, char *filename) {
         if  (opendcp->duration < asset->duration) {
             asset->duration = opendcp->duration;
         } else {
-            OPENDCP_LOG(LOG_WARN,"Desired duration %d cannot be greater than assset duration %d, ignoring value",opendcp->duration,asset->duration);
+            OPENDCP_LOG(LOG_WARN, "Desired duration %d cannot be greater than assset duration %d, ignoring value", opendcp->duration, asset->duration);
         }
     }
 
@@ -653,7 +667,7 @@ int add_asset(opendcp_t *opendcp, asset_t *asset, char *filename) {
         if (opendcp->entry_point < asset->duration) {
             asset->entry_point = opendcp->entry_point;
         } else {
-            OPENDCP_LOG(LOG_WARN,"Desired entry point %d cannot be greater than assset duration %d, ignoring value",opendcp->entry_point,asset->duration);
+            OPENDCP_LOG(LOG_WARN, "Desired entry point %d cannot be greater than assset duration %d, ignoring value", opendcp->entry_point, asset->duration);
         }
     }
 
@@ -666,14 +680,14 @@ int add_asset(opendcp_t *opendcp, asset_t *asset, char *filename) {
 int add_asset_to_reel(opendcp_t *opendcp, reel_t *reel, asset_t asset) {
     int result;
 
-    OPENDCP_LOG(LOG_INFO,"Adding asset to reel");
+    OPENDCP_LOG(LOG_INFO, "Adding asset to reel");
 
     if (opendcp->ns == XML_NS_UNKNOWN) {
         opendcp->ns = asset.xml_ns;
-        OPENDCP_LOG(LOG_DEBUG,"add_asset_to_reel: Label type detected: %d",opendcp->ns);
+        OPENDCP_LOG(LOG_DEBUG, "add_asset_to_reel: Label type detected: %d", opendcp->ns);
     } else {
         if (opendcp->ns != asset.xml_ns) {
-            OPENDCP_LOG(LOG_ERROR,"Warning DCP specification mismatch in assets. Please make sure all assets are MXF Interop or SMPTE");
+            OPENDCP_LOG(LOG_ERROR, "Warning DCP specification mismatch in assets. Please make sure all assets are MXF Interop or SMPTE");
             return OPENDCP_SPECIFICATION_MISMATCH;
         }
     }
@@ -681,23 +695,23 @@ int add_asset_to_reel(opendcp_t *opendcp, reel_t *reel, asset_t asset) {
     result = get_asset_type(asset);
 
     switch (result) {
-       case ACT_PICTURE:
-           OPENDCP_LOG(LOG_DEBUG,"add_asset_to_reel: adding picture");
-           reel->main_picture = asset;
-       break;
+        case ACT_PICTURE:
+            OPENDCP_LOG(LOG_DEBUG, "add_asset_to_reel: adding picture");
+            reel->main_picture = asset;
+            break;
 
-       case ACT_SOUND:
-           OPENDCP_LOG(LOG_DEBUG,"add_asset_to_reel: adding sound");
-           reel->main_sound = asset;
-       break;
+        case ACT_SOUND:
+            OPENDCP_LOG(LOG_DEBUG, "add_asset_to_reel: adding sound");
+            reel->main_sound = asset;
+            break;
 
-       case ACT_TIMED_TEXT:
-           OPENDCP_LOG(LOG_DEBUG,"add_asset_to_reel: adding subtitle");
-           reel->main_subtitle = asset;
-       break;
+        case ACT_TIMED_TEXT:
+            OPENDCP_LOG(LOG_DEBUG, "add_asset_to_reel: adding subtitle");
+            reel->main_subtitle = asset;
+            break;
 
-       default:
-           return OPENDCP_ERROR;
+        default:
+            return OPENDCP_ERROR;
     }
 
     return OPENDCP_NO_ERROR;

@@ -59,7 +59,7 @@ char *dn_oneline(X509_NAME *xn) {
 
     X509_NAME_print_ex(bio, xn, 0, flags);
     n = BIO_pending(bio);
-    result = (char *)malloc(sizeof(char *) * (n+1));
+    result = (char *)malloc(sizeof(char *) * (n + 1));
     n = BIO_read(bio, result, n);
     result[n] = '\0';
     BIO_free(bio);
@@ -68,30 +68,32 @@ char *dn_oneline(X509_NAME *xn) {
 }
 
 char *strip_cert(const char *data) {
-    int i,len;
+    int i, len;
     int offset = 28;
     char *buffer;
 
     len = strlen((char *)data) - 53;
     buffer = (char *)malloc(len);
-    memset(buffer,0,(len));
-    for (i=0;i<len-2;i++) {
-        buffer[i] = data[i+offset];
+    memset(buffer, 0, (len));
+
+    for (i = 0; i < len - 2; i++) {
+        buffer[i] = data[i + offset];
     }
 
     return buffer;
 }
 
 char *strip_cert_file(char *filename) {
-    int i=0;
+    int i = 0;
     char text[5000];
     char *ptr;
-    FILE *fp=fopen(filename, "rb");
+    FILE *fp = fopen(filename, "rb");
 
     while (!feof(fp)) {
         text[i++] = fgetc(fp);
     }
-    text[i-1]='\0';
+
+    text[i - 1] = '\0';
     ptr = strip_cert(text);
     return(ptr);
 }
@@ -110,21 +112,27 @@ int write_dsig_template(opendcp_t *opendcp, xmlTextWriterPtr xml) {
         /* read certificates from file */
         FILE *cp;
 
-        cp = fopen(opendcp->xml_signature.signer,"rb");
+        cp = fopen(opendcp->xml_signature.signer, "rb");
+
         if (cp) {
-            x[0] = PEM_read_X509(cp,NULL,NULL,NULL);
+            x[0] = PEM_read_X509(cp, NULL, NULL, NULL);
             fclose(cp);
         }
-        cp = fopen(opendcp->xml_signature.ca,"rb");
+
+        cp = fopen(opendcp->xml_signature.ca, "rb");
+
         if (cp) {
-            x[1] = PEM_read_X509(cp,NULL,NULL,NULL);
+            x[1] = PEM_read_X509(cp, NULL, NULL, NULL);
             fclose(cp);
         }
-        cp = fopen(opendcp->xml_signature.root,"rb");
+
+        cp = fopen(opendcp->xml_signature.root, "rb");
+
         if (cp) {
-            x[2] = PEM_read_X509(cp,NULL,NULL,NULL);
+            x[2] = PEM_read_X509(cp, NULL, NULL, NULL);
             fclose(cp);
         }
+
         cert[0] = strip_cert_file(opendcp->xml_signature.signer);
         cert[1] = strip_cert_file(opendcp->xml_signature.ca);
         cert[2] = strip_cert_file(opendcp->xml_signature.root);
@@ -139,11 +147,12 @@ int write_dsig_template(opendcp_t *opendcp, xmlTextWriterPtr xml) {
         cert[1] = strip_cert(opendcp_ca_cert);
         cert[2] = strip_cert(opendcp_root_cert);
 
-        for (i=0;i<3;i++) {
+        for (i = 0; i < 3; i++) {
             if (bio[i] == NULL) {
                 OPENDCP_LOG(LOG_ERROR, "could allocate certificate from memory");
                 return OPENDCP_ERROR;
             }
+
             x[i] = PEM_read_bio_X509(bio[i], NULL, NULL, NULL);
 
             if (!BIO_set_close(bio[i], BIO_NOCLOSE)) {
@@ -154,14 +163,15 @@ int write_dsig_template(opendcp_t *opendcp, xmlTextWriterPtr xml) {
             if (x[i] == NULL) {
                 OPENDCP_LOG(LOG_ERROR, "could not read certificate");
                 return OPENDCP_ERROR;
-             }
+            }
         }
     }
 
     /* get issuer, subject */
-    for (i=0;i<3;i++) {
+    for (i = 0; i < 3; i++) {
         issuer_xn[i]  =  X509_get_issuer_name(x[i]);
         subject_xn[i] =  X509_get_subject_name(x[i]);
+
         if (issuer_xn[i] == NULL || subject_xn[i] == NULL) {
             OPENDCP_LOG(LOG_ERROR, "could not parse certificate data");
             return OPENDCP_ERROR;
@@ -189,7 +199,7 @@ int write_dsig_template(opendcp_t *opendcp, xmlTextWriterPtr xml) {
 
     xmlTextWriterWriteFormatElementNS(xml, BAD_CAST "dsig",
                                       BAD_CAST "X509SubjectName", NULL,
-                                     "%s", dn_oneline(subject_xn[0]));
+                                      "%s", dn_oneline(subject_xn[0]));
 
     xmlTextWriterEndElement(xml);
     xmlTextWriterEndElement(xml);
@@ -259,7 +269,7 @@ int write_dsig_template(opendcp_t *opendcp, xmlTextWriterPtr xml) {
     xmlTextWriterStartElementNS(xml, BAD_CAST "dsig",
                                 BAD_CAST "KeyInfo", NULL);
 
-    for (i=0;i<3;i++) {
+    for (i = 0; i < 3; i++) {
         xmlTextWriterStartElementNS(xml, BAD_CAST "dsig",
                                     BAD_CAST "X509Data", NULL);
         xmlTextWriterStartElementNS(xml, BAD_CAST "dsig",
@@ -285,10 +295,10 @@ int write_dsig_template(opendcp_t *opendcp, xmlTextWriterPtr xml) {
     xmlTextWriterEndElement(xml); /* Signature */
 
     if (subject_xn[0]) {
-       free(subject_xn[0]);
+        free(subject_xn[0]);
     }
 
-    for (i=0;i<3;i++) {
+    for (i = 0; i < 3; i++) {
         if (issuer_xn[i]) {
             free(issuer_xn[i]);
         }
@@ -306,25 +316,25 @@ int xmlsec_init() {
     xmlSubstituteEntitiesDefault(1);
 
     /* init xmlsec lib */
-    if(xmlSecInit() < 0) {
+    if (xmlSecInit() < 0) {
         OPENDCP_LOG(OPENDCP_ERROR, "xmlsec initialization failed.");
         return(OPENDCP_ERROR);
     }
 
     /* Check loaded library version */
-    if(xmlSecCheckVersion() != 1) {
+    if (xmlSecCheckVersion() != 1) {
         OPENDCP_LOG(OPENDCP_ERROR, "loaded xmlsec library version is not compatible.");
         return(OPENDCP_ERROR);
     }
 
     /* Init crypto library */
-    if(xmlSecCryptoAppInit(NULL) < 0) {
+    if (xmlSecCryptoAppInit(NULL) < 0) {
         OPENDCP_LOG(OPENDCP_ERROR, "crypto initialization failed.");
         return(OPENDCP_ERROR);
     }
 
     /* Init xmlsec-crypto library */
-    if(xmlSecCryptoInit() < 0) {
+    if (xmlSecCryptoInit() < 0) {
         OPENDCP_LOG(OPENDCP_ERROR, "xmlsec-crypto initialization failed.");
         return(OPENDCP_ERROR);
     }
@@ -372,7 +382,7 @@ xmlSecKeysMngrPtr load_certificates_sign(opendcp_t *opendcp) {
     if (opendcp->xml_signature.private_key) {
         key = xmlSecCryptoAppKeyLoad(opendcp->xml_signature.private_key, xmlSecKeyDataFormatPem, NULL, NULL, NULL);
     } else {
-        key = xmlSecCryptoAppKeyLoadMemory((unsigned char *)opendcp_private_key, strlen((char *)opendcp_private_key),xmlSecKeyDataFormatPem, NULL, NULL, NULL);
+        key = xmlSecCryptoAppKeyLoadMemory((unsigned char *)opendcp_private_key, strlen((char *)opendcp_private_key), xmlSecKeyDataFormatPem, NULL, NULL, NULL);
     }
 
     if (xmlSecCryptoAppDefaultKeysMngrAdoptKey(key_manager, key) < 0) {
@@ -384,13 +394,13 @@ xmlSecKeysMngrPtr load_certificates_sign(opendcp_t *opendcp) {
     /* load root certificate */
     if (opendcp->xml_signature.root) {
         if (xmlSecCryptoAppKeysMngrCertLoad(key_manager, opendcp->xml_signature.root, xmlSecKeyDataFormatPem, xmlSecKeyDataTypeTrusted) < 0) {
-            fprintf(stderr,"Error: failed to load pem certificate \"%s\"\n", opendcp->xml_signature.root);
+            fprintf(stderr, "Error: failed to load pem certificate \"%s\"\n", opendcp->xml_signature.root);
             xmlSecKeysMngrDestroy(key_manager);
             return(NULL);
         }
     } else {
         if (xmlSecCryptoAppKeysMngrCertLoadMemory(key_manager, (unsigned char *)opendcp_root_cert, strlen((char* )opendcp_root_cert), xmlSecKeyDataFormatPem, xmlSecKeyDataTypeTrusted) < 0) {
-            fprintf(stderr,"Error: failed to load pem certificate from memory\n");
+            fprintf(stderr, "Error: failed to load pem certificate from memory\n");
             xmlSecKeysMngrDestroy(key_manager);
             return(NULL);
         }
@@ -399,13 +409,13 @@ xmlSecKeysMngrPtr load_certificates_sign(opendcp_t *opendcp) {
     /* load ca (intermediate) certificate */
     if (opendcp->xml_signature.ca) {
         if (xmlSecCryptoAppKeysMngrCertLoad(key_manager, opendcp->xml_signature.ca, xmlSecKeyDataFormatPem, xmlSecKeyDataTypeTrusted) < 0) {
-            fprintf(stderr,"Error: failed to load pem certificate \"%s\"\n", opendcp->xml_signature.ca);
+            fprintf(stderr, "Error: failed to load pem certificate \"%s\"\n", opendcp->xml_signature.ca);
             xmlSecKeysMngrDestroy(key_manager);
             return(NULL);
         }
     } else {
         if (xmlSecCryptoAppKeysMngrCertLoadMemory(key_manager, (unsigned char *)opendcp_ca_cert, strlen((char *)opendcp_ca_cert), xmlSecKeyDataFormatPem, xmlSecKeyDataTypeTrusted) < 0) {
-            fprintf(stderr,"Error: failed to load pem certificate from memory\n");
+            fprintf(stderr, "Error: failed to load pem certificate from memory\n");
             xmlSecKeysMngrDestroy(key_manager);
             return(NULL);
         }
@@ -455,7 +465,7 @@ int xml_sign(opendcp_t *opendcp, char *filename) {
     OPENDCP_LOG(LOG_DEBUG, "find root node");
     root_node = xmlDocGetRootElement(doc);
 
-    if (root_node == NULL){
+    if (root_node == NULL) {
         OPENDCP_LOG(OPENDCP_ERROR, "unable to find root node");
         goto done;
     }
@@ -463,6 +473,7 @@ int xml_sign(opendcp_t *opendcp, char *filename) {
     /* find signature node */
     OPENDCP_LOG(LOG_DEBUG, "find signature node");
     sign_node = xmlSecFindNode(root_node, xmlSecNodeSignature, xmlSecDSigNs);
+
     if (sign_node == NULL) {
         OPENDCP_LOG(LOG_ERROR, "start node not found");
         goto done;
@@ -471,6 +482,7 @@ int xml_sign(opendcp_t *opendcp, char *filename) {
     /* create keys manager */
     OPENDCP_LOG(LOG_DEBUG, "load certificates");
     key_manager = load_certificates_sign(opendcp);
+
     if (key_manager == NULL) {
         OPENDCP_LOG(LOG_ERROR, "failed to create key manager\n");
         goto done;
@@ -480,21 +492,22 @@ int xml_sign(opendcp_t *opendcp, char *filename) {
     OPENDCP_LOG(LOG_DEBUG, "create signature context");
     dsig_ctx = xmlSecDSigCtxCreate(key_manager);
 
-    if(dsig_ctx == NULL) {
+    if (dsig_ctx == NULL) {
         OPENDCP_LOG(LOG_ERROR, "failed to create signature context");
         goto done;
     }
 
     /* sign the template */
     OPENDCP_LOG(LOG_DEBUG, "sign template");
-    if(xmlSecDSigCtxSign(dsig_ctx, sign_node) < 0) {
+
+    if (xmlSecDSigCtxSign(dsig_ctx, sign_node) < 0) {
         OPENDCP_LOG(LOG_ERROR, "Error: signature failed\n");
         goto done;
     }
 
     /* open xml file */
     OPENDCP_LOG(LOG_DEBUG, "open file for writing %s", filename);
-    fp = fopen(filename,"wb");
+    fp = fopen(filename, "wb");
 
     if (fp == NULL) {
         OPENDCP_LOG(LOG_ERROR, "Error: could not open output file\n");
@@ -503,6 +516,7 @@ int xml_sign(opendcp_t *opendcp, char *filename) {
 
     /* write the xml file */
     OPENDCP_LOG(LOG_DEBUG, "write signed XML document");
+
     if (xmlDocDump(fp, doc) < 0) {
         OPENDCP_LOG(LOG_ERROR, "Error: writing XML document failed\n");
         goto done;
@@ -521,13 +535,15 @@ done:
 
     /* destroy signature context */
     OPENDCP_LOG(LOG_DEBUG, "destroy signature context");
-    if(dsig_ctx != NULL) {
+
+    if (dsig_ctx != NULL) {
         xmlSecDSigCtxDestroy(dsig_ctx);
     }
 
     /* destroy xml doc */
     OPENDCP_LOG(LOG_DEBUG, "free document memory");
-    if(doc != NULL) {
+
+    if (doc != NULL) {
         xmlFreeDoc(doc);
     }
 
@@ -562,20 +578,22 @@ int xml_verify(char *filename) {
     /* find root node */
     root_node = xmlDocGetRootElement(doc);
 
-    if (root_node == NULL){
+    if (root_node == NULL) {
         OPENDCP_LOG(LOG_ERROR, "unable to find root node");
         goto done;
     }
 
     /* find signature node */
     sign_node = xmlSecFindNode(root_node, xmlSecNodeSignature, xmlSecDSigNs);
-    if(sign_node == NULL) {
+
+    if (sign_node == NULL) {
         OPENDCP_LOG(LOG_ERROR, "signature node not found");
         goto done;
     }
 
     /* create keys manager */
     key_manager = load_certificates_verify();
+
     if (key_manager == NULL) {
         OPENDCP_LOG(LOG_ERROR, "create key manager failed");
         goto done;
@@ -583,18 +601,23 @@ int xml_verify(char *filename) {
 
     /* find certificates */
     cur_node = sign_node;
+
     while ((x509d_node = xmlSecFindNode(cur_node, xmlSecNodeX509Data, xmlSecDSigNs))) {
         cert_node = xmlSecFindNode(x509d_node, xmlSecNodeX509Certificate, xmlSecDSigNs);
-        if(cert_node == NULL) {
+
+        if (cert_node == NULL) {
             OPENDCP_LOG(LOG_ERROR, "X509certficate node not found");
             goto done;
         }
-        sprintf((char *)cert,"-----BEGIN CERTIFICATE-----\n%s\n-----END CERTIFICATE-----\n",xmlNodeGetContent(cert_node));
+
+        sprintf((char *)cert, "-----BEGIN CERTIFICATE-----\n%s\n-----END CERTIFICATE-----\n", xmlNodeGetContent(cert_node));
         cert_l = strlen((char *)cert);
+
         if (xmlSecCryptoAppKeysMngrCertLoadMemory(key_manager, cert, cert_l, xmlSecKeyDataFormatPem, xmlSecKeyDataTypeTrusted) < 0) {
             OPENDCP_LOG(LOG_ERROR, "couldn't read X509certificate node value");
             goto done;
         }
+
         cur_node = xmlNextElementSibling(x509d_node);
     }
 
@@ -625,12 +648,12 @@ done:
     xmlSecKeysMngrDestroy(key_manager);
 
     /* destroy signature context */
-    if(dsig_ctx != NULL) {
+    if (dsig_ctx != NULL) {
         xmlSecDSigCtxDestroy(dsig_ctx);
     }
 
     /* destroy xml doc */
-    if(doc != NULL) {
+    if (doc != NULL) {
         xmlFreeDoc(doc);
     }
 

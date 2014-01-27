@@ -42,7 +42,7 @@ extern "C" void uuid_random(char *uuid) {
     char buffer[64];
     Kumu::UUID TmpID;
     Kumu::GenRandomValue(TmpID);
-    sprintf(uuid,"%.36s", TmpID.EncodeHex(buffer, 64));
+    sprintf(uuid, "%.36s", TmpID.EncodeHex(buffer, 64));
 }
 
 /* calcuate the SHA1 digest of a file */
@@ -67,6 +67,7 @@ extern "C" int calculate_digest(opendcp_t *opendcp, const char *filename, char *
 
         if (ASDCP_SUCCESS(result)) {
             sha1_update(&sha_context, read_buffer.Data(), read_length);
+
             /* update callback (also check for interrupt) */
             if (opendcp->dcp.sha1_update.callback(opendcp->dcp.sha1_update.argument)) {
                 return OPENDCP_CALC_DIGEST;
@@ -80,7 +81,7 @@ extern "C" int calculate_digest(opendcp_t *opendcp, const char *filename, char *
 
     if (ASDCP_SUCCESS(result)) {
         sha1_final(byte_buffer, &sha_context);
-        sprintf(digest,"%.36s",base64encode(byte_buffer, sha_length, sha_buffer, 64));
+        sprintf(digest, "%.36s", base64encode(byte_buffer, sha_length, sha_buffer, 64));
     }
 
     if (opendcp->dcp.sha1_done.callback(opendcp->dcp.sha1_done.argument)) {
@@ -101,7 +102,7 @@ extern "C" int get_wav_duration(const char *filename, int frame_rate) {
     Result_t             result   = RESULT_OK;
     ui32_t               duration = 0;
 
-    Rational edit_rate(frame_rate,1);
+    Rational edit_rate(frame_rate, 1);
 
     result = pcm_parser.OpenRead(filename, edit_rate);
 
@@ -119,7 +120,7 @@ extern "C" int get_wav_info(const char *filename, int frame_rate, wav_info_t *wa
     PCM::AudioDescriptor audio_desc;
     Result_t             result   = RESULT_OK;
 
-    Rational edit_rate(frame_rate,1);
+    Rational edit_rate(frame_rate, 1);
 
     result = pcm_parser.OpenRead(filename, edit_rate);
 
@@ -148,7 +149,7 @@ extern "C" int get_file_essence_class(char *filename, int raw) {
     } else {
         result = ASDCP::EssenceType(filename, essence_type);
     }
- 
+
     /* If type is unknown, return */
     if (ASDCP_FAILURE(result) || essence_type == ESS_UNKNOWN) {
         OPENDCP_LOG(LOG_DEBUG, "Unable to determine essence type");
@@ -161,13 +162,16 @@ extern "C" int get_file_essence_class(char *filename, int raw) {
         case ESS_MPEG2_VES:
             return  ACT_PICTURE;
             break;
+
         case ESS_PCM_24b_48k:
         case ESS_PCM_24b_96k:
             return ACT_SOUND;
             break;
+
         case ESS_TIMED_TEXT:
             return ACT_TIMED_TEXT;
             break;
+
         default:
             return ACT_UNKNOWN;
             break;
@@ -191,18 +195,23 @@ extern "C" int get_file_essence_type(char *filename) {
         case ESS_MPEG2_VES:
             return AET_MPEG2_VES;
             break;
+
         case ESS_JPEG_2000:
             return AET_JPEG_2000;
             break;
+
         case ESS_PCM_24b_48k:
             return AET_PCM_24b_48k;
             break;
+
         case ESS_PCM_24b_96k:
             return AET_PCM_24b_96k;
             break;
+
         case ESS_TIMED_TEXT:
             return AET_TIMED_TEXT;
             break;
+
         default:
             return AET_UNKNOWN;
             break;
@@ -245,13 +254,14 @@ extern "C" int read_asset_info(asset_t *asset) {
             asset->intrinsic_duration = desc.ContainerDuration;
             asset->entry_point        = 0;
             asset->xml_ns             = info.LabelSetType;
-            sprintf(asset->uuid,"%.36s", Kumu::bin2UUIDhex(info.AssetUUID,16,uuid_buffer, 64));
-            sprintf(asset->aspect_ratio,"%d %d",desc.AspectRatio.Numerator,desc.AspectRatio.Denominator);
-            sprintf(asset->edit_rate,"%d %d",desc.EditRate.Numerator,desc.EditRate.Denominator);
-            sprintf(asset->sample_rate,"%d %d",desc.SampleRate.Numerator,desc.SampleRate.Denominator);
-            sprintf(asset->frame_rate,"%d",desc.FrameRate);
+            sprintf(asset->uuid, "%.36s", Kumu::bin2UUIDhex(info.AssetUUID, 16, uuid_buffer, 64));
+            sprintf(asset->aspect_ratio, "%d %d", desc.AspectRatio.Numerator, desc.AspectRatio.Denominator);
+            sprintf(asset->edit_rate, "%d %d", desc.EditRate.Numerator, desc.EditRate.Denominator);
+            sprintf(asset->sample_rate, "%d %d", desc.SampleRate.Numerator, desc.SampleRate.Denominator);
+            sprintf(asset->frame_rate, "%d", desc.FrameRate);
             break;
         }
+
         case ESS_JPEG_2000_S:
         {
             JP2K::MXFSReader reader;
@@ -272,13 +282,14 @@ extern "C" int read_asset_info(asset_t *asset) {
             asset->intrinsic_duration = desc.ContainerDuration;
             asset->entry_point        = 0;
             asset->xml_ns             = info.LabelSetType;
-            sprintf(asset->uuid,"%.36s", Kumu::bin2UUIDhex(info.AssetUUID,16,uuid_buffer, 64));
-            sprintf(asset->aspect_ratio,"%d %d",desc.AspectRatio.Numerator,desc.AspectRatio.Denominator);
-            sprintf(asset->edit_rate,"%d %d",desc.EditRate.Numerator,desc.EditRate.Denominator);
-            sprintf(asset->sample_rate,"%d %d",desc.SampleRate.Numerator,desc.SampleRate.Denominator);
-            sprintf(asset->frame_rate,"%d %d",desc.SampleRate.Numerator,desc.SampleRate.Denominator);
+            sprintf(asset->uuid, "%.36s", Kumu::bin2UUIDhex(info.AssetUUID, 16, uuid_buffer, 64));
+            sprintf(asset->aspect_ratio, "%d %d", desc.AspectRatio.Numerator, desc.AspectRatio.Denominator);
+            sprintf(asset->edit_rate, "%d %d", desc.EditRate.Numerator, desc.EditRate.Denominator);
+            sprintf(asset->sample_rate, "%d %d", desc.SampleRate.Numerator, desc.SampleRate.Denominator);
+            sprintf(asset->frame_rate, "%d %d", desc.SampleRate.Numerator, desc.SampleRate.Denominator);
             break;
         }
+
         case ESS_JPEG_2000:
         {
             JP2K::MXFReader reader;
@@ -290,9 +301,11 @@ extern "C" int read_asset_info(asset_t *asset) {
                 JP2K::MXFSReader reader;
                 result = reader.OpenRead(asset->filename);
                 asset->stereoscopic   = 1;
+
                 if ( ASDCP_FAILURE(result) ) {
                     return OPENDCP_FILEOPEN_J2K;
                 }
+
                 reader.FillPictureDescriptor(desc);
                 reader.FillWriterInfo(info);
             } else {
@@ -306,13 +319,14 @@ extern "C" int read_asset_info(asset_t *asset) {
             asset->intrinsic_duration  = desc.ContainerDuration;
             asset->entry_point    = 0;
             asset->xml_ns         = info.LabelSetType;
-            sprintf(asset->uuid,"%.36s", Kumu::bin2UUIDhex(info.AssetUUID,16,uuid_buffer, 64));
-            sprintf(asset->aspect_ratio,"%d %d",desc.AspectRatio.Numerator,desc.AspectRatio.Denominator);
-            sprintf(asset->edit_rate,"%d %d",desc.EditRate.Numerator,desc.EditRate.Denominator);
-            sprintf(asset->sample_rate,"%d %d",desc.SampleRate.Numerator,desc.SampleRate.Denominator);
-            sprintf(asset->frame_rate,"%d %d",desc.SampleRate.Numerator,desc.SampleRate.Denominator);
+            sprintf(asset->uuid, "%.36s", Kumu::bin2UUIDhex(info.AssetUUID, 16, uuid_buffer, 64));
+            sprintf(asset->aspect_ratio, "%d %d", desc.AspectRatio.Numerator, desc.AspectRatio.Denominator);
+            sprintf(asset->edit_rate, "%d %d", desc.EditRate.Numerator, desc.EditRate.Denominator);
+            sprintf(asset->sample_rate, "%d %d", desc.SampleRate.Numerator, desc.SampleRate.Denominator);
+            sprintf(asset->frame_rate, "%d %d", desc.SampleRate.Numerator, desc.SampleRate.Denominator);
             break;
         }
+
         case ESS_PCM_24b_48k:
         case ESS_PCM_24b_96k:
         {
@@ -333,11 +347,12 @@ extern "C" int read_asset_info(asset_t *asset) {
             asset->intrinsic_duration = desc.ContainerDuration;
             asset->entry_point    = 0;
             asset->xml_ns         = info.LabelSetType;
-            sprintf(asset->uuid,"%.36s", Kumu::bin2UUIDhex(info.AssetUUID,16,uuid_buffer, 64));
-            sprintf(asset->edit_rate,"%d %d",desc.EditRate.Numerator,desc.EditRate.Denominator);
-            sprintf(asset->sample_rate,"%d %d",desc.AudioSamplingRate.Numerator,desc.AudioSamplingRate.Denominator);
+            sprintf(asset->uuid, "%.36s", Kumu::bin2UUIDhex(info.AssetUUID, 16, uuid_buffer, 64));
+            sprintf(asset->edit_rate, "%d %d", desc.EditRate.Numerator, desc.EditRate.Denominator);
+            sprintf(asset->sample_rate, "%d %d", desc.AudioSamplingRate.Numerator, desc.AudioSamplingRate.Denominator);
             break;
         }
+
         case ESS_TIMED_TEXT:
         {
             TimedText::MXFReader reader;
@@ -357,10 +372,11 @@ extern "C" int read_asset_info(asset_t *asset) {
             asset->intrinsic_duration = desc.ContainerDuration;
             asset->entry_point    = 0;
             asset->xml_ns         = info.LabelSetType;
-            sprintf(asset->uuid,"%.36s", Kumu::bin2UUIDhex(info.AssetUUID,16,uuid_buffer, 64));
-            sprintf(asset->edit_rate,"%d %d",desc.EditRate.Numerator,desc.EditRate.Denominator);
+            sprintf(asset->uuid, "%.36s", Kumu::bin2UUIDhex(info.AssetUUID, 16, uuid_buffer, 64));
+            sprintf(asset->edit_rate, "%d %d", desc.EditRate.Numerator, desc.EditRate.Denominator);
             break;
         }
+
         default:
         {
             return OPENDCP_UNKNOWN_TRACK_TYPE;
@@ -385,27 +401,34 @@ extern "C" int write_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_
     switch (essence_type) {
         case ESS_JPEG_2000:
             if ( opendcp->stereoscopic ) {
-                return write_j2k_s_mxf(opendcp,filelist,output_file);
+                return write_j2k_s_mxf(opendcp, filelist, output_file);
             } else {
-                return write_j2k_mxf(opendcp,filelist,output_file);
+                return write_j2k_mxf(opendcp, filelist, output_file);
             }
+
             break;
+
         case ESS_JPEG_2000_S:
-            return write_j2k_s_mxf(opendcp,filelist,output_file);
+            return write_j2k_s_mxf(opendcp, filelist, output_file);
             break;
+
         case ESS_PCM_24b_48k:
         case ESS_PCM_24b_96k:
             return write_pcm_mxf(opendcp, filelist, output_file);
             break;
+
         case ESS_MPEG2_VES:
-            return write_mpeg2_mxf(opendcp,filelist,output_file);
+            return write_mpeg2_mxf(opendcp, filelist, output_file);
             break;
+
         case ESS_TIMED_TEXT:
-            return write_tt_mxf(opendcp,filelist,output_file);
+            return write_tt_mxf(opendcp, filelist, output_file);
             break;
+
         case ESS_UNKNOWN:
             return OPENDCP_UNKNOWN_TRACK_TYPE;
             break;
+
         default:
             return OPENDCP_UNKNOWN_TRACK_TYPE;
             break;
@@ -492,7 +515,7 @@ int write_j2k_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
     ui32_t                  slide_duration = 0;
 
     /* set the starting frame */
-    if (opendcp->mxf.start_frame && filelist->nfiles >= (opendcp->mxf.start_frame-1)) {
+    if (opendcp->mxf.start_frame && filelist->nfiles >= (opendcp->mxf.start_frame - 1)) {
         start_frame = opendcp->mxf.start_frame - 1;  /* adjust for zero base */
     } else {
         start_frame = 0;
@@ -505,7 +528,7 @@ int write_j2k_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
         return OPENDCP_FILEOPEN_J2K;
     }
 
-    Rational edit_rate(opendcp->frame_rate,1);
+    Rational edit_rate(opendcp->frame_rate, 1);
     j2k_parser.FillPictureDescriptor(picture_desc);
     picture_desc.EditRate = edit_rate;
 
@@ -529,6 +552,7 @@ int write_j2k_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
 
     ui32_t read  = 1;
     ui32_t i = start_frame;
+
     /* read each input frame and write to the output mxf until duration is reached */
     while ( ASDCP_SUCCESS(result) && mxf_duration--) {
         if (read) {
@@ -604,7 +628,7 @@ int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file)
     ui32_t                  slide_duration = 0;
 
     /* set the starting frame */
-    if (opendcp->mxf.start_frame && filelist->nfiles >= (opendcp->mxf.start_frame-1)) {
+    if (opendcp->mxf.start_frame && filelist->nfiles >= (opendcp->mxf.start_frame - 1)) {
         start_frame = opendcp->mxf.start_frame - 1; /* adjust for zero base */
     } else {
         start_frame = 0;
@@ -622,7 +646,7 @@ int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file)
         return OPENDCP_FILEOPEN_J2K;
     }
 
-    Rational edit_rate(opendcp->frame_rate,1);
+    Rational edit_rate(opendcp->frame_rate, 1);
     j2k_parser_left.FillPictureDescriptor(picture_desc);
     picture_desc.EditRate = edit_rate;
 
@@ -635,8 +659,8 @@ int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file)
     }
 
     /* set the duration of the output mxf, set to half the filecount since it is 3D */
-    if ((filelist->nfiles/2) < opendcp->duration || !opendcp->duration) {
-        mxf_duration = filelist->nfiles/2;
+    if ((filelist->nfiles / 2) < opendcp->duration || !opendcp->duration) {
+        mxf_duration = filelist->nfiles / 2;
     } else {
         mxf_duration = opendcp->duration;
     }
@@ -653,6 +677,7 @@ int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file)
 
     ui32_t read = 1;
     ui32_t i = start_frame;
+
     /* read each input frame and write to the output mxf until duration is reached */
     while (ASDCP_SUCCESS(result) && mxf_duration--) {
         if (read) {
@@ -746,7 +771,7 @@ int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
     PCM::FrameBuffer     frame_buffer_channel[MAX_AUDIO_CHANNELS];
     PCM::AudioDescriptor audio_desc_channel[MAX_AUDIO_CHANNELS];
 
-    Rational edit_rate(opendcp->frame_rate,1);
+    Rational edit_rate(opendcp->frame_rate, 1);
 
     /* read first file */
     result = pcm_parser_channel[0].OpenRead(filelist->files[0], edit_rate);
@@ -762,23 +787,29 @@ int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
 
     for (file_index = 0; file_index < filelist->nfiles; file_index++) {
         result = pcm_parser_channel[file_index].OpenRead(filelist->files[file_index], edit_rate);
+
         if (ASDCP_FAILURE(result)) {
             OPENDCP_LOG(LOG_ERROR, "could not open %s", filelist->files[file_index]);
             return OPENDCP_FILEOPEN_WAV;
         }
+
         pcm_parser_channel[file_index].FillAudioDescriptor(audio_desc_channel[file_index]);
+
         if (audio_desc_channel[file_index].AudioSamplingRate != audio_desc.AudioSamplingRate) {
             OPENDCP_LOG(LOG_ERROR, "mismatched sampling rate");
             return OPENDCP_FILEOPEN_WAV;
         }
+
         if (audio_desc_channel[file_index].QuantizationBits != audio_desc.QuantizationBits) {
             OPENDCP_LOG(LOG_ERROR, "mismatched bit rate");
             return OPENDCP_FILEOPEN_WAV;
         }
+
         if (audio_desc_channel[file_index].ContainerDuration != audio_desc.ContainerDuration) {
             OPENDCP_LOG(LOG_ERROR, "mismatched duration");
             return OPENDCP_FILEOPEN_WAV;
         }
+
         frame_buffer_channel[file_index].Capacity(PCM::CalcFrameBufferSize(audio_desc_channel[file_index]));
     }
 
@@ -791,7 +822,7 @@ int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
         audio_desc.ChannelCount += audio_desc_channel[file_index].ChannelCount;
     }
 
-    audio_desc.BlockAlign = audio_desc.ChannelCount * 24 / 8; 
+    audio_desc.BlockAlign = audio_desc.ChannelCount * 24 / 8;
     audio_desc.EditRate = edit_rate;
     audio_desc.AvgBps   = audio_desc.AvgBps * filelist->nfiles;
 
@@ -825,12 +856,14 @@ int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
         for (file_index = 0; file_index < filelist->nfiles; file_index++) {
             memset(frame_buffer_channel[file_index].Data(), 0, frame_buffer_channel[file_index].Capacity());
             result = pcm_parser_channel[file_index].ReadFrame(frame_buffer_channel[file_index]);
+
             if (ASDCP_FAILURE(result)) {
                 continue;
             }
+
             if (frame_buffer_channel[file_index].Size() != frame_buffer_channel[file_index].Capacity()) {
                 OPENDCP_LOG(LOG_INFO, "frame size mismatch, expect size: %d did match actual size: %d",
-                                  frame_buffer_channel[file_index].Capacity(), frame_buffer_channel[file_index].Size());
+                            frame_buffer_channel[file_index].Capacity(), frame_buffer_channel[file_index].Size());
                 result = RESULT_ENDOFFILE;
                 continue;
             }
@@ -840,10 +873,11 @@ int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
         if (ASDCP_SUCCESS(result)) {
             while (data_s < data_e) {
                 for (file_index = 0; file_index < filelist->nfiles; file_index++) {
-                    byte_t *frame = frame_buffer_channel[file_index].Data()+offset;
-                    memcpy(data_s,frame,sample_size);
+                    byte_t *frame = frame_buffer_channel[file_index].Data() + offset;
+                    memcpy(data_s, frame, sample_size);
                     data_s += sample_size;
                 }
+
                 offset += sample_size;
             }
 
@@ -915,7 +949,7 @@ int write_tt_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
         result = tt_parser.ReadAncillaryResource((*resource_iterator++).ResourceID, frame_buffer);
 
         if (ASDCP_FAILURE(result)) {
-          return OPENDCP_FILEOPEN_TT;
+            return OPENDCP_FILEOPEN_TT;
         }
 
         result = mxf_writer.WriteAncillaryResource(frame_buffer, writer_info.aes_context, writer_info.hmac_context);

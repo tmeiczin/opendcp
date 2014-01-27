@@ -41,7 +41,7 @@ void opendcp_log_init(int level);
 char *opendcp_log_timestamp();
 
 void opendcp_log_print_message(const char *msg) {
-    fprintf(stdout,"%s\n",msg);
+    fprintf(stdout, "%s\n", msg);
 }
 
 void opendcp_log(int level, const char *file, const char *function, int line,  const char *fmt, ...) {
@@ -54,7 +54,7 @@ void opendcp_log(int level, const char *file, const char *function, int line,  c
     vsnprintf(msg + strlen(msg), sizeof(msg) - strlen(msg), fmt, vl);
     va_end(vl);
 
-    for (x=0; x < opendcp_log_callback_count; x++) {
+    for (x = 0; x < opendcp_log_callback_count; x++) {
         if (level <= opendcp_log_callbacks[x].level) {
             opendcp_log_callbacks[x].callback(msg);
         }
@@ -65,6 +65,7 @@ void opendcp_log_register_callback(int level, void *function) {
     if (opendcp_log_callback_count >= OPENDCP_LOG_MAX_CALLBACKS) {
         return;
     }
+
     opendcp_log_callbacks[opendcp_log_callback_count].level = level;
     opendcp_log_callbacks[opendcp_log_callback_count++].callback = function;
 
@@ -78,7 +79,7 @@ char *opendcp_log_timestamp() {
 
     time(&time_ptr);
     time_struct = localtime(&time_ptr);
-    strftime(buffer,30,"%Y%m%d%I%M%S",time_struct);
+    strftime(buffer, 30, "%Y%m%d%I%M%S", time_struct);
 
     return buffer;
 }

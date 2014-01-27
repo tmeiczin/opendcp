@@ -20,10 +20,10 @@ SET(LIB_DIR ${PREFIX}/lib)
 
 SET(LIBS ${LIBS} -lz)
 IF (DARWIN_VERSION GREATER 8)
-  SET(LZMA 1)
+  SET(LZMA "-llzma")
 ENDIF ()
 
-SET(LIBS ${LIBS} -L${LIB_DIR} -lssl -lcrypto)
+SET(LIBS ${LIBS} -L${LIB_DIR} -lssl -lcrypto ${LZMA})
 
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/contrib/include/libxml2)
 SET(COMPILE_LIBXML2 1)

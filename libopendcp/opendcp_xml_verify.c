@@ -52,25 +52,25 @@ int xmlsec_verify_init() {
     xmlSubstituteEntitiesDefault(1);
 
     /* init xmlsec lib */
-    if(xmlSecInit() < 0) {
+    if (xmlSecInit() < 0) {
         OPENDCP_LOG(DCP_FATAL, "xmlsec initialization failed");
         return(DCP_FATAL);
     }
 
     /* Check loaded library version */
-    if(xmlSecCheckVersion() != 1) {
+    if (xmlSecCheckVersion() != 1) {
         OPENDCP_LOG(DCP_FATAL, "loaded xmlsec library version is not compatible");
         return(DCP_FATAL);
     }
 
     /* Init crypto library */
-    if(xmlSecCryptoAppInit(NULL) < 0) {
+    if (xmlSecCryptoAppInit(NULL) < 0) {
         OPENDCP_LOG(DCP_FATAL, "crypto initialization failed");
         return(DCP_FATAL);
     }
 
     /* Init xmlsec-crypto library */
-    if(xmlSecCryptoInit() < 0) {
+    if (xmlSecCryptoInit() < 0) {
         OPENDCP_LOG(DCP_FATAL, "xmlsec-crypto initialization failed");
         return(DCP_FATAL);
     }
@@ -138,20 +138,22 @@ int xml_verify(char *filename) {
     /* find root node */
     root_node = xmlDocGetRootElement(doc);
 
-    if (root_node == NULL){
+    if (root_node == NULL) {
         OPENDCP_LOG(LOG_ERROR, "unable to find root node");
         goto done;
     }
 
     /* find signature node */
     sign_node = xmlSecFindNode(root_node, xmlSecNodeSignature, xmlSecDSigNs);
-    if(sign_node == NULL) {
+
+    if (sign_node == NULL) {
         OPENDCP_LOG(LOG_ERROR, "signature node not found");
         goto done;
     }
 
     /* create keys manager */
     key_manager = load_certificates();
+
     if (key_manager == NULL) {
         OPENDCP_LOG(LOG_ERROR, "create key manager failed");
         goto done;
@@ -159,18 +161,23 @@ int xml_verify(char *filename) {
 
     /* find certificates */
     cur_node = sign_node;
+
     while (x509d_node = xmlSecFindNode(cur_node, xmlSecNodeX509Data, xmlSecDSigNs)) {
         cert_node = xmlSecFindNode(x509d_node, xmlSecNodeX509Certificate, xmlSecDSigNs);
-        if(cert_node == NULL) {
+
+        if (cert_node == NULL) {
             OPENDCP_LOG(LOG_ERROR, "X509certficate node not found");
             goto done;
         }
-        sprintf(cert,"-----BEGIN CERTIFICATE-----\n%s\n-----END CERTIFICATE-----\n",xmlNodeGetContent(cert_node));
+
+        sprintf(cert, "-----BEGIN CERTIFICATE-----\n%s\n-----END CERTIFICATE-----\n", xmlNodeGetContent(cert_node));
         cert_l = strlen(cert);
+
         if (xmlSecCryptoAppKeysMngrCertLoadMemory(key_manager, cert, cert_l, xmlSecKeyDataFormatPem, xmlSecKeyDataTypeTrusted) < 0) {
             OPENDCP_LOG(LOG_ERROR, "could read X509certificate node value");
             goto done;
         }
+
         cur_node = xmlNextElementSibling(x509d_node);
     }
 
@@ -201,12 +208,12 @@ done:
     xmlSecKeysMngrDestroy(key_manager);
 
     /* destroy signature context */
-    if(dsig_ctx != NULL) {
+    if (dsig_ctx != NULL) {
         xmlSecDSigCtxDestroy(dsig_ctx);
     }
 
     /* destroy xml doc */
-    if(doc != NULL) {
+    if (doc != NULL) {
         xmlFreeDoc(doc);
     }
 

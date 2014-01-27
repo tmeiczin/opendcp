@@ -31,18 +31,18 @@ int convert_to_j2k(opendcp_t *opendcp, char *sfile, char *dfile) {
     char *extension;
     int result = 0;
 
-    extension = strrchr(dfile,'.');
+    extension = strrchr(dfile, '.');
     extension++;
 
     encoder = opendcp_encoder_find(NULL, extension, 0);
     OPENDCP_LOG(LOG_DEBUG, "using %s encoder (%s) to convert file %s to %s", encoder->name, extension, sfile, dfile);
 
-    #ifdef OPENMP
+#ifdef OPENMP
     #pragma omp critical
-    #endif
+#endif
     {
-    OPENDCP_LOG(LOG_DEBUG, "reading input file %s", sfile);
-    result = read_image(&opendcp_image, sfile);
+        OPENDCP_LOG(LOG_DEBUG, "reading input file %s", sfile);
+        result = read_image(&opendcp_image, sfile);
     }
 
     if (result != OPENDCP_NO_ERROR) {
@@ -57,7 +57,7 @@ int convert_to_j2k(opendcp_t *opendcp, char *sfile, char *dfile) {
 
     /* verify image is dci compliant */
     if (check_image_compliance(opendcp->cinema_profile, opendcp_image, NULL) != OPENDCP_NO_ERROR) {
-        OPENDCP_LOG(LOG_WARN,"the image resolution of %s is not DCI Compliant",sfile);
+        OPENDCP_LOG(LOG_WARN, "the image resolution of %s is not DCI Compliant", sfile);
 
         /* resize image */
         if (opendcp->j2k.resize) {
@@ -73,6 +73,7 @@ int convert_to_j2k(opendcp_t *opendcp, char *sfile, char *dfile) {
 
     if (opendcp->j2k.xyz) {
         OPENDCP_LOG(LOG_INFO, "RGB->XYZ color conversion %s", sfile);
+
         if (rgb_to_xyz(opendcp_image, opendcp->j2k.lut, opendcp->j2k.xyz_method)) {
             OPENDCP_LOG(LOG_ERROR, "color conversion failed %s", sfile);
             opendcp_image_free(opendcp_image);
