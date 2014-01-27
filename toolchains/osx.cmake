@@ -12,7 +12,6 @@ EXEC_PROGRAM(uname ARGS -v  OUTPUT_VARIABLE DARWIN_VERSION)
 STRING(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
 #-------------------------------------------------------------------------------
 
-
 #--set os specifc linking mode--------------------------------------------------
 SET(DOWNLOAD ON)
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/contrib/include)

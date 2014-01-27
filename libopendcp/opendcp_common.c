@@ -449,9 +449,9 @@ void create_pkl(dcp_t dcp, pkl_t *pkl) {
 
    /* Generate XML filename */
     if ( !strcmp(dcp.basename,"") ) {
-        sprintf(pkl->filename,"%.40s_pkl.xml",pkl->uuid);
+        sprintf(pkl->filename,"PKL_%.40s.xml",pkl->uuid);
     } else {
-        sprintf(pkl->filename,"%.40s_pkl.xml",dcp.basename);
+        sprintf(pkl->filename,"PKL_%.40s.xml",dcp.basename);
     }
 
     return;
@@ -502,9 +502,9 @@ void create_cpl(dcp_t dcp, cpl_t *cpl) {
 
     /* Generate XML filename */
     if ( !strcmp(dcp.basename, "") ) {
-        sprintf(cpl->filename, "%.40s_cpl.xml", cpl->uuid);
+        sprintf(cpl->filename, "CPL_%.40s.xml", cpl->uuid);
     } else {
-        sprintf(cpl->filename, "%.40s_cpl.xml", dcp.basename);
+        sprintf(cpl->filename, "CPL_%.40s.xml", dcp.basename);
     }
 
     return;
