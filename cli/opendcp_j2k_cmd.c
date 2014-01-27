@@ -73,25 +73,25 @@ void dcp_usage() {
     fprintf(fp,"Options:\n");
     fprintf(fp,"       -r | --rate <rate>                 - frame rate (default 24)\n");
     fprintf(fp,"       -p | --profile <profile>           - profile cinema2k | cinema4k (default cinema2k)\n");
-    fprintf(fp,"       -3 | --3d                          - adjust frame rate for 3D\n");
-    fprintf(fp,"       -t | --threads <threads>           - set number of threads (default 4)\n");
-    fprintf(fp,"       -x | --no_xyz                      - do not perform rgb->xyz color conversion\n");
-    fprintf(fp,"       -e | --encoder <openjpeg | kakadu> - jpeg2000 encoder (default openjpeg)\n");
-    fprintf(fp,"       -g | --dpx <linear | film | video> - process dpx image as linear, log film, or log video (default linear)\n");
     fprintf(fp,"       -b | --bw                          - max Mbps bandwitdh (default: 250)\n");
-    fprintf(fp,"       -n | --no_overwrite                - do not overwrite existing jpeg2000 files\n");
-    fprintf(fp,"       -l | --log_level <level>           - sets the log level 0:Quiet, 1:Error, 2:Warn (default),  3:Info, 4:Debug\n");
-    fprintf(fp,"       -h | --help                        - show help\n");
+    fprintf(fp,"       -3 | --3d                          - adjust frame rate for 3D\n");
+    fprintf(fp,"       -e | --encoder <openjpeg | kakadu> - jpeg2000 encoder (default openjpeg)\n");
+    fprintf(fp,"       -x | --no_xyz                      - do not perform rgb->xyz color conversion\n");
     fprintf(fp,"       -c | --colorspace <color>          - select source colorpsace: (srgb, rec709, p3, srgb_complex, rec709_complex)\n");
+    fprintf(fp,"       -f | --calculate                   - Calculate RGB->XYZ values instead of using LUT\n");
+    fprintf(fp,"       -g | --dpx <linear | film | video> - process dpx image as linear, log film, or log video (default linear)\n");
     fprintf(fp,"       -z | --resize                      - resize image to DCI compliant resolution\n");
     fprintf(fp,"       -s | --start                       - start frame\n");
     fprintf(fp,"       -d | --end                         - end frame\n");
+    fprintf(fp,"       -t | --threads <threads>           - set number of threads (default 4)\n");
+    fprintf(fp,"       -m | --tmp_dir                     - sets temporary directory (usually tmpfs one) to save there temporary tiffs for Kakadu\n");
+    fprintf(fp,"       -n | --no_overwrite                - do not overwrite existing jpeg2000 files\n");
+    fprintf(fp,"       -l | --log_level <level>           - sets the log level 0:Quiet, 1:Error, 2:Warn (default),  3:Info, 4:Debug\n");
+    fprintf(fp,"       -h | --help                        - show help\n");
     fprintf(fp,"       -v | --version                     - show version\n");
-    fprintf(fp,"       -m | --tmp_dir                     - sets temporary directory (usually tmpfs one) to save there temporary tiffs for Kakadu");
-    fprintf(fp,"       -f | --calculate                   - Calculate RGB->XYZ values instead of using LUT");
     fprintf(fp,"\n\n");
     fprintf(fp,"^ Kakadu requires you to download and have the kdu_compress utility in your path.\n");
-    fprintf(fp,"  You must agree to the Kakadu non-commerical licensing terms and assume all respsonsibility of its use.\n");
+    fprintf(fp,"  You must agree to the Kakadu non-commerical licensing terms or have a commerical license and assume all respsonsibility of its use.\n");
     fprintf(fp,"\n\n");
 
     fclose(fp);
@@ -222,26 +222,26 @@ int main (int argc, char **argv) {
     {
         static struct option long_options[] =
         {
+            {"bw",             required_argument, 0, 'b'},
+            {"colorspace",     required_argument, 0, 'c'},
+            {"end",            required_argument, 0, 'd'},
+            {"encoder",        required_argument, 0, 'e'},
+            {"calculate",      required_argument, 0, 'f'},
+            {"dpx ",           required_argument, 0, 'g'},
             {"help",           required_argument, 0, 'h'},
             {"input",          required_argument, 0, 'i'},
-            {"output",         required_argument, 0, 'o'},
-            {"bw",             required_argument, 0, 'b'},
-            {"calculate",      required_argument, 0, 'f'},
-            {"colorspace",     required_argument, 0, 'c'},
-            {"dpx ",           required_argument, 0, 'g'},
-            {"rate",           required_argument, 0, 'r'},
-            {"profile",        required_argument, 0, 'p'},
             {"log_level",      required_argument, 0, 'l'},
-            {"threads",        required_argument, 0, 't'},
-            {"encoder",        required_argument, 0, 'e'},
-            {"start",          required_argument, 0, 's'},
-            {"end",            required_argument, 0, 'd'},
-            {"no_xyz",         no_argument,       0, 'x'},
-            {"no_overwrite",   no_argument,       0, 'n'},
-            {"3d",             no_argument,       0, '3'},
-            {"version",        no_argument,       0, 'v'},
-            {"resize",         no_argument,       0, 'z'},
             {"tmp_dir",        required_argument, 0, 'm'},
+            {"output",         required_argument, 0, 'o'},
+            {"profile",        required_argument, 0, 'p'},
+            {"rate",           required_argument, 0, 'r'},
+            {"start",          required_argument, 0, 's'},
+            {"threads",        required_argument, 0, 't'},
+            {"3d",             no_argument,       0, '3'},
+            {"no_overwrite",   no_argument,       0, 'n'},
+            {"version",        no_argument,       0, 'v'},
+            {"no_xyz",         no_argument,       0, 'x'},
+            {"resize",         no_argument,       0, 'z'},
             {0, 0, 0, 0}
         };
 
