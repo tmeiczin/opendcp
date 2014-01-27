@@ -22,6 +22,12 @@
 
 int main(int argc, char *argv[])
 {
+#ifdef Q_OS_MACX
+    if ( QSysInfo::MacintoshVersion > QSysInfo::MV_10_8 )
+    {
+        QFont::insertSubstitution(".Lucida Grande UI", "Lucida Grande");
+    }
+#endif
     QApplication a(argc, argv);
 
     QCoreApplication::setOrganizationName("OpenDCP");
