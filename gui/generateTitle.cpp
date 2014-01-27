@@ -19,8 +19,6 @@
 #include "generateTitle.h"
 #include "ui_generatetitle.h"
 #include <QtGui>
-#include <QFile>
-#include <QTextStream>
 
 GenerateTitle::GenerateTitle(QWidget *parent) :
     QDialog(parent),

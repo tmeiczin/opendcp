@@ -161,6 +161,7 @@ int write_pkl_asset(opendcp_t *opendcp, xmlTextWriterPtr xml, asset_t asset) {
             return OPENDCP_NO_ERROR;
         }
     }
+    xmlTextWriterWriteFormatElement(xml, BAD_CAST "OriginalFileName","%s",asset.filename);
     xmlTextWriterEndElement(xml);      /* end asset */
 
     return OPENDCP_NO_ERROR;
@@ -331,7 +332,7 @@ int write_pkl(opendcp_t *opendcp, pkl_t *pkl) {
         xmlTextWriterWriteAttribute(xml, BAD_CAST "xmlns:dsig", BAD_CAST DS_DSIG);
     }
 
-    /* cpl attributes */
+    /* pkl attributes */
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "Id","%s%s","urn:uuid:",pkl->uuid);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "AnnotationText","%s",pkl->annotation);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "IssueDate","%s",opendcp->dcp.timestamp);
@@ -362,6 +363,7 @@ int write_pkl(opendcp_t *opendcp, pkl_t *pkl) {
         } else {
             xmlTextWriterWriteFormatElement(xml, BAD_CAST "Type","%s","text/xml;asdcpKind=CPL");
         }
+        xmlTextWriterWriteFormatElement(xml, BAD_CAST "OriginalFileName","%s",cpl.filename);
         xmlTextWriterEndElement(xml);      /* end cpl asset */
     }
     xmlTextWriterEndElement(xml);      /* end assetlist */
