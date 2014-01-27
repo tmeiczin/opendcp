@@ -10,9 +10,6 @@ SET(AUTO_LDFLAGS "LDFLAGS=-Wl,-search_paths_first")
 #--gett osx version-------------------------------------------------------------
 EXEC_PROGRAM(uname ARGS -v  OUTPUT_VARIABLE DARWIN_VERSION)
 STRING(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
-IF (DARWIN_VERSION GREATER 8)
-  SET(LZMA 1)
-ENDIF ()
 #-------------------------------------------------------------------------------
 
 
@@ -23,10 +20,10 @@ INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/contrib/include)
 SET(LIB_DIR ${PREFIX}/lib)
 
 SET(LIBS ${LIBS} -lz)
-#-- if osx 10.8+ uncomment below --#
-IF (LZMA)
-    SET(LIBS ${LIBS} -llzma)
-ENDIF()
+IF (DARWIN_VERSION GREATER 8)
+  SET(LZMA 1)
+ENDIF ()
+
 SET(LIBS ${LIBS} -L${LIB_DIR} -lssl -lcrypto)
 
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/contrib/include/libxml2)
