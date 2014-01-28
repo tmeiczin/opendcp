@@ -17,9 +17,11 @@
 */
 
 #include <string.h>
-#ifdef WIN32
-#include "win32/opendcp_win32_dirent.h"
+#if defined(WIN32) || defined(APPLE)
 #include "win32/opendcp_win32_string.h"
+#endif
+#ifdef WIN32 
+#include "win32/opendcp_win32_dirent.h"
 #else
 #include <dirent.h>
 #endif
