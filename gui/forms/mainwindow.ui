@@ -445,6 +445,11 @@
               <string notr="true">Kakadu</string>
              </property>
             </item>
+            <item>
+             <property name="text">
+              <string notr="true">Ragnarok</string>
+             </property>
+            </item>
            </widget>
            <widget class="QSlider" name="bwSlider">
             <property name="geometry">

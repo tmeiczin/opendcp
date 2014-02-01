@@ -24,6 +24,7 @@
 #include <QPixmap>
 #include <stdio.h>
 #include <opendcp.h>
+#include <opendcp_encoder.h>
 
 enum J2K_STATE {
     DISABLED = 0,
@@ -302,11 +303,7 @@ void MainWindow::processOptions(opendcp_t *opendcp) {
         opendcp->cinema_profile = DCP_CINEMA4K;
     }
 
-    if (ui->encoderComboBox->currentIndex() == 0) {
-        opendcp->j2k.encoder = J2K_OPENJPEG;
-    } else {
-        opendcp->j2k.encoder = J2K_KAKADU;
-    }
+    opendcp->j2k.encoder = ui->encoderComboBox->currentIndex();
 
     opendcp->j2k.lut    = ui->colorComboBox->currentIndex();
     opendcp->j2k.resize = ui->resizeComboBox->currentIndex();

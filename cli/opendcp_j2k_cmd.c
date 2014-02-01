@@ -296,6 +296,8 @@ int main (int argc, char **argv) {
                     opendcp->j2k.encoder = OPENDCP_ENCODER_OPENJPEG;
                 } else if (!strcmp(optarg, "kakadu")) {
                     opendcp->j2k.encoder = OPENDCP_ENCODER_KAKADU;
+                } else if (!strcmp(optarg, "ragnarok")) {
+                    opendcp->j2k.encoder = OPENDCP_ENCODER_RAGNAROK;
                 } else if (!strcmp(optarg, "remote")) {
                     opendcp->j2k.encoder = OPENDCP_ENCODER_REMOTE;
                 } else {
@@ -376,7 +378,9 @@ int main (int argc, char **argv) {
         if (opendcp->j2k.encoder == OPENDCP_ENCODER_KAKADU) {
             printf("  Encoder: Kakadu\n");
         } else if (opendcp->j2k.encoder == OPENDCP_ENCODER_REMOTE)  {
-            printf("  Encoder: RemoteG\n");
+            printf("  Encoder: Remote\n");
+        } else if (opendcp->j2k.encoder == OPENDCP_ENCODER_RAGNAROK)  {
+            printf("  Encoder: Ragnarok\n");
         } else {
             printf("  Encoder: OpenJPEG\n");
         }

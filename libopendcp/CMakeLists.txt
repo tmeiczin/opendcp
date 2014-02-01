@@ -31,6 +31,7 @@ SET(OPENDCP_CODEC_SRC
      codecs/opendcp_encoder_kakadu.c
      codecs/opendcp_encoder_openjpeg.c
      codecs/opendcp_encoder_tif.c
+     codecs/opendcp_encoder_ragnarok.c
      codecs/opendcp_encoder_remote.c
 )
 
@@ -58,7 +59,7 @@ ELSE()
     ADD_LIBRARY(opendcp-lib STATIC ${OPENDCP_SRC_FILES})
     SET_TARGET_PROPERTIES(opendcp-lib PROPERTIES OUTPUT_NAME "opendcp")
     SET_TARGET_PROPERTIES(opendcp-lib PROPERTIES PREFIX "lib")
-    TARGET_LINK_LIBRARIES(opendcp-lib ${ASDCP_LIBRARIES} ${LIBS})
+    TARGET_LINK_LIBRARIES(opendcp-lib ${ASDCP_LIBRARIES} ${LIBS} -lragnarok -lkdu)
     IF(INSTALL_LIB)
         INSTALL(TARGETS opendcp-lib DESTINATION ${LIB_INSTALL_PATH})
     ENDIF()

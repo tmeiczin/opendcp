@@ -34,6 +34,10 @@ int convert_to_j2k(opendcp_t *opendcp, char *sfile, char *dfile) {
     extension = strrchr(dfile, '.');
     extension++;
 
+    if (opendcp_encoder_enable(extension, NULL, opendcp->j2k.encoder)) {
+        OPENDCP_LOG(LOG_ERROR, "Could not enabled encoder");
+    }
+
     encoder = opendcp_encoder_find(NULL, extension, 0);
     OPENDCP_LOG(LOG_DEBUG, "using %s encoder (%s) to convert file %s to %s", encoder->name, extension, sfile, dfile);
 
