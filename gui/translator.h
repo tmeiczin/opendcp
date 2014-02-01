@@ -21,8 +21,6 @@
 
 #include <QSettings>
 #include <QTranslator>
-#include <QMainWindow>
-#include <QtGui>
 
 class Translator : public QObject
 {

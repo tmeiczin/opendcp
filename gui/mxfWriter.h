@@ -19,7 +19,7 @@
 #ifndef __MXF_WRITER_H__
 #define __MXF_WRITER_H__
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QObject>
 #include <string.h>
 #include <iostream>

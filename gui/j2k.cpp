@@ -22,8 +22,10 @@
 #include <QtGui>
 #include <QDir>
 #include <QPixmap>
+#include <QtConcurrent/QtConcurrent>
 #include <stdio.h>
 #include <opendcp.h>
+#include <opendcp_encoder.h>
 
 enum J2K_STATE {
     DISABLED = 0,
@@ -166,7 +168,7 @@ void MainWindow::preview(QString filename)
 }
 
 int j2kEncode(QStringList pair) {
-    int rc = convert_to_j2k(context,pair.at(0).toAscii().data(),pair.at(1).toAscii().data());
+    int rc = convert_to_j2k(context,pair.at(0).toLatin1().data(),pair.at(1).toLatin1().data());
 
     return rc;
 }
@@ -303,9 +305,13 @@ void MainWindow::processOptions(opendcp_t *opendcp) {
     }
 
     if (ui->encoderComboBox->currentIndex() == 0) {
-        opendcp->j2k.encoder = J2K_OPENJPEG;
+        opendcp->j2k.encoder = OPENDCP_ENCODER_OPENJPEG;
     } else {
-        opendcp->j2k.encoder = J2K_KAKADU;
+        opendcp->j2k.encoder = OPENDCP_ENCODER_KAKADU;
+    }
+
+    if (opendcp_encoder_enable("j2c", NULL, opendcp->j2k.encoder)) {
+        dcp_fatal(opendcp, "Could not enabled encoder");
     }
 
     opendcp->j2k.lut    = ui->colorComboBox->currentIndex();

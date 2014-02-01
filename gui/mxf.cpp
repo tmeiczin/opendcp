@@ -18,7 +18,6 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QtGui>
 #include <QDir>
 #include <stdio.h>
 #include <stdlib.h>

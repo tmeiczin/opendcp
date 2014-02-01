@@ -21,7 +21,8 @@
 #include "generateTitle.h"
 #include "settings.h"
 #include "opendcp.h"
-#include <QtGui>
+#include <QtWidgets>
+#include <QPlainTextEdit>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),

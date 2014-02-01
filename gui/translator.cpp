@@ -17,7 +17,7 @@
 */
 
 #include <QDir>
-#include <QtGui>
+#include <QtWidgets>
 #include "translator.h"
 
 Translator::Translator()

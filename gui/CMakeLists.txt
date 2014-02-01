@@ -9,9 +9,22 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
   ADD_DEFINITIONS(-g)
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
-#--find qt4-------------------------------------------------------------
-FIND_PACKAGE(Qt4 REQUIRED)
-INCLUDE(${QT_USE_FILE})
+#--find qt------------------------------------------------------------
+#FIND_PACKAGE(Qt4 REQUIRED)
+#INCLUDE(${QT_USE_FILE})
+if (DEFINED ENV{QTDIR})
+    set(CMAKE_PREFIX_PATH $ENV{QTDIR} ${CMAKE_PREFIX_PATH})
+else ()
+    set(CMAKE_PREFIX_PATH "/usr/local/Cellar/qt5/5.2.0/" ${CMAKE_PREFIX_PATH})
+    message (STATUS "ERROR: Environment variable QTDIR is not set. Please locate your Qt folder MY_QT5_DIR.")
+endif ()
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
+find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5GUI REQUIRED)
+find_package(Qt5LinguistTools REQUIRED)
+#find_package(QtPrintSupport REQUIRED)
 #-----------------------------------------------------------------------------
 
 #--set gui source-------------------------------------------------------------
@@ -50,9 +63,6 @@ SET(OPENDCP_GUI_RES
      ${CMAKE_CURRENT_SOURCE_DIR}/resources/opendcp.qrc
 )
 
-SET(OPENDCP_GUI_RES_CXX
-     ${CMAKE_CURRENT_BINARY_DIR}/opendcp_resources.cpp 
-)
 #-----------------------------------------------------------------------------
 
 #--set language support-------------------------------------------------------
@@ -129,23 +139,16 @@ ENDIF()
 #-----------------------------------------------------------------------------
 
 #--add qt4 src----------------------------------------------------------------
-QT4_ADD_RESOURCES(OPENDCP_GUI_RES_CXX ${OPEDNDCP_GUI_RES})
-ADD_CUSTOM_COMMAND(OUTPUT ${OPENDCP_GUI_RES_CXX}  
-    COMMAND ${QT_RCC_EXECUTABLE}
-    ARGS ${rcc_options} -name ${OPENDCP_GUI_RES_CXX} -o ${OPENDCP_GUI_RES_CXX} ${OPENDCP_GUI_RES} 
-    MAIN_DEPENDENCY ${OPENDCP_GUI_RES} 
-    DEPENDS ${_RC_DEPENDS})
-QT4_WRAP_UI(OPENDCP_FORM_H ${OPENDCP_GUI_UI})
-QT4_WRAP_CPP(OPENDCP_MOC_H ${OPENDCP_GUI_H_SRC})
+QT5_ADD_RESOURCES(OPENDCP_GUI_RES_CXX ${OPENDCP_GUI_RES})
 IF(LANGUAGE_TS_FILES)
   MESSAGE(STATUS "Building Language files ${LANGUAGE_TS_FILES}")
   FILE(GLOB OPENDCP_GEN_SRC "${CMAKE_CURRENT_BINARY_DIR}/*.h")
   IF(GENERATE_LANGUAGE_FILES)
-      QT4_CREATE_TRANSLATION(OPENDCP_QM_FILES ${OPENDCP_GUI_CXX_SRC} ${OPENDCP_GEN_SRC} ${LANGUAGE_TS_FILES})
+      QT5_CREATE_TRANSLATION(OPENDCP_QM_FILES ${OPENDCP_GUI_CXX_SRC} ${OPENDCP_GEN_SRC} ${LANGUAGE_TS_FILES})
   ELSE()
-      QT4_ADD_TRANSLATION(OPENDCP_QM_FILES ${LANGUAGE_TS_FILES})
+      QT5_ADD_TRANSLATION(OPENDCP_QM_FILES ${LANGUAGE_TS_FILES})
   ENDIF()
-ENDIF(LANGUAGE_TS_FILES)
+ENDIF()
 #-----------------------------------------------------------------------------
 
 #--compile gui----------------------------------------------------------------
@@ -158,6 +161,7 @@ ELSEIF(WIN32)
 ELSE()
     ADD_EXECUTABLE(${EXE_NAME} ${OPENDCP_GUI_CXX_SRC} ${OPENDCP_GUI_RES_CXX} ${OPENDCP_FORM_H} ${OPENDCP_MOC_H} ${OPENDCP_QM_FILES})
 ENDIF()
+QT5_USE_MODULES(${EXE_NAME} Widgets Core Concurrent PrintSupport)
 #----------------------------------------------------------------------------
 
 #--build---------------------------------------------------------------------
