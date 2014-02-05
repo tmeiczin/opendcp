@@ -19,13 +19,16 @@ SET(OPENDCP_URL "http://www.opendcp.org")
 
 #--options----------------------------------------------------------------------
 OPTION(OPENDCP_VERSION "Set version" ${OPENDCP_VERSION})
-OPTION(ENABLE_XMLSEC  "Enable XML digital singatures and security features" ON)
-OPTION(ENABLE_OPENMP  "Enable OPENMP multithreading" ON)
-OPTION(ENABLE_GUI     "Enable GUI compiling" ON)
-OPTION(ENABLE_DEBUG   "Enable debug symbols" OFF)
+OPTION(ENABLE_XMLSEC   "Enable XML digital singatures and security features" ON)
+OPTION(ENABLE_OPENMP   "Enable OPENMP multithreading" ON)
+OPTION(ENABLE_RAGNAROK "Enable Ragnarok Encoder" OFF)
+OPTION(ENABLE_GUI      "Enable GUI compiling" ON)
+OPTION(ENABLE_CLANG    "Enable CLANG compiling (OSX)" ON)
+OPTION(ENABLE_DEBUG    "Enable debug symbols" OFF)
+OPTION(BUILD_STATIC    "Enable debug symbols" ON)
 OPTION(GENERATE_LANGUAGE_FILES "Generate Translation files" OFF)
-OPTION(RPM            "Create RPM package" OFF)
-OPTION(DEB            "Create DEB package" OFF)
+OPTION(RPM             "Create RPM package" OFF)
+OPTION(DEB             "Create DEB package" OFF)
 #-------------------------------------------------------------------------------
 
 #--check 32 or 64-bit-----------------------------------------------------------
@@ -45,9 +48,14 @@ IF(ENABLE_XMLSEC)
     ADD_DEFINITIONS(-DXMLSEC_STATIC)
 ENDIF()
 
-IF(ENABLE_OPENMP)
+IF(ENABLE_OPENMP AND NOT ENABLE_CLANG)
     ADD_DEFINITIONS(-DOPENMP)
     SET(OPENMP -fopenmp)
+ENDIF()
+
+IF(ENABLE_RAGNAROK)
+    ADD_DEFINITIONS(-DHAVE_RAGNAROK)
+    SET(LIB_RAGNAROK "-lopendcp_ragnarok")
 ENDIF()
 
 ADD_DEFINITIONS(-D_FILE_OFFSET_BITS=64)
@@ -72,8 +80,6 @@ INCLUDE_DIRECTORIES(${OPENDCP_INCLUDE_DIR}/libopendcp
                     ${PROJECT_SOURCE_DIR}/libopendcp/codecs
                     ${PROJECT_SOURCE_DIR}/libasdcp
 )
-SET(OPENDCP_LIB opendcp-lib)
-SET(ASDCP_LIBRARIES opendcp-asdcp opendcp-kumu)
 #-------------------------------------------------------------------------------
 
 #--contrib paths----------------------------------------------------------------
