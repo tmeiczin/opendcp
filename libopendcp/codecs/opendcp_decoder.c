@@ -20,7 +20,6 @@
 #include <stdlib.h>
 #include "opendcp.h"
 #include "opendcp_decoder.h"
-#include "opendcp_decoder_tif.c"
 
 int opendcp_decode_none(opendcp_image_t **image_ptr, const char *infile) {
     UNUSED(image_ptr);

@@ -303,7 +303,8 @@ void MainWindow::processOptions(opendcp_t *opendcp) {
         opendcp->cinema_profile = DCP_CINEMA4K;
     }
 
-    opendcp->j2k.encoder = ui->encoderComboBox->currentIndex();
+    int index = ui->encoderComboBox->currentIndex();
+    opendcp->j2k.encoder = ui->encoderComboBox->itemData(index).toInt();
 
     opendcp->j2k.lut    = ui->colorComboBox->currentIndex();
     opendcp->j2k.resize = ui->resizeComboBox->currentIndex();

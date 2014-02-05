@@ -42,7 +42,7 @@ typedef struct {
     int        supported;
 } tiff_image_t;
 
-void tif_set_strip(tiff_image_t *tif) {
+void opendcp_tif_set_strip(tiff_image_t *tif) {
     tif->strip_num  = TIFFNumberOfStrips(tif->fp);
     tif->strip_size = TIFFStripSize(tif->fp);
     tif->strip_data = _TIFFmalloc(tif->strip_size);
@@ -133,7 +133,7 @@ int opendcp_decode_tif(opendcp_image_t **image_ptr, const char *sfile) {
 
     /* BW */
     if (tif.photo == PHOTOMETRIC_MINISWHITE) {
-        tif_set_strip(&tif);
+        opendcp_tif_set_strip(&tif);
         uint8_t *data  = (uint8_t *)tif.strip_data;
         for (tif.strip = 0; tif.strip < tif.strip_num; tif.strip++) {
             tif.read_size = TIFFReadEncodedStrip(tif.fp, tif.strip, tif.strip_data, tif.strip_size);
@@ -178,7 +178,7 @@ int opendcp_decode_tif(opendcp_image_t **image_ptr, const char *sfile) {
 
     /* RGB(A) and GRAYSCALE */
     else if (tif.photo == PHOTOMETRIC_RGB) {
-        tif_set_strip(&tif);
+        opendcp_tif_set_strip(&tif);
         uint8_t *data  = (uint8_t *)tif.strip_data;
 
         /* 8 bits per pixel */

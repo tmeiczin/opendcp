@@ -21,6 +21,7 @@
 #include "generateTitle.h"
 #include "settings.h"
 #include "opendcp.h"
+#include "opendcp_encoder.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -154,15 +155,19 @@ void MainWindow::setInitialUiState()
     mxfSetStereoscopicState();
     mxfSetInitialState();
 
-    // Check For Kakadu
+    // add encoders
+    ui->encoderComboBox->addItem("OpenJPEG", QVariant(OPENDCP_ENCODER_OPENJPEG));
+    #ifdef HAVE_RAGNAROK
+    ui->encoderComboBox->addItem("Ragnarok", QVariant(OPENDCP_ENCODER_RAGNAROK));
+    #endif
     QProcess *kdu;
     kdu = new QProcess(this);
     int exitCode = kdu->execute("kdu_compress", QStringList() << "-version");
-    if (exitCode) {
-        int value = ui->encoderComboBox->findText("Kakadu");
-        ui->encoderComboBox->removeItem(value);
+    if (!exitCode) {
+        ui->encoderComboBox->addItem("Kakadu", QVariant(OPENDCP_ENCODER_KAKADU));
     }
     delete kdu;
+  
 
     // Set thread count
 #ifdef Q_OS_WIN32

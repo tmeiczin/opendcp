@@ -21,7 +21,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "opendcp.h"
+
+#ifdef HAVE_RAGNAROK
 #include <opendcp_encoder_ragnarok.h>
+#endif
 
 /*!
  @function opendcp_encoder_openjpeg
@@ -37,7 +40,6 @@ int opendcp_encode_ragnarok(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
     int max_comp_size;
     int max_cs_len;
     int bw, i, x;
-    ragnarok_t ragnarok;
 
     if (opendcp->j2k.bw) {
         bw = opendcp->j2k.bw;
@@ -52,6 +54,9 @@ int opendcp_encode_ragnarok(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
     if (opendcp->stereoscopic) {
         max_cs_len = max_cs_len/2;
     }
+
+#ifdef HAVE_RAGNAROK
+    ragnarok_t ragnarok;
 
     ragnarok.h = opendcp_image->h;
     ragnarok.w = opendcp_image->w;
@@ -72,6 +77,7 @@ int opendcp_encode_ragnarok(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
     ragnarok_encode(&ragnarok, b, dfile); 
 
     free(b);
+#endif
 
     return OPENDCP_NO_ERROR;
 }
