@@ -18,7 +18,7 @@ SET(OPENDCP_URL "http://www.opendcp.org")
 #-------------------------------------------------------------------------------
 
 #--options----------------------------------------------------------------------
-OPTION(OPENDCP_VERSION "Set version" ${OPENDCP_VERSION})
+#OPTION(OPENDCP_VERSION "Set version" ${OPENDCP_VERSION})
 OPTION(ENABLE_XMLSEC   "Enable XML digital singatures and security features" ON)
 OPTION(ENABLE_OPENMP   "Enable OPENMP multithreading" ON)
 OPTION(ENABLE_RAGNAROK "Enable Ragnarok Encoder" OFF)
@@ -55,7 +55,7 @@ ENDIF()
 
 IF(ENABLE_RAGNAROK)
     ADD_DEFINITIONS(-DHAVE_RAGNAROK)
-    SET(LIB_RAGNAROK "-lopendcp_ragnarok")
+    SET(LIB_RAGNAROK "-lopendcp-ragnarok")
 ENDIF()
 
 ADD_DEFINITIONS(-D_FILE_OFFSET_BITS=64)
