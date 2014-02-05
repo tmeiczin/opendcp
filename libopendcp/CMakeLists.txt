@@ -47,15 +47,18 @@ SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/libopendcp/")
 #-------------------------------------------------------------------------------
 
 #--compile opendcplib-----------------------------------------------------------
+SET(OPENDCP_LIB opendcp-lib PARENT_SCOPE)
+
 IF(BUILD_SHARED)
     ADD_LIBRARY(opendcp-lib-shared SHARED ${OPENDCP_SRC_FILES})
     SET_TARGET_PROPERTIES(opendcp-lib-shared PROPERTIES OUTPUT_NAME "opendcp")
     SET_TARGET_PROPERTIES(opendcp-lib-shared PROPERTIES PREFIX "lib")
-    TARGET_LINK_LIBRARIES(opendcp-lib-shared ${ASDCP_LIBRARIES} ${LIBS})
+    TARGET_LINK_LIBRARIES(opendcp-lib-shared ${ASDCP_SHARED_LIBRARIES} ${LIBS} ${LIB_RAGNAROK})
     IF(INSTALL_LIB)
         INSTALL(TARGETS opendcp-lib-shared DESTINATION ${LIB_INSTALL_PATH})
     ENDIF()
-ELSE()
+ENDIF()
+IF(BUILD_STATIC)
     ADD_LIBRARY(opendcp-lib STATIC ${OPENDCP_SRC_FILES})
     SET_TARGET_PROPERTIES(opendcp-lib PROPERTIES OUTPUT_NAME "opendcp")
     SET_TARGET_PROPERTIES(opendcp-lib PROPERTIES PREFIX "lib")
