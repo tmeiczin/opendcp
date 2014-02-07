@@ -19,9 +19,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef OPENMP
-#include <omp.h>
-#endif
 #include "opendcp.h"
 #include "opendcp_encoder.h"
 
@@ -41,13 +38,8 @@ int convert_to_j2k(opendcp_t *opendcp, char *sfile, char *dfile) {
     encoder = opendcp_encoder_find(NULL, extension, 0);
     OPENDCP_LOG(LOG_DEBUG, "using %s encoder (%s) to convert file %s to %s", encoder->name, extension, sfile, dfile);
 
-#ifdef OPENMP
-    #pragma omp critical
-#endif
-    {
-        OPENDCP_LOG(LOG_DEBUG, "reading input file %s", sfile);
-        result = read_image(&opendcp_image, sfile);
-    }
+    OPENDCP_LOG(LOG_DEBUG, "reading input file %s", sfile);
+    result = read_image(&opendcp_image, sfile);
 
     if (result != OPENDCP_NO_ERROR) {
         OPENDCP_LOG(LOG_ERROR, "unable to read file %s", sfile);

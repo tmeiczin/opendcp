@@ -18,7 +18,6 @@ SET(OPENDCP_URL "http://www.opendcp.org")
 #-------------------------------------------------------------------------------
 
 #--options----------------------------------------------------------------------
-#OPTION(OPENDCP_VERSION "Set version" ${OPENDCP_VERSION})
 OPTION(ENABLE_XMLSEC   "Enable XML digital singatures and security features" ON)
 OPTION(ENABLE_OPENMP   "Enable OPENMP multithreading" ON)
 OPTION(ENABLE_RAGNAROK "Enable Ragnarok Encoder" OFF)
@@ -46,11 +45,6 @@ IF(ENABLE_XMLSEC)
     ADD_DEFINITIONS(-DLIBXML_STATIC)
     ADD_DEFINITIONS(-DLIBXSLT_STATIC)
     ADD_DEFINITIONS(-DXMLSEC_STATIC)
-ENDIF()
-
-IF(ENABLE_OPENMP AND NOT ENABLE_CLANG)
-    ADD_DEFINITIONS(-DOPENMP)
-    SET(OPENMP -fopenmp)
 ENDIF()
 
 IF(ENABLE_RAGNAROK)

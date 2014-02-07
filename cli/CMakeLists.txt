@@ -13,6 +13,21 @@ ENDIF(ENABLE_XMLSEC)
 SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}")
 #-----------------------------------------------------------------------------
 
+#--set compiler options-------------------------------------------------------
+IF(ENABLE_OPENMP)
+    ADD_DEFINITIONS(-DOPENMP)
+    FIND_PACKAGE(OpenMP QUIET)
+    if(OPENMP_FOUND)
+        SET(CMAKE_C_FLAGS   "${OpenMP_C_FLAGS} ${CMAKE_C_FLAGS}")
+        SET(CMAKE_CXX_FLAGS "${OpenMP_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+    endif()
+ENDIF()
+
+IF (APPLE AND NOT ENABLE_CLANG)
+    set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -fvisibility=default")
+ENDIF()
+#-----------------------------------------------------------------------------
+
 #--compile cli tools----------------------------------------------------------
 ADD_EXECUTABLE(opendcp_largefile opendcp_largefile.c)
 TARGET_LINK_LIBRARIES(opendcp_largefile ${LIBS})

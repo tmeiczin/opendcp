@@ -13,6 +13,14 @@ STRING(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
 #-------------------------------------------------------------------------------
 
 #--set os specifc linking mode--------------------------------------------------
+IF(${CMAKE_COMPILER_IS_GNUCC})
+    SET(ENABLE_CLANG OFF)
+ENDIF()
+
+IF(ENABLE_OPENMP AND DARWIN_VERSION GREATER 10 AND ENABLE_CLANG)
+    SET(ENABLE_OPENMP OFF)
+ENDIF()
+
 SET(DOWNLOAD ON)
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/contrib/include)
 
@@ -20,10 +28,10 @@ SET(LIB_DIR ${PREFIX}/lib)
 
 SET(LIBS ${LIBS} -lz)
 IF (DARWIN_VERSION GREATER 10)
-  SET(LZMA "-llzma")
+  FIND_LIBRARY(LZMA_LIB liblzma.a)
 ENDIF ()
 
-SET(LIBS ${LIBS} -L${LIB_DIR} -lssl -lcrypto ${LZMA})
+SET(LIBS ${LIBS} -L${LIB_DIR} -lssl -lcrypto ${LZMA_LIB})
 
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/contrib/include/libxml2)
 SET(COMPILE_LIBXML2 1)
