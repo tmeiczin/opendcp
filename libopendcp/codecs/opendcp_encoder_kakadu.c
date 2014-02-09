@@ -80,8 +80,10 @@ int opendcp_encode_kakadu(opendcp_t *opendcp, opendcp_image_t *simage, char *dfi
         sprintf(cmd,"kdu_compress -i \"%s\" -o \"%s\" Sprofile=CINEMA4K %s -quiet",temp_file, dfile, k_lengths);
     }
 
-    cmdfp=popen(cmd,"r");
-    result=pclose(cmdfp);
+    OPENDCP_LOG(LOG_DEBUG, cmd);
+
+    cmdfp = popen(cmd,"r");
+    result = pclose(cmdfp);
 
     remove(temp_file);
 
