@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>750</width>
-    <height>640</height>
+    <height>681</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>20</x>
      <y>5</y>
      <width>710</width>
-     <height>561</height>
+     <height>591</height>
     </rect>
    </property>
    <property name="title">
@@ -75,16 +75,58 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>20</x>
       <y>100</y>
       <width>671</width>
-      <height>452</height>
+      <height>482</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout">
+     <item row="13" column="3">
+      <widget class="QSpinBox" name="dateDaySB">
+       <property name="suffix">
+        <string notr="true"/>
+       </property>
+       <property name="prefix">
+        <string notr="true"/>
+       </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>31</number>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1" colspan="8">
+      <widget class="QComboBox" name="ratingComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <property name="acceptDrops">
+        <bool>false</bool>
+       </property>
+       <property name="maxVisibleItems">
+        <number>10</number>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
+       </property>
+       <property name="frame">
+        <bool>true</bool>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
      <item row="0" column="0">
       <widget class="QLabel" name="filmLabel">
        <property name="text">
@@ -131,14 +173,14 @@
        </item>
       </widget>
      </item>
-     <item row="2" column="0">
+     <item row="3" column="0">
       <widget class="QLabel" name="aspectLabel">
        <property name="text">
         <string>Aspect Ratio:</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1" colspan="8">
+     <item row="3" column="1" colspan="8">
       <widget class="QComboBox" name="aspectComboBox">
        <property name="font">
         <font>
@@ -152,14 +194,14 @@
        </item>
       </widget>
      </item>
-     <item row="3" column="0">
+     <item row="4" column="0">
       <widget class="QLabel" name="languageAudioLabel">
        <property name="text">
         <string>Language Audio:</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1" colspan="8">
+     <item row="4" column="1" colspan="8">
       <widget class="QComboBox" name="languageAudioComboBox">
        <property name="font">
         <font>
@@ -173,14 +215,14 @@
        </item>
       </widget>
      </item>
-     <item row="4" column="0">
+     <item row="5" column="0">
       <widget class="QLabel" name="languageSubtitleLabel">
        <property name="text">
         <string>Language Subtitle:</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1" colspan="8">
+     <item row="5" column="1" colspan="8">
       <widget class="QComboBox" name="languageSubtitleComboBox">
        <property name="font">
         <font>
@@ -199,14 +241,14 @@
        </item>
       </widget>
      </item>
-     <item row="5" column="0">
+     <item row="6" column="0">
       <widget class="QLabel" name="territoryLabel">
        <property name="text">
         <string>Territory:</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="1" colspan="8">
+     <item row="6" column="1" colspan="8">
       <widget class="QComboBox" name="territoryComboBox">
        <property name="font">
         <font>
@@ -220,47 +262,21 @@
        </item>
       </widget>
      </item>
-     <item row="6" column="0">
+     <item row="7" column="0">
       <widget class="QLabel" name="ratingLabel">
        <property name="text">
         <string>Rating:</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="1" colspan="8">
-      <widget class="QComboBox" name="ratingComboBox">
-       <property name="font">
-        <font>
-         <family>Courier</family>
-        </font>
-       </property>
-       <property name="acceptDrops">
-        <bool>false</bool>
-       </property>
-       <property name="maxVisibleItems">
-        <number>10</number>
-       </property>
-       <property name="sizeAdjustPolicy">
-        <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
-       </property>
-       <property name="frame">
-        <bool>true</bool>
-       </property>
-       <item>
-        <property name="text">
-         <string/>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="7" column="0">
+     <item row="8" column="0">
       <widget class="QLabel" name="audioLabel">
        <property name="text">
         <string>Audio Type:</string>
        </property>
       </widget>
      </item>
-     <item row="7" column="1" colspan="8">
+     <item row="8" column="1" colspan="8">
       <widget class="QComboBox" name="audioComboBox">
        <property name="font">
         <font>
@@ -274,14 +290,14 @@
        </item>
       </widget>
      </item>
-     <item row="8" column="0">
+     <item row="9" column="0">
       <widget class="QLabel" name="narrativeLabel">
        <property name="text">
         <string>Narrative:</string>
        </property>
       </widget>
      </item>
-     <item row="8" column="1" colspan="8">
+     <item row="9" column="1" colspan="8">
       <widget class="QComboBox" name="narrativeComboBox">
        <property name="font">
         <font>
@@ -301,14 +317,14 @@
        </item>
       </widget>
      </item>
-     <item row="9" column="0">
+     <item row="10" column="0">
       <widget class="QLabel" name="resolutionLabel">
        <property name="text">
         <string>Resolution:</string>
        </property>
       </widget>
      </item>
-     <item row="9" column="1" colspan="8">
+     <item row="10" column="1" colspan="8">
       <widget class="QComboBox" name="resolutionComboBox">
        <property name="font">
         <font>
@@ -322,14 +338,14 @@
        </item>
       </widget>
      </item>
-     <item row="10" column="0">
+     <item row="11" column="0">
       <widget class="QLabel" name="studioLabel">
        <property name="text">
         <string>Studio:</string>
        </property>
       </widget>
      </item>
-     <item row="10" column="1" colspan="8">
+     <item row="11" column="1" colspan="8">
       <widget class="QComboBox" name="studioComboBox">
        <property name="font">
         <font>
@@ -346,14 +362,14 @@
        </item>
       </widget>
      </item>
-     <item row="11" column="0">
+     <item row="12" column="0">
       <widget class="QLabel" name="studioLabel_2">
        <property name="text">
         <string>Facility:</string>
        </property>
       </widget>
      </item>
-     <item row="11" column="1" colspan="8">
+     <item row="12" column="1" colspan="8">
       <widget class="QComboBox" name="facilityComboBox">
        <property name="font">
         <font>
@@ -370,14 +386,14 @@
        </item>
       </widget>
      </item>
-     <item row="12" column="0">
+     <item row="13" column="0">
       <widget class="QLabel" name="dateLabel">
        <property name="text">
         <string>Date:</string>
        </property>
       </widget>
      </item>
-     <item row="12" column="1">
+     <item row="13" column="1">
       <widget class="QSpinBox" name="dateYearSB">
        <property name="suffix">
         <string notr="true"/>
@@ -393,15 +409,15 @@
        </property>
       </widget>
      </item>
-     <item row="13" column="0">
+     <item row="14" column="0">
       <widget class="QLabel" name="steroscopicLabel">
        <property name="text">
-        <string>3D Specs:</string>
+        <string>Standard:</string>
        </property>
       </widget>
      </item>
-     <item row="13" column="1" colspan="8">
-      <widget class="QComboBox" name="stereoscopicComboBox">
+     <item row="14" column="1" colspan="8">
+      <widget class="QComboBox" name="standardComboBox">
        <property name="font">
         <font>
          <family>Courier</family>
@@ -414,14 +430,14 @@
        </item>
       </widget>
      </item>
-     <item row="14" column="0">
+     <item row="15" column="0">
       <widget class="QLabel" name="packageLabel">
        <property name="text">
         <string>Package Type:</string>
        </property>
       </widget>
      </item>
-     <item row="14" column="1" colspan="8">
+     <item row="15" column="1" colspan="8">
       <widget class="QComboBox" name="packageComboBox">
        <property name="font">
         <font>
@@ -435,7 +451,7 @@
        </item>
       </widget>
      </item>
-     <item row="12" column="2">
+     <item row="13" column="2">
       <widget class="QSpinBox" name="dateMonthSB">
        <property name="suffix">
         <string notr="true"/>
@@ -451,20 +467,42 @@
        </property>
       </widget>
      </item>
-     <item row="12" column="3">
-      <widget class="QSpinBox" name="dateDaySB">
-       <property name="suffix">
-        <string notr="true"/>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Type Modifiers:</string>
        </property>
-       <property name="prefix">
-        <string notr="true"/>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="stereoscopicComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
        </property>
-       <property name="minimum">
-        <number>1</number>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QComboBox" name="framerateComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
        </property>
-       <property name="maximum">
-        <number>31</number>
+       <property name="editable">
+        <bool>true</bool>
        </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
@@ -474,7 +512,7 @@
    <property name="geometry">
     <rect>
      <x>550</x>
-     <y>590</y>
+     <y>630</y>
      <width>164</width>
      <height>32</height>
     </rect>
@@ -502,7 +540,7 @@
   <tabstop>studioComboBox</tabstop>
   <tabstop>facilityComboBox</tabstop>
   <tabstop>dateYearSB</tabstop>
-  <tabstop>stereoscopicComboBox</tabstop>
+  <tabstop>standardComboBox</tabstop>
   <tabstop>packageComboBox</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>

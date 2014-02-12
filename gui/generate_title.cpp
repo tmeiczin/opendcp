@@ -43,6 +43,8 @@ GenerateTitle::GenerateTitle(QWidget *parent) :
     connect(ui->territoryComboBox,        SIGNAL(currentIndexChanged(int)), this, SLOT(updateTitle()));
     connect(ui->typeComboBox,             SIGNAL(currentIndexChanged(int)), this, SLOT(updateTitle()));
     connect(ui->stereoscopicComboBox,     SIGNAL(currentIndexChanged(int)), this, SLOT(updateTitle()));
+    connect(ui->framerateComboBox,        SIGNAL(currentIndexChanged(int)), this, SLOT(updateTitle()));
+    connect(ui->standardComboBox,         SIGNAL(currentIndexChanged(int)), this, SLOT(updateTitle()));
     connect(ui->packageComboBox,          SIGNAL(currentIndexChanged(int)), this, SLOT(updateTitle()));
     connect(ui->filmEdit,                 SIGNAL(textChanged(QString)),     this, SLOT(updateTitle()));
     connect(ui->dateYearSB,               SIGNAL(valueChanged(int)),        this, SLOT(updateTitle()));
@@ -58,7 +60,7 @@ GenerateTitle::~GenerateTitle()
 
 QString loadForm()
 {
-     return "foo";
+     return "";
 }
 
 void GenerateTitle::updateTitle()
@@ -74,6 +76,12 @@ QString GenerateTitle::getTitle()
     text.append(ui->filmEdit->text().split(" ").first());
     if (ui->typeComboBox->currentIndex()) {
         text.append("_" + ui->typeComboBox->currentText().split(" ").first());
+        if (ui->stereoscopicComboBox->currentIndex()) {
+            text.append("-" + ui->stereoscopicComboBox->currentText().split(" ").first());
+        }
+        if (ui->framerateComboBox->currentIndex()) {
+            text.append("-" + ui->framerateComboBox->currentText().split(" ").first().left(2));
+        }
     }
     if (ui->aspectComboBox->currentIndex()) {
         text.append("_" + ui->aspectComboBox->currentText().split(" ").first());
@@ -108,8 +116,8 @@ QString GenerateTitle::getTitle()
     if (ui->facilityComboBox->currentIndex()) {
         text.append("_" + ui->facilityComboBox->currentText().split(" ").first().left(3));
     }
-    if (ui->stereoscopicComboBox->currentIndex()) {
-        text.append("_" + ui->stereoscopicComboBox->currentText().split(" ").first());
+    if (ui->standardComboBox->currentIndex()) {
+        text.append("_" + ui->standardComboBox->currentText().split(" ").first());
     }
     if (ui->packageComboBox->currentIndex()) {
         text.append("_" + ui->packageComboBox->currentText().split(" ").first());
@@ -131,8 +139,10 @@ void GenerateTitle::load(const QString& filename)
     int inResolution = 0;
     int inStudio     = 0;
     int inFacility   = 0;
-    int in3d         = 0;
+    int inStandard   = 0;
     int inPackage    = 0;
+    int inFramerate  = 0;
+    int in3d    = 0;
 
     if (!file.open(QIODevice::ReadOnly)) {
         qDebug() << "could not open file: " << filename;
@@ -146,6 +156,14 @@ void GenerateTitle::load(const QString& filename)
             inContent = 1;
         } else if (line == "</content>") {
             inContent = 0;
+        } else if (line == "<stereoscopic>") {
+            in3d = 1;
+        } else if (line == "</stereoscopic>") {
+            in3d = 0;
+        } else if (line == "<framerate>") {
+            inFramerate = 1;
+        } else if (line == "</framerate>") {
+            inFramerate = 0;
         } else if (line == "<aspect>") {
             inAspect = 1;
         } else if (line == "</aspect>") {
@@ -178,10 +196,10 @@ void GenerateTitle::load(const QString& filename)
             inFacility = 1;
         } else if (line == "</facility>") {
             inFacility = 0;
-        } else if (line == "<3d>") {
-            in3d = 1;
-        } else if (line == "</3d>") {
-            in3d = 0;
+        } else if (line == "<standard>") {
+            inStandard = 1;
+        } else if (line == "</standard>") {
+            inStandard = 0;
         } else if (line == "<package>") {
             inPackage = 1;
         } else if (line == "</package>") {
@@ -205,8 +223,12 @@ void GenerateTitle::load(const QString& filename)
                     ui->resolutionComboBox->addItem(line.trimmed());
             } else if (inStudio) {
                     ui->studioComboBox->addItem(line.trimmed());
+            } else if (inStandard) {
+                    ui->standardComboBox->addItem(line.trimmed());
             } else if (in3d) {
                     ui->stereoscopicComboBox->addItem(line.trimmed());
+            } else if (inFramerate) {
+                    ui->framerateComboBox->addItem(line.trimmed());
             } else if (inPackage) {
                     ui->packageComboBox->addItem(line.trimmed());
             } else if (inFacility) {
