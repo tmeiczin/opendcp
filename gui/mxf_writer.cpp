@@ -21,7 +21,7 @@
 #include <QFileInfo>
 
 #include <opendcp.h>
-#include "mxfWriter.h"
+#include "mxf_writer.h"
 
 MxfWriter::MxfWriter(QObject *parent)
     : QThread(parent)

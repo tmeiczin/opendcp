@@ -18,7 +18,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "generateTitle.h"
+#include "generate_title.h"
 #include "settings.h"
 #include "opendcp.h"
 #include "opendcp_encoder.h"

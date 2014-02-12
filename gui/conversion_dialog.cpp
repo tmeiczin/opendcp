@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "conversionDialog.h"
+#include "conversion_dialog.h"
 
 enum CONVERSION_STATE {
     IDLE  = 0,

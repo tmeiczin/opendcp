@@ -21,8 +21,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <opendcp.h>
-#include "mxfWriter.h"
-#include "conversionDialog.h"
+#include "mxf_writer.h"
+#include "conversion_dialog.h"
 
 enum MXF_ESSENCE_TYPE {
     JPEG2000 = 0,
