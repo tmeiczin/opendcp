@@ -243,7 +243,7 @@
     <message>
         <location filename="../../build/gui/ui_mainwindow.h" line="1339"/>
         <source>DCI Resize:</source>
-        <translation>Sprememba velikosti DCI:</translation>
+        <translation>Spr. velikosti DCI:</translation>
     </message>
     <message>
         <location filename="../../build/gui/ui_mainwindow.h" line="1342"/>
