@@ -54,7 +54,7 @@ void version() {
     FILE *fp;
 
     fp = stdout;
-    fprintf(fp,"\n%s version %s %s\n\n",OPENDCP_NAME,OPENDCP_VERSION,OPENDCP_COPYRIGHT);
+    fprintf(fp, "\n%s version %s %s\n\n", OPENDCP_NAME, OPENDCP_VERSION, OPENDCP_COPYRIGHT);
 
     exit(0);
 }
@@ -63,36 +63,36 @@ void dcp_usage() {
     FILE *fp;
     fp = stdout;
 
-    fprintf(fp,"\n%s version %s %s\n\n",OPENDCP_NAME,OPENDCP_VERSION,OPENDCP_COPYRIGHT);
-    fprintf(fp,"Usage:\n");
-    fprintf(fp,"       opendcp_j2k -i <file> -o <file> [options ...]\n\n");
-    fprintf(fp,"Required:\n");
-    fprintf(fp,"       -i | --input <file>            - input file or directory\n");
-    fprintf(fp,"       -o | --output <file>           - output file or directory\n");
-    fprintf(fp,"\n");
-    fprintf(fp,"Options:\n");
-    fprintf(fp,"       -r | --rate <rate>                 - frame rate (default 24)\n");
-    fprintf(fp,"       -p | --profile <profile>           - profile cinema2k | cinema4k (default cinema2k)\n");
-    fprintf(fp,"       -b | --bw                          - max Mbps bandwitdh (default: 250)\n");
-    fprintf(fp,"       -3 | --3d                          - adjust frame rate for 3D\n");
-    fprintf(fp,"       -e | --encoder <openjpeg | kakadu> - jpeg2000 encoder (default openjpeg)\n");
-    fprintf(fp,"       -x | --no_xyz                      - do not perform rgb->xyz color conversion\n");
-    fprintf(fp,"       -c | --colorspace <color>          - select source colorpsace: (srgb, rec709, p3, srgb_complex, rec709_complex)\n");
-    fprintf(fp,"       -f | --calculate                   - Calculate RGB->XYZ values instead of using LUT\n");
-    fprintf(fp,"       -g | --dpx <linear | film | video> - process dpx image as linear, log film, or log video (default linear)\n");
-    fprintf(fp,"       -z | --resize                      - resize image to DCI compliant resolution\n");
-    fprintf(fp,"       -s | --start                       - start frame\n");
-    fprintf(fp,"       -d | --end                         - end frame\n");
-    fprintf(fp,"       -t | --threads <threads>           - set number of threads (default 4)\n");
-    fprintf(fp,"       -m | --tmp_dir                     - sets temporary directory (usually tmpfs one) to save there temporary tiffs for Kakadu\n");
-    fprintf(fp,"       -n | --no_overwrite                - do not overwrite existing jpeg2000 files\n");
-    fprintf(fp,"       -l | --log_level <level>           - sets the log level 0:Quiet, 1:Error, 2:Warn (default),  3:Info, 4:Debug\n");
-    fprintf(fp,"       -h | --help                        - show help\n");
-    fprintf(fp,"       -v | --version                     - show version\n");
-    fprintf(fp,"\n\n");
-    fprintf(fp,"^ Kakadu requires you to download and have the kdu_compress utility in your path.\n");
-    fprintf(fp,"  You must agree to the Kakadu non-commerical licensing terms or have a commerical license and assume all respsonsibility of its use.\n");
-    fprintf(fp,"\n\n");
+    fprintf(fp, "\n%s version %s %s\n\n", OPENDCP_NAME, OPENDCP_VERSION, OPENDCP_COPYRIGHT);
+    fprintf(fp, "Usage:\n");
+    fprintf(fp, "       opendcp_j2k -i <file> -o <file> [options ...]\n\n");
+    fprintf(fp, "Required:\n");
+    fprintf(fp, "       -i | --input <file>            - input file or directory\n");
+    fprintf(fp, "       -o | --output <file>           - output file or directory\n");
+    fprintf(fp, "\n");
+    fprintf(fp, "Options:\n");
+    fprintf(fp, "       -r | --rate <rate>                 - frame rate (default 24)\n");
+    fprintf(fp, "       -p | --profile <profile>           - profile cinema2k | cinema4k (default cinema2k)\n");
+    fprintf(fp, "       -b | --bw                          - max Mbps bandwitdh (default: 250)\n");
+    fprintf(fp, "       -3 | --3d                          - adjust frame rate for 3D\n");
+    fprintf(fp, "       -e | --encoder <openjpeg | kakadu> - jpeg2000 encoder (default openjpeg)\n");
+    fprintf(fp, "       -x | --no_xyz                      - do not perform rgb->xyz color conversion\n");
+    fprintf(fp, "       -c | --colorspace <color>          - select source colorpsace: (srgb, rec709, p3, srgb_complex, rec709_complex)\n");
+    fprintf(fp, "       -f | --calculate                   - Calculate RGB->XYZ values instead of using LUT\n");
+    fprintf(fp, "       -g | --dpx <linear | film | video> - process dpx image as linear, log film, or log video (default linear)\n");
+    fprintf(fp, "       -z | --resize                      - resize image to DCI compliant resolution\n");
+    fprintf(fp, "       -s | --start                       - start frame\n");
+    fprintf(fp, "       -d | --end                         - end frame\n");
+    fprintf(fp, "       -t | --threads <threads>           - set number of threads (default 4)\n");
+    fprintf(fp, "       -m | --tmp_dir                     - sets temporary directory (usually tmpfs one) to save there temporary tiffs for Kakadu\n");
+    fprintf(fp, "       -n | --no_overwrite                - do not overwrite existing jpeg2000 files\n");
+    fprintf(fp, "       -l | --log_level <level>           - sets the log level 0:Quiet, 1:Error, 2:Warn (default),  3:Info, 4:Debug\n");
+    fprintf(fp, "       -h | --help                        - show help\n");
+    fprintf(fp, "       -v | --version                     - show version\n");
+    fprintf(fp, "\n\n");
+    fprintf(fp, "^ Kakadu requires you to download and have the kdu_compress utility in your path.\n");
+    fprintf(fp, "  You must agree to the Kakadu non-commerical licensing terms or have a commerical license and assume all respsonsibility of its use.\n");
+    fprintf(fp, "\n\n");
 
     fclose(fp);
     exit(0);
@@ -112,7 +112,7 @@ char *substring(const char *str, size_t begin, size_t len) {
     }
 
     result[0] = '\0';
-    strncat(result, str+begin, len);
+    strncat(result, str + begin, len);
 
     return result;
 }
@@ -122,19 +122,22 @@ char *basename_noext(const char *str) {
         return NULL;
     }
 
-    char *base = strrchr(str,'/') + 1;
-    char *ext  = strrchr(str,'.');
+    char *base = strrchr(str, '/') + 1;
+    char *ext  = strrchr(str, '.');
 
     return strndup(base, ext - base);
 }
 
 void build_j2k_filename(const char *in, char *path, char *out) {
     OPENDCP_LOG(LOG_DEBUG, "Building filename from %s", in);
+
     if (!is_dir(path)) {
-        sprintf(out,"%s",path);
-    } else {
+        sprintf(out, "%s", path);
+    }
+    else {
         char *base = basename_noext(in);
         sprintf(out, "%s/%s.j2c", path, base);
+
         if (base) {
             free(base);
         }
@@ -158,24 +161,29 @@ int is_dir(char *path) {
 void progress_bar(int val, int total) {
     int x;
     int step = 20;
-    float c = (float)step/total * (float)val;
+    float c = (float)step / total * (float)val;
 #ifdef OPENMP
     int nthreads = omp_get_num_threads();
 #else
     int nthreads = 1;
 #endif
     printf("  JPEG2000 Conversion (%d thread", nthreads);
+
     if (nthreads > 1) {
         printf("s");
     }
+
     printf(") [");
-    for (x=0;x<step;x++) {
-        if (c>x) {
+
+    for (x = 0; x < step; x++) {
+        if (c > x) {
             printf("=");
-        } else {
+        }
+        else {
             printf(" ");
         }
     }
+
     printf("] 100%% [%d/%d]\r", val, total);
     fflush(stdout);
 }
@@ -253,113 +261,155 @@ int main (int argc, char **argv) {
 
         /* Detect the end of the options. */
         if (c == -1)
+        {
             break;
+        }
 
         switch (c)
         {
             case 0:
+
                 /* If this option set a flag, do nothing else now. */
                 if (long_options[option_index].flag != 0) {
                     break;
                 }
+
                 break;
+
             case '3':
                 opendcp->stereoscopic = 1;
                 break;
+
             case 'b':
                 opendcp->j2k.bw = atoi(optarg);
                 break;
+
             case 'c':
                 if (!strcmp(optarg, "srgb")) {
                     opendcp->j2k.lut = CP_SRGB;
-                } else if (!strcmp(optarg, "rec709")) {
+                }
+                else if (!strcmp(optarg, "rec709")) {
                     opendcp->j2k.lut = CP_REC709;
-                } else if (!strcmp(optarg, "p3")) {
+                }
+                else if (!strcmp(optarg, "p3")) {
                     opendcp->j2k.lut = CP_P3;
-                } else if (!strcmp(optarg, "srgb_complex")) {
+                }
+                else if (!strcmp(optarg, "srgb_complex")) {
                     opendcp->j2k.lut = CP_SRGB_COMPLEX;
-                } else if (!strcmp(optarg, "rec709_complex")) {
+                }
+                else if (!strcmp(optarg, "rec709_complex")) {
                     opendcp->j2k.lut = CP_REC709_COMPLEX;
-                } else {
+                }
+                else {
                     fprintf(stderr, "Invalid colorspace argument\n");
                     exit(1);
                 }
+
                 break;
+
             case 'd':
                 opendcp->j2k.end_frame = strtol(optarg, NULL, 10);
                 break;
+
             case 'f':
                 opendcp->j2k.xyz_method = 1;
                 break;
+
             case 'e':
                 if (!strcmp(optarg, "openjpeg")) {
                     opendcp->j2k.encoder = OPENDCP_ENCODER_OPENJPEG;
-                } else if (!strcmp(optarg, "kakadu")) {
+                }
+                else if (!strcmp(optarg, "kakadu")) {
                     opendcp->j2k.encoder = OPENDCP_ENCODER_KAKADU;
-                } else if (!strcmp(optarg, "ragnarok")) {
+                }
+                else if (!strcmp(optarg, "ragnarok")) {
                     opendcp->j2k.encoder = OPENDCP_ENCODER_RAGNAROK;
-                } else if (!strcmp(optarg, "remote")) {
+                }
+                else if (!strcmp(optarg, "remote")) {
                     opendcp->j2k.encoder = OPENDCP_ENCODER_REMOTE;
-                } else {
+                }
+                else {
                     fprintf(stderr, "Invalid encoder argument\n");
                     exit(1);
                 }
+
                 break;
+
             case 'g':
                 if (!strcmp(optarg, "linear")) {
                     opendcp->j2k.dpx = DPX_LINEAR;
-                } else if (!strcmp(optarg, "film")) {
+                }
+                else if (!strcmp(optarg, "film")) {
                     opendcp->j2k.dpx = DPX_FILM;
-                } else if (!strcmp(optarg, "video")) {
+                }
+                else if (!strcmp(optarg, "video")) {
                     opendcp->j2k.dpx = DPX_VIDEO;
-                } else {
+                }
+                else {
                     fprintf(stderr, "Invalid dpx argument\n");
                     exit(1);
                 }
+
                 break;
+
             case 'h':
-                 dcp_usage();
-                 break;
+                dcp_usage();
+                break;
+
             case 'i':
                 in_path = optarg;
                 break;
+
             case 'l':
                 opendcp->log_level = atoi(optarg);
                 break;
+
             case 'm':
                 opendcp->tmp_path = optarg;
                 break;
+
             case 'o':
                 out_path = optarg;
                 break;
+
             case 'n':
                 opendcp->j2k.no_overwrite = 1;
                 break;
+
             case 'p':
                 if (!strcmp(optarg, "cinema2k")) {
                     opendcp->cinema_profile = DCP_CINEMA2K;
-                } else if (!strcmp(optarg, "cinema4k")) {
+                }
+                else if (!strcmp(optarg, "cinema4k")) {
                     opendcp->cinema_profile = DCP_CINEMA4K;
-                } else {
+                }
+                else {
                     fprintf(stderr, "Invalid cinema profile argument\n");
                     exit(1);
                 }
+
                 break;
+
             case 'r':
                 opendcp->frame_rate = atoi(optarg);
                 break;
+
             case 's':
                 opendcp->j2k.start_frame = atoi(optarg);
                 break;
+
             case 't':
                 opendcp->threads = atoi(optarg);
                 break;
+
             case 'x':
                 opendcp->j2k.xyz = 0;
                 break;
+
             case 'v':
                 version();
                 break;
+
             case 'z':
                 opendcp->j2k.resize = 1;
                 break;
@@ -375,13 +425,17 @@ int main (int argc, char **argv) {
 
     if (opendcp->log_level > 0) {
         printf("\nOpenDCP J2K %s %s\n", OPENDCP_VERSION, OPENDCP_COPYRIGHT);
+
         if (opendcp->j2k.encoder == OPENDCP_ENCODER_KAKADU) {
             printf("  Encoder: Kakadu\n");
-        } else if (opendcp->j2k.encoder == OPENDCP_ENCODER_REMOTE)  {
+        }
+        else if (opendcp->j2k.encoder == OPENDCP_ENCODER_REMOTE)  {
             printf("  Encoder: Remote\n");
-        } else if (opendcp->j2k.encoder == OPENDCP_ENCODER_RAGNAROK)  {
+        }
+        else if (opendcp->j2k.encoder == OPENDCP_ENCODER_RAGNAROK)  {
             printf("  Encoder: Ragnarok\n");
-        } else {
+        }
+        else {
             printf("  Encoder: OpenJPEG\n");
         }
     }
@@ -409,7 +463,8 @@ int main (int argc, char **argv) {
     /* encoder check */
     if (opendcp->j2k.encoder == OPENDCP_ENCODER_KAKADU) {
         result = system("kdu_compress -u >/dev/null 2>&1");
-        if (result>>8 != 0) {
+
+        if (result >> 8 != 0) {
             dcp_fatal(opendcp, "kdu_compress was not found. Either add to path or remove -e 1 flag");
         }
     }
@@ -417,7 +472,8 @@ int main (int argc, char **argv) {
     /* bandwidth check */
     if (opendcp->j2k.bw < 10 || opendcp->j2k.bw > 250) {
         dcp_fatal(opendcp, "Bandwidth must be between 10 and 250, but %d was specified", opendcp->j2k.bw);
-    } else {
+    }
+    else {
         opendcp->j2k.bw *= 1000000;
     }
 
@@ -445,7 +501,7 @@ int main (int argc, char **argv) {
     }
 
     /* get file list */
-    OPENDCP_LOG(LOG_DEBUG,"searching path %s", in_path);
+    OPENDCP_LOG(LOG_DEBUG, "searching path %s", in_path);
     filelist = get_filelist(in_path, "bmp,dpx,tif,tiff,j2k,j2c,jp2,jpf");
 
     if (filelist == NULL || filelist->nfiles < 1) {
@@ -457,7 +513,8 @@ int main (int argc, char **argv) {
         if (opendcp->j2k.end_frame > filelist->nfiles) {
             dcp_fatal(opendcp, "End frame is greater than the actual frame count");
         }
-    } else {
+    }
+    else {
         opendcp->j2k.end_frame = filelist->nfiles;
     }
 
@@ -474,11 +531,14 @@ int main (int argc, char **argv) {
     }
 
     rc = ensure_sequential(filelist->files, filelist->nfiles);
+
     if (rc != OPENDCP_NO_ERROR) {
-        OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", filelist->files[rc],filelist->files[rc+1]);
+        OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", filelist->files[rc], filelist->files[rc + 1]);
     }
 
-    if (opendcp->log_level>0 && opendcp->log_level<3) { progress_bar(0,0); }
+    if (opendcp->log_level > 0 && opendcp->log_level < 3) {
+        progress_bar(0, 0);
+    }
 
 #ifdef OPENMP
     omp_set_num_threads(opendcp->threads);
@@ -488,42 +548,54 @@ int main (int argc, char **argv) {
     count = opendcp->j2k.start_frame;
 
     #pragma omp parallel for private(c)
-    for (c=opendcp->j2k.start_frame-1; c<opendcp->j2k.end_frame; c++) {
+
+    for (c = opendcp->j2k.start_frame - 1; c < opendcp->j2k.end_frame; c++) {
         #pragma omp flush(SIGINT_received)
 
         /* check for non-ascii filenames under windows */
-        #ifdef _WIN32
+#ifdef _WIN32
+
         if (is_filename_ascii(filelist->files[c]) == 0) {
-             OPENDCP_LOG(LOG_WARN, "Filename %s contains non-ascii characters, skipping", filelist->files[c]);
-             continue;
+            OPENDCP_LOG(LOG_WARN, "Filename %s contains non-ascii characters, skipping", filelist->files[c]);
+            continue;
         }
-        #endif
+
+#endif
 
         char out[MAX_FILENAME_LENGTH];
         build_j2k_filename(filelist->files[c], out_path, out);
+
         if (!SIGINT_received) {
-            OPENDCP_LOG(LOG_INFO, "JPEG2000 conversion %s started OPENMP: %d", filelist->files[c],openmp_flag);
+            OPENDCP_LOG(LOG_INFO, "JPEG2000 conversion %s started OPENMP: %d", filelist->files[c], openmp_flag);
+
             if(access(out, F_OK) != 0 || opendcp->j2k.no_overwrite == 0) {
                 result = convert_to_j2k(opendcp, filelist->files[c], out);
-            } else {
+            }
+            else {
                 result = OPENDCP_NO_ERROR;
             }
 
             if (count) {
-               if (opendcp->log_level>0 && opendcp->log_level<3) {progress_bar(count,opendcp->j2k.end_frame);}
+                if (opendcp->log_level > 0 && opendcp->log_level < 3) {
+                    progress_bar(count, opendcp->j2k.end_frame);
+                }
             }
 
             if (result == OPENDCP_ERROR) {
                 OPENDCP_LOG(LOG_ERROR, "JPEG2000 conversion %s failed", filelist->files[c]);
                 dcp_fatal(opendcp, "Exiting...");
-            } else {
+            }
+            else {
                 OPENDCP_LOG(LOG_INFO, "JPEG2000 conversion %s complete", filelist->files[c]);
             }
+
             count++;
         }
     }
 
-    if (opendcp->log_level>0 && opendcp->log_level<3) {progress_bar(count-1, opendcp->j2k.end_frame);}
+    if (opendcp->log_level > 0 && opendcp->log_level < 3) {
+        progress_bar(count - 1, opendcp->j2k.end_frame);
+    }
 
     filelist_free(filelist);
 

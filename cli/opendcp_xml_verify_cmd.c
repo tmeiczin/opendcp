@@ -30,10 +30,10 @@ void dcp_usage() {
     FILE *fp;
     fp = stdout;
 
-    fprintf(fp,"\n%s version %s %s\n\n",OPENDCP_NAME,OPENDCP_VERSION,OPENDCP_COPYRIGHT);
-    fprintf(fp,"Verifies the digital signature of an XML file\n\n");
-    fprintf(fp,"Usage:\n");
-    fprintf(fp,"       opendcp_xml_verify <xml file>\n\n");
+    fprintf(fp, "\n%s version %s %s\n\n", OPENDCP_NAME, OPENDCP_VERSION, OPENDCP_COPYRIGHT);
+    fprintf(fp, "Verifies the digital signature of an XML file\n\n");
+    fprintf(fp, "Usage:\n");
+    fprintf(fp, "       opendcp_xml_verify <xml file>\n\n");
 
     fclose(fp);
     exit(0);
@@ -52,12 +52,13 @@ int main (int argc, char **argv) {
 
     filename = argv[1];
 
-    if( stat(filename,&s) == 0 ) {
+    if( stat(filename, &s) == 0 ) {
         if( !(s.st_mode & S_IFREG) ) {
             OPENDCP_LOG(LOG_ERROR, "%s not a file", filename);
             exit(OPENDCP_ERROR);
         }
-    } else {
+    }
+    else {
         OPENDCP_LOG(LOG_ERROR, "could not open file: %s", filename);
         exit(OPENDCP_ERROR);
     }
@@ -67,7 +68,8 @@ int main (int argc, char **argv) {
     if (result == OPENDCP_NO_ERROR) {
         OPENDCP_LOG(LOG_INFO, "%s Signature is VALID", filename);
         exit(OPENDCP_NO_ERROR);
-    } else {
+    }
+    else {
         OPENDCP_LOG(LOG_ERROR, "%s Signature is NOT VALID", filename);
         exit(OPENDCP_ERROR);
     }

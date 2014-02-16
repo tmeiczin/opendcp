@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 1998-2002  Toni Ronkko
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * ``Software''), to deal in the Software without restriction, including
@@ -8,10 +8,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included
  * in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -19,8 +19,8 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
- * 
- * 
+ *
+ *
  * May 28 1998, Toni Ronkko <tronkko@messi.uku.fi>
  *
  * $Id: uce-dirent.h,v 1.7 2002/05/13 10:48:35 tr Exp $
@@ -58,12 +58,12 @@
  */
 #if !defined(HAVE_DIRENT_H) && !defined(HAVE_DIRECT_H) && !defined(HAVE_SYS_DIR_H) && !defined(HAVE_NDIR_H) && !defined(HAVE_SYS_NDIR_H) && !defined(HAVE_DIR_H)
 # if defined(_MSC_VER)                         /* Microsoft C/C++ */
-    /* no dirent.h */
+/* no dirent.h */
 # elif defined(__BORLANDC__)                   /* Borland C/C++ */
 #   define HAVE_DIRENT_H
 #   define VOID_CLOSEDIR
 # elif defined(__TURBOC__)                     /* Borland Turbo C */
-    /* no dirent.h */
+/* no dirent.h */
 # elif defined(__WATCOMC__)                    /* Watcom C/C++ */
 #   define HAVE_DIRECT_H
 # elif defined(__apollo)                       /* Apollo */
@@ -122,7 +122,7 @@
 
 #elif defined(MSDOS) || defined(WIN32)
 
-  /* figure out type of underlaying directory interface to be used */
+/* figure out type of underlaying directory interface to be used */
 # if defined(WIN32)
 #   define DIRENT_WIN32_INTERFACE
 # elif defined(MSDOS)
@@ -131,7 +131,7 @@
 #   error "missing native dirent interface"
 # endif
 
-  /*** WIN32 specifics ***/
+/*** WIN32 specifics ***/
 # if defined(DIRENT_WIN32_INTERFACE)
 #   include <windows.h>
 #   if !defined(DIRENT_MAXNAMLEN)
@@ -141,13 +141,13 @@
 #if !defined(S_ISDIR)
 #define __S_ISTYPE(mode, mask) (((mode) & S_IFMT) == (mask))
 #define S_ISDIR(mode) __S_ISTYPE((mode), S_IFDIR)
-#endif 
+#endif
 
-  /*** MS-DOS specifics ***/
+/*** MS-DOS specifics ***/
 # elif defined(DIRENT_MSDOS_INTERFACE)
 #   include <dos.h>
 
-    /* Borland defines file length macros in dir.h */
+/* Borland defines file length macros in dir.h */
 #   if defined(__BORLANDC__)
 #     include <dir.h>
 #     if !defined(DIRENT_MAXNAMLEN)
@@ -157,7 +157,7 @@
 #       define _find_t find_t
 #     endif
 
-    /* Turbo C defines ffblk structure in dir.h */
+/* Turbo C defines ffblk structure in dir.h */
 #   elif defined(__TURBOC__)
 #     include <dir.h>
 #     if !defined(DIRENT_MAXNAMLEN)
@@ -165,13 +165,13 @@
 #     endif
 #     define DIRENT_USE_FFBLK
 
-    /* MSVC */
+/* MSVC */
 #   elif defined(_MSC_VER)
 #     if !defined(DIRENT_MAXNAMLEN)
 #       define DIRENT_MAXNAMLEN (12)
 #     endif
 
-    /* Watcom */
+/* Watcom */
 #   elif defined(__WATCOMC__)
 #     if !defined(DIRENT_MAXNAMLEN)
 #       if defined(__OS2__) || defined(__NT__)
@@ -184,7 +184,7 @@
 #   endif
 # endif
 
-  /*** generic MS-DOS and MS-Windows stuff ***/
+/*** generic MS-DOS and MS-Windows stuff ***/
 # if !defined(NAME_MAX) && defined(DIRENT_MAXNAMLEN)
 #   define NAME_MAX DIRENT_MAXNAMLEN
 # endif
@@ -223,7 +223,7 @@ typedef struct DIR {
     dirent        current;                     /* current entry */
     int           dirent_filled;               /* is current un-processed? */
 
-  /*** Operating system specific part ***/
+    /*** Operating system specific part ***/
 #  if defined(DIRENT_WIN32_INTERFACE)
     HANDLE        search_handle;
 #  elif defined(DIRENT_MSDOS_INTERFACE)
@@ -275,28 +275,33 @@ static void _setdirname (struct DIR *dirp);
 static DIR *opendir(const char *dirname) {
     DIR *dirp;
     assert (dirname != NULL);
-  
+
     dirp = (DIR*)malloc (sizeof (struct DIR));
+
     if (dirp != NULL) {
         char *p;
         /* allocate room for directory name */
         dirp->dirname = (char*) malloc (strlen (dirname) + 1 + strlen ("\\*.*"));
+
         if (dirp->dirname == NULL) {
             /* failed to duplicate directory name.  errno set by malloc() */
             free (dirp);
             return NULL;
         }
+
         /* Copy directory name while appending directory separator and "*.*".
          * Directory separator is not appended if the name already ends with
          * drive or directory separator.  Directory separator is assumed to be
          * '/' or '\' and drive separator is assumed to be ':'. */
         strcpy (dirp->dirname, dirname);
         p = strchr (dirp->dirname, '\0');
+
         if (dirp->dirname < p  &&
-            *(p - 1) != '\\'  &&  *(p - 1) != '/'  &&  *(p - 1) != ':')
+                *(p - 1) != '\\'  &&  *(p - 1) != '/'  &&  *(p - 1) != ':')
         {
             strcpy (p++, "\\");
         }
+
 # ifdef DIRENT_WIN32_INTERFACE
         strcpy (p, "*"); /*scan files with and without extension in win32*/
 # else
@@ -311,6 +316,7 @@ static DIR *opendir(const char *dirname) {
             return NULL;
         }
     }
+
     return dirp;
 }
 
@@ -319,37 +325,45 @@ static DIR *opendir(const char *dirname) {
 //=========================
 static struct dirent *readdir (DIR *dirp) {
     assert(dirp != NULL);
+
     if (dirp == NULL) {
         errno = EBADF;
         return NULL;
     }
 
 #if defined(DIRENT_WIN32_INTERFACE)
+
     if (dirp->search_handle == INVALID_HANDLE_VALUE) {
         /* directory stream was opened/rewound incorrectly or it ended normally */
         errno = EBADF;
         return NULL;
     }
+
 #endif
 
     if (dirp->dirent_filled != 0) {
         dirp->dirent_filled = 0;
     } else {
 #if defined(DIRENT_WIN32_INTERFACE)
+
         if (FindNextFile (dirp->search_handle, &dirp->current.data) == FALSE) {
             FindClose (dirp->search_handle);
             dirp->search_handle = INVALID_HANDLE_VALUE;
             errno = ENOENT;
-             return NULL;
+            return NULL;
         }
+
 # elif defined(DIRENT_MSDOS_INTERFACE)
+
         if (_dos_findnext (&dirp->current.data) != 0) {
             return NULL;
         }
+
 # endif
         _setdirname (dirp);
         assert (dirp->dirent_filled == 0);
     }
+
     return &dirp->current;
 }
 
@@ -361,17 +375,19 @@ static int closedir (DIR *dirp) {
 
     /* make sure that dirp points to legal structure */
     assert (dirp != NULL);
+
     if (dirp == NULL) {
         errno = EBADF;
         return -1;
-     }
- 
-     /* free directory name and search handles */
-     if (dirp->dirname != NULL) {
-         free (dirp->dirname);
-     }
+    }
+
+    /* free directory name and search handles */
+    if (dirp->dirname != NULL) {
+        free (dirp->dirname);
+    }
 
 #if defined(DIRENT_WIN32_INTERFACE)
+
     if (dirp->search_handle != INVALID_HANDLE_VALUE) {
         if (FindClose (dirp->search_handle) == FALSE) {
             /* Unknown error */
@@ -379,7 +395,8 @@ static int closedir (DIR *dirp) {
             errno = EBADF;
         }
     }
-#endif                     
+
+#endif
 
     /* clear dirp structure to make sure that it cannot be used anymore*/
     memset (dirp, 0, sizeof (*dirp));
@@ -397,18 +414,22 @@ static int closedir (DIR *dirp) {
 static void rewinddir (DIR *dirp) {
     /* make sure that dirp is legal */
     assert (dirp != NULL);
+
     if (dirp == NULL) {
         errno = EBADF;
         return;
     }
+
     assert (dirp->dirname != NULL);
-  
+
 #if defined(DIRENT_WIN32_INTERFACE)
+
     if (dirp->search_handle != INVALID_HANDLE_VALUE) {
         if (FindClose (dirp->search_handle) == FALSE) {
             errno = EBADF;
         }
     }
+
 #endif
 
     /* re-open previous stream */
@@ -429,18 +450,21 @@ static int _initdir (DIR *dirp) {
 
 # if defined(DIRENT_WIN32_INTERFACE)
     dirp->search_handle = FindFirstFile (dirp->dirname, &dirp->current.data);
+
     if (dirp->search_handle == INVALID_HANDLE_VALUE) {
         errno = ENOENT;
         return 0;
     }
 
 # elif defined(DIRENT_MSDOS_INTERFACE)
+
     if (_dos_findfirst (dirp->dirname,
-          _A_SUBDIR | _A_RDONLY | _A_ARCH | _A_SYSTEM | _A_HIDDEN,
-          &dirp->current.data) != 0)
+                        _A_SUBDIR | _A_RDONLY | _A_ARCH | _A_SYSTEM | _A_HIDDEN,
+                        &dirp->current.data) != 0)
     {
         return 0;
     }
+
 # endif
 
     /* initialize DIR and it's first entry */
@@ -450,31 +474,31 @@ static int _initdir (DIR *dirp) {
 }
 
 //=========================
-// getdirname 
+// getdirname
 //=========================
 static const char *_getdirname (const struct dirent *dp) {
 #if defined(DIRENT_WIN32_INTERFACE)
     return dp->data.cFileName;
-  
+
 #elif defined(DIRENT_USE_FFBLK)
     return dp->data.ff_name;
-  
+
 #else
     return dp->data.name;
-#endif  
+#endif
 }
 
 //=========================
-// setdirname 
+// setdirname
 //=========================
 static void _setdirname (struct DIR *dirp) {
     /* make sure that d_name is long enough */
     assert (strlen (_getdirname (&dirp->current)) <= NAME_MAX);
-  
-    strncpy (dirp->current.d_name,_getdirname (&dirp->current),NAME_MAX);
+
+    strncpy (dirp->current.d_name, _getdirname (&dirp->current), NAME_MAX);
     dirp->current.d_name[NAME_MAX] = '\0'; /*char d_name[NAME_MAX+1]*/
 }
-  
+
 # ifdef __cplusplus
 }
 # endif
@@ -485,7 +509,7 @@ static void _setdirname (struct DIR *dirp) {
 #endif
 
 //=========================
-// scandirname 
+// scandirname
 //=========================
 int scandir(const char *dir, struct dirent ***namelist,
             int (*select)(const struct dirent *),
@@ -493,48 +517,56 @@ int scandir(const char *dir, struct dirent ***namelist,
 {
     DIR *d;
     struct dirent *entry;
-    register int i=0;
+    register int i = 0;
     size_t entrysize;
 
-    if ((d=opendir(dir)) == NULL) {
+    if ((d = opendir(dir)) == NULL) {
         return(-1);
     }
 
-    *namelist=NULL;
-    while ((entry=readdir(d)) != NULL) {
+    *namelist = NULL;
+
+    while ((entry = readdir(d)) != NULL) {
         if (select == NULL || (select != NULL && (*select)(entry))) {
-            *namelist=(struct dirent **)realloc((void *)(*namelist),
-            (size_t)((i+1)*sizeof(struct dirent *)));
-	    if (*namelist == NULL) {
+            *namelist = (struct dirent **)realloc((void *)(*namelist),
+                                                  (size_t)((i + 1) * sizeof(struct dirent *)));
+
+            if (*namelist == NULL) {
                 return(-1);
             }
-	    entrysize=sizeof(struct dirent)-sizeof(entry->d_name)+strlen(entry->d_name)+1;
-	    (*namelist)[i]=(struct dirent *)malloc(entrysize);
-	    if ((*namelist)[i] == NULL) {
+
+            entrysize = sizeof(struct dirent) - sizeof(entry->d_name) + strlen(entry->d_name) + 1;
+            (*namelist)[i] = (struct dirent *)malloc(entrysize);
+
+            if ((*namelist)[i] == NULL) {
                 return(-1);
             }
-	    memcpy((*namelist)[i], entry, entrysize);
-	    i++;
+
+            memcpy((*namelist)[i], entry, entrysize);
+            i++;
         }
     }
+
     if (closedir(d)) {
         return(-1);
     }
+
     if (i == 0) {
         return(-1);
     }
+
     if (compar != NULL) {
         qsort((void *)(*namelist), (size_t)i, sizeof(struct dirent *), compar);
     }
-    
+
     return(i);
 }
 
 //=========================
-// alphasort 
+// alphasort
 //=========================
 int alphasort(const struct dirent **a, const struct dirent **b) {
-  return(strcmp((*a)->d_name, (*b)->d_name));
+    return(strcmp((*a)->d_name, (*b)->d_name));
 }
 
 #ifndef TMP_MAX
@@ -542,7 +574,7 @@ int alphasort(const struct dirent **a, const struct dirent **b) {
 #endif
 
 //=========================
-// mkstemps 
+// mkstemps
 //=========================
 int mkstemps (char *template, int suffix_len)
 {
@@ -558,7 +590,7 @@ int mkstemps (char *template, int suffix_len)
     len = strlen (template);
 
     if ((int)len < 6 + suffix_len || strncmp (&template[len - 6 - suffix_len], "XXXXXX", 6)) {
-      return -1;
+        return -1;
     }
 
     XXXXXX = &template[len - 6 - suffix_len];
@@ -579,16 +611,16 @@ int mkstemps (char *template, int suffix_len)
         v /= 62;
         XXXXXX[5] = letters[v % 62];
 
-        fd = open (template, O_RDWR|O_CREAT|O_EXCL, 0600);
+        fd = open (template, O_RDWR | O_CREAT | O_EXCL, 0600);
 
         if (fd >= 0) {
-	      /* The file does not exist.  */
-	     return fd;
-         }
+            /* The file does not exist.  */
+            return fd;
+        }
 
         /* This is a random value.  It is only necessary that the next
-	  TMP_MAX values generated by adding 7777 to VALUE are different
-	  with (module 2^32).  */
+        TMP_MAX values generated by adding 7777 to VALUE are different
+        with (module 2^32).  */
         value += 7777;
     }
 
@@ -601,7 +633,7 @@ int mkstemps (char *template, int suffix_len)
 // mkdtemp
 //=========================
 char *mkdtemp (char *template) {
-    if (mkstemps(template,0)) {
+    if (mkstemps(template, 0)) {
         return NULL;
     } else {
         return template;

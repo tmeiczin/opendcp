@@ -31,7 +31,7 @@ void version() {
     FILE *fp;
 
     fp = stdout;
-    fprintf(fp,"\n%s version %s %s\n\n",OPENDCP_NAME,OPENDCP_VERSION,OPENDCP_COPYRIGHT);
+    fprintf(fp, "\n%s version %s %s\n\n", OPENDCP_NAME, OPENDCP_VERSION, OPENDCP_COPYRIGHT);
 
     exit(0);
 }
@@ -40,25 +40,25 @@ void dcp_usage() {
     FILE *fp;
     fp = stdout;
 
-    fprintf(fp,"\n%s version %s %s\n\n",OPENDCP_NAME,OPENDCP_VERSION,OPENDCP_COPYRIGHT);
-    fprintf(fp,"Usage:\n");
-    fprintf(fp,"       opendcp_mxf -i <file> -o <file> [options ...]\n\n");
-    fprintf(fp,"Required:\n");
-    fprintf(fp,"       -i | --input <file | dir>      - input file or directory.\n");
-    fprintf(fp,"       -1 | --left <dir>              - left channel input images when creating a 3D essence\n");
-    fprintf(fp,"       -2 | --right <dir>             - right channel input images when creating a 3D essence\n");
-    fprintf(fp,"       -o | --output <file>           - output mxf file\n");
-    fprintf(fp,"\n");
-    fprintf(fp,"Options:\n");
-    fprintf(fp,"       -n | --ns <interop | smpte>    - Generate SMPTE or MXF Interop labels (default smpte)\n");
-    fprintf(fp,"       -r | --rate <rate>             - frame rate (default 24)\n");
-    fprintf(fp,"       -s | --start <frame>           - start frame\n");
-    fprintf(fp,"       -d | --end  <frame>            - end frame\n");
-    fprintf(fp,"       -p | --slideshow  <duration>   - create slideshow with each image having duration specified (in seconds)\n");
-    fprintf(fp,"       -l | --log_level <level>       - Sets the log level 0:Quiet, 1:Error, 2:Warn (default),  3:Info, 4:Debug\n");
-    fprintf(fp,"       -h | --help                    - show help\n");
-    fprintf(fp,"       -v | --version                 - show version\n");
-    fprintf(fp,"\n\n");
+    fprintf(fp, "\n%s version %s %s\n\n", OPENDCP_NAME, OPENDCP_VERSION, OPENDCP_COPYRIGHT);
+    fprintf(fp, "Usage:\n");
+    fprintf(fp, "       opendcp_mxf -i <file> -o <file> [options ...]\n\n");
+    fprintf(fp, "Required:\n");
+    fprintf(fp, "       -i | --input <file | dir>      - input file or directory.\n");
+    fprintf(fp, "       -1 | --left <dir>              - left channel input images when creating a 3D essence\n");
+    fprintf(fp, "       -2 | --right <dir>             - right channel input images when creating a 3D essence\n");
+    fprintf(fp, "       -o | --output <file>           - output mxf file\n");
+    fprintf(fp, "\n");
+    fprintf(fp, "Options:\n");
+    fprintf(fp, "       -n | --ns <interop | smpte>    - Generate SMPTE or MXF Interop labels (default smpte)\n");
+    fprintf(fp, "       -r | --rate <rate>             - frame rate (default 24)\n");
+    fprintf(fp, "       -s | --start <frame>           - start frame\n");
+    fprintf(fp, "       -d | --end  <frame>            - end frame\n");
+    fprintf(fp, "       -p | --slideshow  <duration>   - create slideshow with each image having duration specified (in seconds)\n");
+    fprintf(fp, "       -l | --log_level <level>       - Sets the log level 0:Quiet, 1:Error, 2:Warn (default),  3:Info, 4:Debug\n");
+    fprintf(fp, "       -h | --help                    - show help\n");
+    fprintf(fp, "       -v | --version                 - show version\n");
+    fprintf(fp, "\n\n");
 
     fclose(fp);
     exit(0);
@@ -74,7 +74,7 @@ filelist_t *get_filelist_3d(char *in_path_left, char *in_path_right) {
     right = get_filelist(in_path_right, "j2c,j2k");
 
     if (left->nfiles != right->nfiles) {
-        OPENDCP_LOG(LOG_ERROR, "Mismatching file count for 3D images left: %d right: %d", left->nfiles,right->nfiles);
+        OPENDCP_LOG(LOG_ERROR, "Mismatching file count for 3D images left: %d right: %d", left->nfiles, right->nfiles);
         filelist_free(left);
         filelist_free(right);
         return NULL;
@@ -90,16 +90,18 @@ filelist_t *get_filelist_3d(char *in_path_left, char *in_path_right) {
     }
 
     rc = ensure_sequential(left->files, left->nfiles);
+
     if (rc != OPENDCP_NO_ERROR) {
-        OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", left->files[rc], left->files[rc+1]);
+        OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", left->files[rc], left->files[rc + 1]);
         filelist_free(left);
         filelist_free(right);
         return NULL;
     }
 
     rc = ensure_sequential(right->files, left->nfiles);
+
     if (rc != OPENDCP_NO_ERROR) {
-        OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", right->files[rc], right->files[rc+1]);
+        OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", right->files[rc], right->files[rc + 1]);
         filelist_free(left);
         filelist_free(right);
         return NULL;
@@ -107,9 +109,9 @@ filelist_t *get_filelist_3d(char *in_path_left, char *in_path_right) {
 
     filelist = filelist_alloc(left->nfiles + right->nfiles);
 
-    for (x=0; x < filelist->nfiles; y++,x+=2) {
+    for (x = 0; x < filelist->nfiles; y++, x += 2) {
         strcpy(filelist->files[x],   left->files[y]);
-        strcpy(filelist->files[x+1], right->files[y]);
+        strcpy(filelist->files[x + 1], right->files[y]);
     }
 
     filelist_free(left);
@@ -139,17 +141,20 @@ int write_done_cb(void *p) {
 void progress_bar() {
     int x;
     int step = 20;
-    float c = (float)step/total * (float)val;
+    float c = (float)step / total * (float)val;
 
     printf("  MXF Creation [");
-    for (x=0;x<step;x++) {
-        if (c>x) {
+
+    for (x = 0; x < step; x++) {
+        if (c > x) {
             printf("=");
-        } else {
+        }
+        else {
             printf(" ");
         }
     }
-    printf("] 100%% [%d/%d]\r",val,total);
+
+    printf("] 100%% [%d/%d]\r", val, total);
     fflush(stdout);
 }
 
@@ -202,108 +207,125 @@ int main (int argc, char **argv) {
 
         /* Detect the end of the options. */
         if (c == -1)
-            break;
+        { break; }
 
         switch (c)
         {
             case 0:
+
                 /* If this option set a flag, do nothing else now. */
                 if (long_options[option_index].flag != 0)
-                   break;
+                { break; }
+
                 printf ("option %s", long_options[option_index].name);
+
                 if (optarg)
-                   printf (" with arg %s", optarg);
-                 printf ("\n");
-            break;
+                { printf (" with arg %s", optarg); }
+
+                printf ("\n");
+                break;
 
             case '3':
-               opendcp->stereoscopic = 1;
-            break;
+                opendcp->stereoscopic = 1;
+                break;
 
             case 'd':
-               opendcp->mxf.end_frame = atoi(optarg);
-               if (opendcp->mxf.end_frame < 1) {
-                   dcp_fatal(opendcp, "End frame  must be greater than 0");
-               }
-            break;
+                opendcp->mxf.end_frame = atoi(optarg);
+
+                if (opendcp->mxf.end_frame < 1) {
+                    dcp_fatal(opendcp, "End frame  must be greater than 0");
+                }
+
+                break;
 
             case 'p':
-               opendcp->mxf.slide = 1;
-               opendcp->mxf.duration = atoi(optarg);
-               if (opendcp->mxf.duration < 1) {
-                   dcp_fatal(opendcp, "Slide duration  must be greater than 0");
-               }
-            break;
+                opendcp->mxf.slide = 1;
+                opendcp->mxf.duration = atoi(optarg);
+
+                if (opendcp->mxf.duration < 1) {
+                    dcp_fatal(opendcp, "Slide duration  must be greater than 0");
+                }
+
+                break;
 
             case 's':
-               opendcp->mxf.start_frame = atoi(optarg);
-               if (opendcp->mxf.start_frame < 1) {
-                   dcp_fatal(opendcp, "Start frame must be greater than 0");
-               }
-            break;
+                opendcp->mxf.start_frame = atoi(optarg);
+
+                if (opendcp->mxf.start_frame < 1) {
+                    dcp_fatal(opendcp, "Start frame must be greater than 0");
+                }
+
+                break;
 
             case 'n':
-               if (!strcmp(optarg, "smpte")) {
-                   opendcp->ns = XML_NS_SMPTE;
-               } else if (!strcmp(optarg,"interop")) {
-                   opendcp->ns = XML_NS_INTEROP;
-               } else {
-                   dcp_fatal(opendcp, "Invalid profile argument, must be smpte or interop");
-               }
-            break;
+                if (!strcmp(optarg, "smpte")) {
+                    opendcp->ns = XML_NS_SMPTE;
+                }
+                else if (!strcmp(optarg, "interop")) {
+                    opendcp->ns = XML_NS_INTEROP;
+                }
+                else {
+                    dcp_fatal(opendcp, "Invalid profile argument, must be smpte or interop");
+                }
+
+                break;
 
             case 'i':
-               in_path = optarg;
-            break;
+                in_path = optarg;
+                break;
 
             case '1':
-               in_path_left = optarg;
-               opendcp->stereoscopic = 1;
-            break;
+                in_path_left = optarg;
+                opendcp->stereoscopic = 1;
+                break;
 
             case '2':
-               in_path_right = optarg;
-               opendcp->stereoscopic = 1;
-            break;
+                in_path_right = optarg;
+                opendcp->stereoscopic = 1;
+                break;
 
             case 'l':
-               opendcp->log_level = atoi(optarg);
-            break;
+                opendcp->log_level = atoi(optarg);
+                break;
 
             case 'o':
-               out_path = optarg;
-            break;
+                out_path = optarg;
+                break;
 
             case 'h':
-               dcp_usage();
-            break;
+                dcp_usage();
+                break;
 
             case 'r':
-               opendcp->frame_rate = atoi(optarg);
-               if (opendcp->frame_rate > 60 || opendcp->frame_rate < 1 ) {
-                   dcp_fatal(opendcp, "Invalid frame rate. Must be between 1 and 60.");
-               }
-            break;
+                opendcp->frame_rate = atoi(optarg);
+
+                if (opendcp->frame_rate > 60 || opendcp->frame_rate < 1 ) {
+                    dcp_fatal(opendcp, "Invalid frame rate. Must be between 1 and 60.");
+                }
+
+                break;
 
             case 'v':
-               version();
-            break;
+                version();
+                break;
         }
     }
 
     opendcp_log_init(opendcp->log_level);
 
     if (opendcp->log_level > 0) {
-        printf("\nOpenDCP MXF %s %s\n", OPENDCP_VERSION,OPENDCP_COPYRIGHT);
+        printf("\nOpenDCP MXF %s %s\n", OPENDCP_VERSION, OPENDCP_COPYRIGHT);
     }
 
     if (opendcp->stereoscopic) {
         if (in_path_left == NULL) {
             dcp_fatal(opendcp, "3D input detected, but missing left image input path");
-        } else if (in_path_right == NULL) {
+        }
+        else if (in_path_right == NULL) {
             dcp_fatal(opendcp, "3D input detected, but missing right image input path");
         }
-    } else {
+    }
+    else {
         if (in_path == NULL) {
             dcp_fatal(opendcp, "Missing input file");
         }
@@ -315,7 +337,8 @@ int main (int argc, char **argv) {
 
     if (opendcp->stereoscopic) {
         filelist = get_filelist_3d(in_path_left, in_path_right);
-    } else {
+    }
+    else {
         filelist = get_filelist(in_path, "j2c,j2k,wav");
 
         /* Sort files by index, and make sure they're sequential. */
@@ -324,8 +347,9 @@ int main (int argc, char **argv) {
         }
 
         int rc = ensure_sequential(filelist->files, filelist->nfiles);
+
         if (rc != OPENDCP_NO_ERROR) {
-            OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", filelist->files[rc],filelist->files[rc+1]);
+            OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", filelist->files[rc], filelist->files[rc + 1]);
         }
     }
 
@@ -337,21 +361,24 @@ int main (int argc, char **argv) {
         dcp_fatal(opendcp, "No input files located");
     }
 
-    #ifdef _WIN32
+#ifdef _WIN32
+
     /* check for non-ascii filenames under windows */
     for (c = 0; c < filelist->nfiles; c++) {
         if (is_filename_ascii(filelist->files[c]) == 0) {
-             OPENDCP_LOG(LOG_ERROR, "Filename %s contains non-ascii characters, skipping", filelist->files[c]);
-             dcp_fatal(opendcp, "Filenames cannot contain non-ascii characters");
+            OPENDCP_LOG(LOG_ERROR, "Filename %s contains non-ascii characters, skipping", filelist->files[c]);
+            dcp_fatal(opendcp, "Filenames cannot contain non-ascii characters");
         }
     }
-    #endif
+
+#endif
 
     if (opendcp->mxf.end_frame) {
         if (opendcp->mxf.end_frame > filelist->nfiles) {
             dcp_fatal(opendcp, "End frame is greater than the actual frame count");
         }
-    } else {
+    }
+    else {
         opendcp->mxf.end_frame = filelist->nfiles;
     }
 
@@ -359,14 +386,16 @@ int main (int argc, char **argv) {
         if (opendcp->mxf.start_frame > opendcp->mxf.end_frame) {
             dcp_fatal(opendcp, "Start frame must be less than end frame");
         }
-    } else {
+    }
+    else {
         opendcp->mxf.start_frame = 1;
     }
 
     if (opendcp->mxf.slide) {
         opendcp->mxf.duration = opendcp->mxf.duration * opendcp->frame_rate * filelist->nfiles;
-    } else {
-        opendcp->mxf.duration = opendcp->mxf.end_frame - (opendcp->mxf.start_frame-1);
+    }
+    else {
+        opendcp->mxf.duration = opendcp->mxf.end_frame - (opendcp->mxf.start_frame - 1);
     }
 
     if (opendcp->mxf.duration < 1) {
@@ -374,24 +403,26 @@ int main (int argc, char **argv) {
     }
 
     /* set the callbacks (optional) for the mxf writer */
-    if (opendcp->log_level>0 && opendcp->log_level<3) {
+    if (opendcp->log_level > 0 && opendcp->log_level < 3) {
         opendcp->mxf.frame_done.callback = frame_done_cb;
         opendcp->mxf.file_done.callback  = write_done_cb;
     }
 
     int class = get_file_essence_class(filelist->files[0], 1);
 
-    if (opendcp->log_level>0 && opendcp->log_level<3) { progress_bar(); }
+    if (opendcp->log_level > 0 && opendcp->log_level < 3) { progress_bar(); }
 
     if (class == ACT_SOUND) {
         total = get_wav_duration(filelist->files[0], opendcp->frame_rate);
-    } else {
+    }
+    else {
         total = opendcp->mxf.duration;
     }
 
     if (write_mxf(opendcp, filelist, out_path) != 0 )  {
         OPENDCP_LOG(LOG_INFO, "Could not create MXF file");
-    } else {
+    }
+    else {
         OPENDCP_LOG(LOG_INFO, "MXF creation complete");
     }
 

@@ -75,10 +75,12 @@ int getopt(int nargc, char *const *nargv, const char *ostr) {
     /* update scanning pointer */
     if (optreset || !*place) {
         optreset = 0;
+
         if (optind >= nargc || *(place = nargv[optind]) != '-') {
             place = EMSG;
             return (-1);
         }
+
         if (place[1] && *++place == '-') {
             ++optind;
             place = EMSG;
@@ -86,22 +88,26 @@ int getopt(int nargc, char *const *nargv, const char *ostr) {
         }
     }
 
-    if ((optopt = (int) *place++) == (int) ':' ||
-         !(oli = strchr(ostr, optopt))) {
+    if ((optopt = (int) * place++) == (int) ':' ||
+            !(oli = strchr(ostr, optopt))) {
         /* if the user didn't specify '-' as an option assume it means -1 */
         if (optopt == (int) '-') {
             return (-1);
         }
+
         if (!*place) {
             ++optind;
         }
+
         if (opterr && *ostr != ':') {
             fprintf(stderr, "%s: illegal option -- %c\n", __progname, optopt);
             return (BADCH);
         }
     }
+
     if (*++oli != ':') {                  /* don't need argument */
         optarg = NULL;
+
         if (!*place) {
             ++optind;
         }
@@ -110,9 +116,11 @@ int getopt(int nargc, char *const *nargv, const char *ostr) {
             optarg = place;
         } else if (nargc <= ++optind) {   /* no arg */
             place = EMSG;
+
             if (*ostr == ':') {
                 return (BADARG);
             }
+
             if (opterr) {
                 fprintf(stderr, "%s: option requires an argument -- %c\n", __progname, optopt);
                 return (BADCH);
@@ -120,28 +128,31 @@ int getopt(int nargc, char *const *nargv, const char *ostr) {
         } else {                          /* white space */
             optarg = nargv[optind];
         }
+
         place = EMSG;
         ++optind;
     }
+
     return (optopt);                      /* dump back option letter */
 }
 
 
 int getopt_long(int argc, char * const argv[], const char *optstring,
-struct option *longopts, int *tot_length) {
-    static int lastidx,lastofs;
+                struct option *longopts, int *tot_length) {
+    static int lastidx, lastofs;
     char *tmp;
-    int i,len,totlen;
+    int i, len, totlen;
     char param = 1;
 
     totlen = *tot_length;
 
-    again:
-    if (optind>argc || !argv[optind] || *argv[optind]!='-') {
+again:
+
+    if (optind > argc || !argv[optind] || *argv[optind] != '-') {
         return -1;
     }
 
-    if (argv[optind][0]=='-' && argv[optind][1]==0) {
+    if (argv[optind][0] == '-' && argv[optind][1] == 0) {
         if(optind >= (argc - 1)) {
             param = 0;
         } else {
@@ -150,7 +161,7 @@ struct option *longopts, int *tot_length) {
             } else {
                 param = 2;
             }
-         }
+        }
     }
 
     if (param == 0) {
@@ -158,108 +169,127 @@ struct option *longopts, int *tot_length) {
         return (BADCH);
     }
 
-    if (argv[optind][0]=='-') {
-        char* arg=argv[optind]+1;
+    if (argv[optind][0] == '-') {
+        char* arg = argv[optind] + 1;
         const struct option* o;
-        o=longopts;
-        len=sizeof(longopts[0]);
+        o = longopts;
+        len = sizeof(longopts[0]);
 
         if (param > 1) {
-            arg = argv[optind+1];
+            arg = argv[optind + 1];
             optind++;
         } else {
-            arg = argv[optind]+1;
+            arg = argv[optind] + 1;
         }
 
-        if(strlen(arg)>1) {
-            for (i=0;i<totlen;i=i+len,o++) {
-                if (!strcmp(o->name,arg)) {
+        if(strlen(arg) > 1) {
+            for (i = 0; i < totlen; i = i + len, o++) {
+                if (!strcmp(o->name, arg)) {
                     if (o->has_arg == 0) {
-                        if ((argv[optind+1])&&(!(argv[optind+1][0]=='-'))) {
-                            fprintf(stderr,"%s: option does not require an argument. Ignoring %s\n",arg,argv[optind+1]);
+                        if ((argv[optind + 1]) && (!(argv[optind + 1][0] == '-'))) {
+                            fprintf(stderr, "%s: option does not require an argument. Ignoring %s\n", arg, argv[optind + 1]);
                             ++optind;
                         }
-                    } else { 
-                        optarg=argv[optind+1];
+                    } else {
+                        optarg = argv[optind + 1];
+
                         if (optarg) {
-                            if (optarg[0] == '-') {                                                               
+                            if (optarg[0] == '-') {
                                 if (opterr) {
-                                    fprintf(stderr,"%s: option requires an argument\n",arg);
+                                    fprintf(stderr, "%s: option requires an argument\n", arg);
                                     return (BADCH);
                                 }
                             }
                         }
-                        if (!optarg && o->has_arg==1) {
+
+                        if (!optarg && o->has_arg == 1) {
                             if (opterr) {
-                                fprintf(stderr,"%s: option requires an argument \n",arg);
+                                fprintf(stderr, "%s: option requires an argument \n", arg);
                                 return (BADCH);
                             }
                         }
+
                         ++optind;
                     }
+
                     ++optind;
+
                     if (o->flag) {
-                        *(o->flag)=o->val;
+                        *(o->flag) = o->val;
                     } else {
                         return o->val;
                     }
+
                     return 0;
                 }
             }
-            fprintf(stderr,"Invalid option %s\n",arg);
+
+            fprintf(stderr, "Invalid option %s\n", arg);
             ++optind;
             return (BADCH);
         } else {
-            if (*optstring==':') {
+            if (*optstring == ':') {
                 return ':';
             }
-            if (lastidx!=optind) {
-                lastidx=optind; lastofs=0;
+
+            if (lastidx != optind) {
+                lastidx = optind;
+                lastofs = 0;
             }
-            optopt=argv[optind][lastofs+1];
-            if ((tmp=strchr(optstring,optopt))) {
-                if (*tmp==0) {
+
+            optopt = argv[optind][lastofs + 1];
+
+            if ((tmp = strchr(optstring, optopt))) {
+                if (*tmp == 0) {
                     ++optind;
                     goto again;
                 }
-                if (tmp[1]==':') {
-                    if (tmp[2]==':' || argv[optind][lastofs+2]) {
-                        if (!*(optarg=argv[optind]+lastofs+2)) {
-                            optarg=0;
+
+                if (tmp[1] == ':') {
+                    if (tmp[2] == ':' || argv[optind][lastofs + 2]) {
+                        if (!*(optarg = argv[optind] + lastofs + 2)) {
+                            optarg = 0;
                         }
+
                         goto found;
                     }
-                    optarg=argv[optind+1];
+
+                    optarg = argv[optind + 1];
+
                     if (optarg) {
                         if (optarg[0] == '-') {
                             if (opterr) {
-                                fprintf(stderr,"%s: option requires an argument\n",arg);
+                                fprintf(stderr, "%s: option requires an argument\n", arg);
                                 return (BADCH);
                             }
                         }
                     }
+
                     if (!optarg) {
                         if (opterr) {
-                            fprintf(stderr,"%s: option requires an argument\n",arg);
+                            fprintf(stderr, "%s: option requires an argument\n", arg);
                             return (BADCH);
                         }
                     }
+
                     ++optind;
                 } else {
                     ++lastofs;
                     return optopt;
                 }
-    found:
+
+found:
                 ++optind;
                 return optopt;
             } else {
-                fprintf(stderr,"Invalid option %s\n",arg);
+                fprintf(stderr, "Invalid option %s\n", arg);
                 ++optind;
                 return (BADCH);
             }
         }
     }
-    fprintf(stderr,"Invalid option\n");
+
+    fprintf(stderr, "Invalid option\n");
     ++optind;
     return (BADCH);;
 }

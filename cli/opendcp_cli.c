@@ -20,7 +20,7 @@
 #if defined(WIN32) || defined(APPLE)
 #include "win32/opendcp_win32_string.h"
 #endif
-#ifdef WIN32 
+#ifdef WIN32
 #include "win32/opendcp_win32_dirent.h"
 #else
 #include <dirent.h>
@@ -38,7 +38,7 @@
 int check_extension(char *filename, char *pattern) {
     char *extension;
 
-    extension = strrchr(filename,'.');
+    extension = strrchr(filename, '.');
 
     if ( extension == NULL ) {
         return 0;
@@ -46,11 +46,11 @@ int check_extension(char *filename, char *pattern) {
 
     extension++;
 
-   if (strncasecmp(extension,pattern,3) !=0) {
-       return 0;
-   }
+    if (strncasecmp(extension, pattern, 3) != 0) {
+        return 0;
+    }
 
-   return 1;
+    return 1;
 }
 
 char *get_basename(const char *filename) {
@@ -58,7 +58,7 @@ char *get_basename(const char *filename) {
     char *base = 0;
 
     base = (char *)filename;
-    extension = strrchr(filename,'.');
+    extension = strrchr(filename, '.');
     base[(strlen(filename) - strlen(extension))] = '\0';
 
     return(base);
@@ -67,7 +67,7 @@ char *get_basename(const char *filename) {
 int file_selector(const char *filename, const char *filter) {
     char *extension;
 
-    extension = strrchr(filename,'.');
+    extension = strrchr(filename, '.');
 
     if ( extension == NULL ) {
         return 0;
@@ -90,9 +90,9 @@ filelist_t *get_filelist(const char *path, const char *filter) {
     DIR *d;
     struct stat st_in;
     struct dirent *de;
-    char **names=0, **tmp;
+    char **names = 0, **tmp;
 
-    size_t cnt=0, len=0;
+    size_t cnt = 0, len = 0;
     filelist_t *filelist;
 
     if (stat(path, &st_in) != 0 ) {
@@ -112,28 +112,38 @@ filelist_t *get_filelist(const char *path, const char *filter) {
     }
 
     OPENDCP_LOG(LOG_DEBUG, "reading directory");
+
     while ((de = readdir(d))) {
         if (!file_selector(de->d_name, filter)) {
             continue;
         }
+
         if (cnt >= len) {
-            len = 2*len+1;
-            if (len > SIZE_MAX/sizeof *names) {
+            len = 2 * len + 1;
+
+            if (len > SIZE_MAX / sizeof * names) {
                 break;
             }
-            tmp = realloc(names, len * sizeof *names);
+
+            tmp = realloc(names, len * sizeof * names);
+
             if (!tmp) {
                 break;
             }
+
             names = tmp;
         }
+
         names[cnt] = malloc(strlen(de->d_name) + 1);
+
         if (!names[cnt]) {
             break;
         }
+
         strcpy(names[cnt++], de->d_name);
         OPENDCP_LOG(LOG_DEBUG, "Found %s", de->d_name);
     }
+
     closedir(d);
 
     OPENDCP_LOG(LOG_DEBUG, "found %d files", cnt);
@@ -145,7 +155,8 @@ filelist_t *get_filelist(const char *path, const char *filter) {
             sprintf(filelist->files[cnt], "%s/%s", path, names[cnt]);
             free(names[cnt]);
         }
-       free(names);
+
+        free(names);
     }
 
     return filelist;
@@ -157,7 +168,7 @@ int find_seq_offset(char str1[], char str2[]) {
 
     for (i = 0; (i < strlen(str1)) && (offset == 0); i++) {
         if(str1[i] != str2[i])
-            offset = i;
+        { offset = i; }
     }
 
     return offset;
@@ -165,9 +176,11 @@ int find_seq_offset(char str1[], char str2[]) {
 
 int find_ext_offset(char str[]) {
     int i = strlen(str);
+
     while(i) {
         if(str[i] == '.')
-            return i;
+        { return i; }
+
         i--;
     }
 

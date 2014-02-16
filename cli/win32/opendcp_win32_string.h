@@ -9,6 +9,7 @@ char *strndup (const char *s, size_t n) {
     }
 
     c = (char *) malloc (len + 1);
+
     if (c == NULL) {
         return 0;
     }
