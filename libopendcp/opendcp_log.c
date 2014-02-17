@@ -27,20 +27,16 @@
 #define snprintf _snprintf
 #endif
 
-#define OPENDCP_LOG_MAX_CALLBACKS 5
+#define OPENDCP_LOG_MAX_SUBCRIBERS 5
 
-typedef struct {
-    int level;
-    void (*callback)(char *message);
-} opendcp_log_callback_t;
-
-static int opendcp_log_callback_count = 0;
-static opendcp_log_callback_t opendcp_log_callbacks[OPENDCP_LOG_MAX_CALLBACKS];
+static int subscriber_count = 0;
+static opendcp_log_cb_t subscribers[OPENDCP_LOG_MAX_SUBCRIBERS];
 
 void opendcp_log_init(int level);
 char *opendcp_log_timestamp();
 
-void opendcp_log_print_message(const char *msg) {
+void opendcp_log_print_message(void *arg, const char *msg) {
+    UNUSED(arg);
     fprintf(stdout, "%s\n", msg);
 }
 
@@ -50,26 +46,23 @@ void opendcp_log(int level, const char *file, const char *function, int line,  c
     va_start(vl, fmt);
     int x;
 
-    snprintf(msg, sizeof(msg), "%s | %5s | %-30s | %-5.5d | ", opendcp_log_timestamp(), OPENDCP_LOGLEVEL_NAME[level], function, line);
+    snprintf(msg, sizeof(msg), "%s | %5s | %-30s | %-5.5d | %-30s | ", opendcp_log_timestamp(), OPENDCP_LOGLEVEL_NAME[level], file, line, function);
     vsnprintf(msg + strlen(msg), sizeof(msg) - strlen(msg), fmt, vl);
     va_end(vl);
 
-    for (x = 0; x < opendcp_log_callback_count; x++) {
-        if (level <= opendcp_log_callbacks[x].level) {
-            opendcp_log_callbacks[x].callback(msg);
+    for (x = 0; x < subscriber_count; x++) {
+        if (level <= subscribers[x].level) {
+            subscribers[x].callback(subscribers[x].argument, msg);
         }
     }
 }
 
-void opendcp_log_register_callback(int level, void *function) {
-    if (opendcp_log_callback_count >= OPENDCP_LOG_MAX_CALLBACKS) {
+void opendcp_log_subscribe(opendcp_log_cb_t *cb) {
+    if (subscriber_count >= OPENDCP_LOG_MAX_SUBCRIBERS) {
         return;
     }
 
-    opendcp_log_callbacks[opendcp_log_callback_count].level = level;
-    opendcp_log_callbacks[opendcp_log_callback_count++].callback = function;
-
-    return;
+    subscribers[subscriber_count++] = *cb;
 }
 
 char *opendcp_log_timestamp() {
@@ -85,5 +78,11 @@ char *opendcp_log_timestamp() {
 }
 
 void opendcp_log_init(int level) {
-    opendcp_log_register_callback(level, opendcp_log_print_message);
+    opendcp_log_cb_t cb;
+
+    cb.level    = level; 
+    cb.callback = (void *)opendcp_log_print_message;
+    cb.argument = NULL;
+
+    opendcp_log_subscribe(&cb);
 }

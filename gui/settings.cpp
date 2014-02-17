@@ -43,6 +43,7 @@ void Settings::load()
     
     int idx = comboLanguages->findText(language, Qt::MatchExactly);
     comboLanguages->setCurrentIndex(idx);
+    //enableLogCheckBox->setChecked(settings.value("Options/enable_log").value<QInt>());
 }
       
 void Settings::save()
@@ -52,7 +53,7 @@ void Settings::save()
     QString language = comboLanguages->currentText();
     translator.saveSettings(language);
 
-    settings.setValue("user","Terrence Meiczinger");
-
+    settings.setValue("Options/enable_log", enableLogCheckBox->isChecked());
+    settings.setValue("user", "Terrence Meiczinger");
     close();
 }

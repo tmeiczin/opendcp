@@ -1,6 +1,6 @@
 /*
      OpenDCP: Builds Digital Cinema Packages
-     Copyright (c) 2010-2011 Terrence Meiczinger, All Rights Reserved
+     Copyright (c) 2010-2014 Terrence Meiczinger, All Rights Reserved
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -27,6 +27,21 @@ class GenerateTitle;
 namespace Ui {
     class MainWindow;
 }
+
+class Logger : public QObject
+{
+    Q_OBJECT;
+
+public:
+    Logger();
+    ~Logger();
+
+    QStringList log;
+
+private:
+    opendcp_log_cb_t cb;
+    static void log_receiver(void *, void *);
+};
 
 class MainWindow : public QMainWindow
 {
@@ -78,6 +93,7 @@ private slots:
     bool save();
     bool saveAs();
     void preferences();
+    void log();
     void about();
 
 protected:
@@ -101,6 +117,7 @@ public:
     ~MainWindow();
     void fileCopy(QString source, QString destination);
     QString calculateDigest(opendcp_t *opendcp, QString text, QString filename);
+    void log_msg(char *msg);
 
 private:
     void createActions();
@@ -124,6 +141,9 @@ private:
 
     GenerateTitle       *generateTitle;
     QString             lastDir;
+    QTextEdit           *logViewer;
+
+    Logger              *m_logger;
 
     // copy/paste
     QPlainTextEdit *textEdit;
@@ -144,6 +164,9 @@ private:
     QAction *pasteAct;
     QAction *aboutAct;
     QAction *preferencesAct;
+    QAction *logAct;
 };
+
+
 
 #endif // MAINWINDOW_H

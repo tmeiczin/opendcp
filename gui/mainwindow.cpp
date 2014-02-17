@@ -23,6 +23,28 @@
 #include "opendcp.h"
 #include "opendcp_encoder.h"
 
+
+Logger::Logger()
+{
+    cb.level = LOG_WARN;
+    cb.callback = &Logger::log_receiver;
+    cb.argument = (void *)this;
+    opendcp_log_subscribe(&cb);
+}
+
+Logger::~Logger()
+{
+
+}
+
+void Logger::log_receiver(void *arg, void *message)
+{
+    QString m;
+    m = (char *) message;
+    Logger *self = (Logger *)arg;
+    self->log << m;
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -30,6 +52,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     settings = 0;
+    m_logger = new Logger;
 
     // used for copy/paste
     textEdit = new QPlainTextEdit;
@@ -77,6 +100,7 @@ void MainWindow::createMenus()
     editMenu->addAction(copyAct);
     editMenu->addAction(pasteAct);
     editMenu->addAction(preferencesAct);
+    editMenu->addAction(logAct);
 
     menuBar()->addSeparator();
 
@@ -137,6 +161,10 @@ void MainWindow::createActions()
     preferencesAct->setStatusTip(tr("Application preferences"));
     preferencesAct->setMenuRole(QAction::PreferencesRole);
     connect(preferencesAct, SIGNAL(triggered()), this, SLOT(preferences()));
+
+    logAct = new QAction("&Log", this);
+    logAct->setStatusTip(tr("Application Log"));
+    connect(logAct, SIGNAL(triggered()), this, SLOT(log()));
 
     cutAct->setEnabled(false);
     copyAct->setEnabled(false);
@@ -280,6 +308,16 @@ void MainWindow::about()
     QTextStream(&msg) << OPENDCP_NAME << " Version " << OPENDCP_VERSION << "\n\n";
     QTextStream(&msg) << OPENDCP_COPYRIGHT << "\n\n" << OPENDCP_LICENSE << "\n\n" << OPENDCP_URL << "\n\n";
     QMessageBox::about(this, "About OpenDCP", msg);
+}
+
+void MainWindow::log()
+{
+    logViewer = new QTextEdit();
+    logViewer->setFont(QFont("Courier", 10));
+    logViewer->setPlainText(m_logger->log.join("\n"));
+    logViewer->setMinimumWidth(800);
+    logViewer->setReadOnly(1);
+    logViewer->show();
 }
 
 void MainWindow::preferences()

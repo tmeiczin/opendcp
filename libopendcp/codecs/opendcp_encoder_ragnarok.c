@@ -36,8 +36,6 @@
  @return An OPENDCP_ERROR value
 */
 int opendcp_encode_ragnarok(opendcp_t *opendcp, opendcp_image_t *opendcp_image, char *dfile) {
-    bool result;
-    int max_comp_size;
     int max_cs_len;
     int bw, i, x;
 

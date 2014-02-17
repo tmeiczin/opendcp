@@ -411,11 +411,12 @@ int opendcp_decode_dpx(opendcp_image_t **image_ptr, const char *sfile) {
     int image_size,endian,logarithmic = 0;
     int i,j,w,h,bps,spp;
 
-    /* FIX: add dpx_log option */
+    OPENDCP_LOG(LOG_DEBUG,"DPX decode begin");
+
+    /* FIX: add dpx loogarithmic  option */
     int dpx_log = 0;
 
     /* open dpx using filename or file descriptor */
-    OPENDCP_LOG(LOG_DEBUG,"opening dpx file %s",sfile);
     dpx_fp = fopen(sfile, "rb");
 
     if (!dpx_fp) {
@@ -482,9 +483,7 @@ int opendcp_decode_dpx(opendcp_image_t **image_ptr, const char *sfile) {
     image_size = w * h;
 
     /* create the image */
-    OPENDCP_LOG(LOG_DEBUG,"allocating opendcp image");
     image = opendcp_image_create(3,w,h);
-    OPENDCP_LOG(LOG_DEBUG,"image allocated");
 
     fseek(dpx_fp, r_32(dpx.file.offset, endian), SEEK_SET);
 
@@ -573,7 +572,7 @@ int opendcp_decode_dpx(opendcp_image_t **image_ptr, const char *sfile) {
 
     fclose(dpx_fp);
 
-    OPENDCP_LOG(LOG_DEBUG,"DPX read complete");
+    OPENDCP_LOG(LOG_DEBUG,"DPX decode done");
     *image_ptr = image;
 
     return OPENDCP_NO_ERROR;

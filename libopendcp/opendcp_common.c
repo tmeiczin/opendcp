@@ -373,6 +373,7 @@ int get_asset_type(asset_t asset) {
 
 int opendcp_callback_null(void *args) {
     UNUSED(args);
+
     return OPENDCP_NO_ERROR;
 }
 

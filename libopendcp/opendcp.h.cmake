@@ -25,6 +25,7 @@ extern "C" {
 
 #include <opendcp_image.h>
 #include <stdint.h>
+#include <string.h>
 
 #define MAX_ASSETS          10   /* Soft limit */
 #define MAX_REELS           30   /* Soft limit */
@@ -55,7 +56,8 @@ extern "C" {
 #define DCP_KIND        "feature"
 
 #define UNUSED(x) ( (void)(x) )
-#define OPENDCP_LOG(LEVEL, ...) opendcp_log(LEVEL, __FILE__, __func__, __LINE__, __VA_ARGS__)
+#define BASE_FILE (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
+#define OPENDCP_LOG(LEVEL, ...) opendcp_log(LEVEL, BASE_FILE, __func__, __LINE__, __VA_ARGS__)
 
 /* generate error message */
 #define FOREACH_OPENDCP_ERROR_MSG(OPENDCP_ERROR_MSG) \
@@ -187,7 +189,13 @@ enum COLOR_PROFILE_ENUM {
 };
 
 typedef struct {
-    int  (*callback)(void *);
+    int   level;
+    void  (*callback)(void *, void *);
+    void  *argument;
+} opendcp_log_cb_t;
+
+typedef struct {
+    int   (*callback)(void *);
     void  *argument;
 } opendcp_cb_t;
 
@@ -385,6 +393,7 @@ int         order_indexed_files(char *files[], int nfiles);
 filelist_t *filelist_alloc(int nfiles);
 void        filelist_free(filelist_t *filelist);
 int         strcasefind(const char *s, const char *find);
+void opendcp_log_subscribe(opendcp_log_cb_t *cb);
 
 /* opendcp context */
 opendcp_t *opendcp_create();
