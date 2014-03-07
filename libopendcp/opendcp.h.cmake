@@ -269,8 +269,8 @@ typedef struct {
     char           creator[80];
     char           title[80];
     char           timestamp[30];
-    char           kind[15];
-    char           rating[5];
+    char           kind[32];
+    char           rating[32];
     char           filename[MAX_FILENAME_LENGTH];
     int            reel_count;
     reel_t         reel[MAX_REELS];
