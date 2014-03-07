@@ -213,10 +213,9 @@ void MainWindow::j2kConvert() {
         outFile = outLeftDir % "/" % inLeftList.at(i).completeBaseName() % ".j2c";
         pair << inFile << outFile;
 
-        if (is_filename_ascii(inFile.toUtf8().data()) == 0 ||
-                is_filename_ascii(outFile.toUtf8().data()) == 0) {
-            QMessageBox::critical(this, tr("Invalid Characters in filename"),
-                                 tr("Unicode is not support. Filenames must contain only ASCII characters."));
+        if (is_filename_ascii(inFile.toUtf8().data()) == 0) {
+            QString message = tr("Unicode is not supported. Filenames must contain only ASCII characters. File: ") + inFile.toUtf8().data();
+            QMessageBox::critical(this, tr("Invalid Characters in filename"), message);
             return;
         }
 

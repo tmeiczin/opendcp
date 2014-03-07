@@ -240,8 +240,8 @@ void MainWindow::getPath(QWidget *w)
     }
 
     if (is_filename_ascii(path.toUtf8().data()) == 0) {
-        QMessageBox::critical(this, tr("Invalid Characters in path/filename"),
-                             tr("Unicode is not supported. Filenames must contain only ASCII characters."));
+        QString message = tr("Unicode is not supported. Filenames must contain only ASCII characters. File: ") + path.toUtf8().data();
+        QMessageBox::critical(this, tr("Invalid Characters in path/filename"), message);
         return;
     }
 
@@ -259,8 +259,8 @@ filelist_t *MainWindow::QStringToFilelist(QFileInfoList list)
     while (!list.isEmpty()) {
         sprintf(fileList->files[i++],"%s",list.takeFirst().absoluteFilePath().toUtf8().data());
         if (is_filename_ascii(fileList->files[i-1]) == 0) {
-            QMessageBox::critical(this, tr("Invalid Characters in filename"),
-                                 tr("Unicode is not supported. Filenames must contain only ASCII characters."));
+            QString message = tr("Unicode is not supported. Filenames must contain only ASCII characters. File: ") + fileList->files[i-1];
+            QMessageBox::critical(this, tr("Invalid Characters in filename"), message);
             return NULL;
         }
     }
@@ -273,7 +273,6 @@ int MainWindow::checkFileSequence(QFileInfoList list)
 {
     QString msg;
     int     rc;
-    int     result = OPENDCP_NO_ERROR;
 
     filelist_t *fileList = QStringToFilelist(list);
 
@@ -282,24 +281,31 @@ int MainWindow::checkFileSequence(QFileInfoList list)
         return OPENDCP_ERROR;
     }
 
+    qDebug() << "files: " << fileList->nfiles;
+
     if (order_indexed_files(fileList->files, fileList->nfiles) != OPENDCP_NO_ERROR) {
         if (QMessageBox::question(this, tr("Could not order files"), msg, QMessageBox::No,QMessageBox::Yes) == QMessageBox::No) {
             filelist_free(fileList);
-            result = OPENDCP_ERROR;
+            return OPENDCP_ERROR;
         }
     }
+
     rc = ensure_sequential(fileList->files, fileList->nfiles);
+
+    qDebug() << rc;
 
     if (rc) {
         QTextStream(&msg) << tr("File list does not appear to be sequential between ") << list.at(rc).fileName();
         QTextStream(&msg) << tr(" and ") << list.at(rc+1).fileName() << tr(". Do you wish to continue?");
         if (QMessageBox::question(this, tr("File Sequence Mismatch"), msg, QMessageBox::No,QMessageBox::Yes) == QMessageBox::No) {
-            result = OPENDCP_ERROR;
+            filelist_free(fileList);
+            return OPENDCP_ERROR;
         }
     }
 
     filelist_free(fileList);
-    return result;
+
+    return OPENDCP_NO_ERROR;
 }
 
 void MainWindow::about()
