@@ -121,6 +121,9 @@ int write_cpl_asset(opendcp_t *opendcp, xmlTextWriterPtr xml, asset_t asset) {
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "IntrinsicDuration", "%d", asset.intrinsic_duration);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "EntryPoint", "%d", asset.entry_point);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "Duration", "%d", asset.duration);
+    if ( opendcp->dcp.digest_flag ) {
+        xmlTextWriterWriteFormatElement(xml, BAD_CAST "Hash", "%s", asset.digest);
+    }
 
     if (asset.essence_class == ACT_PICTURE) {
         xmlTextWriterWriteFormatElement(xml, BAD_CAST "FrameRate", "%s", asset.frame_rate);
@@ -130,10 +133,6 @@ int write_cpl_asset(opendcp_t *opendcp, xmlTextWriterPtr xml, asset_t asset) {
         } else {
             xmlTextWriterWriteFormatElement(xml, BAD_CAST "ScreenAspectRatio", "%s", get_aspect_ratio(asset.aspect_ratio));
         }
-    }
-
-    if ( opendcp->dcp.digest_flag ) {
-        xmlTextWriterWriteFormatElement(xml, BAD_CAST "Hash", "%s", asset.digest);
     }
 
     xmlTextWriterEndElement(xml); /* end asset */
