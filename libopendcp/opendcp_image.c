@@ -161,7 +161,9 @@ int opendcp_image_readline(opendcp_image_t *image, int y, unsigned char *dbuffer
 }
 
 int check_image_compliance(int profile, opendcp_image_t *image, char *file) {
-    int          w, h;
+    int w, h;
+    int dci_w = MAX_WIDTH_2K;
+    int dci_h = MAX_HEIGHT_2K;
     opendcp_image_t *tmp;
 
     if (image == NULL) {
@@ -180,26 +182,25 @@ int check_image_compliance(int profile, opendcp_image_t *image, char *file) {
         w = image->w;
     }
 
-    OPENDCP_LOG(LOG_DEBUG, "height: %d width: %d", h, w);
-
-    switch (profile) {
-        case DCP_CINEMA2K:
-            if (!((w == 2048) | (h == 1080))) {
-                return OPENDCP_ERROR;
-            }
-
-            break;
-
-        case DCP_CINEMA4K:
-            if (!((w == 4096) | (h == 2160))) {
-                return OPENDCP_ERROR;
-            }
-
-            break;
-
-        default:
-            break;
+    if (profile == DCP_CINEMA4K) {
+        dci_w = dci_w *2;
+        dci_h = dci_h *2;
     }
+
+    if ((w != dci_w) && (h != dci_h)) {
+        OPENDCP_LOG(LOG_WARN, "image does not match at least one dimension of the DCI container");
+        return OPENDCP_ERROR;
+    }
+
+    if ((w > dci_w) || (h > dci_h)) {
+        OPENDCP_LOG(LOG_WARN, "image dimension exceeds DCI container");
+        return OPENDCP_ERROR;
+    } 
+
+    if ((w % 2) || (h % 2)) { 
+        OPENDCP_LOG(LOG_WARN, "image dimensions are not an even value");
+        return OPENDCP_ERROR;
+    } 
 
     return OPENDCP_NO_ERROR;
 }
@@ -437,6 +438,15 @@ int resize(opendcp_image_t **image, int profile, int method) {
     if (h > MAX_HEIGHT_2K) {
         h = MAX_HEIGHT_2K;
         w = h * aspect;
+    }
+
+    /* the image dimensions must be even values */
+    if (w % 2) { 
+        w = w - 1;
+    }
+
+    if (h % 2) { 
+        h = h - 1;
     }
 
     /* adjust for 4K */

@@ -54,7 +54,6 @@ int convert_to_j2k(opendcp_t *opendcp, char *sfile, char *dfile) {
 
     /* verify image is dci compliant */
     if (check_image_compliance(opendcp->cinema_profile, opendcp_image, NULL) != OPENDCP_NO_ERROR) {
-        OPENDCP_LOG(LOG_WARN, "the image resolution of %s is not DCI Compliant", sfile);
 
         /* resize image */
         if (opendcp->j2k.resize) {
@@ -63,6 +62,7 @@ int convert_to_j2k(opendcp_t *opendcp, char *sfile, char *dfile) {
                 return OPENDCP_ERROR;
             }
         } else {
+            OPENDCP_LOG(LOG_WARN, "the image resolution of %s is not DCI compliant", sfile);
             opendcp_image_free(opendcp_image);
             return OPENDCP_ERROR;
         }
