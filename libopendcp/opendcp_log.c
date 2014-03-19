@@ -44,9 +44,10 @@ void opendcp_log(int level, const char *file, const char *function, int line,  c
     char msg[255];
     va_list vl;
     va_start(vl, fmt);
-    int x;
+    int x, pad;
 
-    snprintf(msg, sizeof(msg), "%s | %5s | %-30s | %-5.5d | %-30s | ", opendcp_log_timestamp(), OPENDCP_LOGLEVEL_NAME[level], file, line, function);
+    pad = 40 - strlen(file) - 4;
+    snprintf(msg, sizeof(msg), "%s | %5s | %s:%-4d %*s | %-30s | ", opendcp_log_timestamp(), OPENDCP_LOGLEVEL_NAME[level], file, line, pad, "", function);
     vsnprintf(msg + strlen(msg), sizeof(msg) - strlen(msg), fmt, vl);
     va_end(vl);
 
