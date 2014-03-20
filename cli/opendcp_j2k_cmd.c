@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 #include <opendcp.h>
 #include <opendcp_encoder.h>
+#include <opendcp_decoder.h>
 #include "opendcp_cli.h"
 
 #ifndef _WIN32
@@ -502,7 +503,12 @@ int main (int argc, char **argv) {
 
     /* get file list */
     OPENDCP_LOG(LOG_DEBUG, "searching path %s", in_path);
-    filelist = get_filelist(in_path, "bmp,dpx,tif,tiff,j2k,j2c,jp2,jpf");
+    
+    char *extensions = opendcp_decoder_extensions();
+
+    filelist = get_filelist(in_path, extensions);
+
+    free(extensions);
 
     if (filelist == NULL || filelist->nfiles < 1) {
         dcp_fatal(opendcp, "No input files located");

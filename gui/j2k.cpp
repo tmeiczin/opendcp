@@ -65,7 +65,7 @@ void MainWindow::j2kConnectSlots()
 void MainWindow::j2kInputSlot(QWidget *w)
 {
     QString path;
-    QString filter = "*.tif;*.tiff;*.dpx;*.bmp";
+    QString filter = "*.tif;*.tiff;*.dpx;*.bmp;*.j2c;*.jp2;*.j2k";
 
     path = QFileDialog::getExistingDirectory(this, tr("Choose a directory of images"), lastDir);
 
@@ -190,7 +190,7 @@ void MainWindow::j2kConvert() {
     QString outLeftDir = ui->outJ2kLeftEdit->text();
     QString outRightDir = ui->outJ2kRightEdit->text();
 
-    QString filter = "*.tif;*.tiff;*.dpx;*.bmp";
+    QString filter = "*.tif;*.tiff;*.dpx;*.bmp;*.j2c;*.j2k;*.jp2";
     QDir inDir(ui->inImageLeftEdit->text());
     inDir.setFilter(QDir::Files | QDir::NoSymLinks);
     inDir.setNameFilters(filter.split(';'));
