@@ -18,6 +18,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "opendcp.h"
 #include "opendcp_decoder.h"
 
@@ -67,4 +68,17 @@ opendcp_decoder_t *opendcp_decoder_find(char *name, char *ext, int id) {
     }
 
     return &opendcp_decoders[OPENDCP_DECODER_NONE];
+}
+
+char *opendcp_decoder_extensions() {
+    int x;
+    char *extensions;
+
+    extensions = malloc(sizeof(char) * 256);
+
+    for (x = 0; x < OPENDCP_DECODER_NONE; x++) {
+        sprintf(extensions, "%s;%s", extensions, opendcp_decoders[x].extensions);
+    }
+
+    return extensions;
 }

@@ -62,3 +62,4 @@ typedef struct {
 } opendcp_decoder_t;
 
 opendcp_decoder_t *opendcp_decoder_find(char *name, char *ext, int id);
+char *opendcp_decoder_extensions();
