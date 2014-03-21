@@ -133,11 +133,11 @@ void build_j2k_filename(const char *in, char *path, char *out) {
     OPENDCP_LOG(LOG_DEBUG, "Building filename from %s", in);
 
     if (!is_dir(path)) {
-        sprintf(out, "%s", path);
+        snprintf(out, MAX_FILENAME_LENGTH, "%s", path);
     }
     else {
         char *base = basename_noext(in);
-        sprintf(out, "%s/%s.j2c", path, base);
+        snprintf(out, MAX_FILENAME_LENGTH, "%s/%s.j2c", path, base);
 
         if (base) {
             free(base);
@@ -508,7 +508,9 @@ int main (int argc, char **argv) {
 
     filelist = get_filelist(in_path, extensions);
 
-    free(extensions);
+    if (extensions != NULL) {
+        free(extensions);
+    }
 
     if (filelist == NULL || filelist->nfiles < 1) {
         dcp_fatal(opendcp, "No input files located");

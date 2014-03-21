@@ -103,7 +103,7 @@ filelist_t *get_filelist(const char *path, const char *filter) {
     if (!S_ISDIR(st_in.st_mode)) {
         OPENDCP_LOG(LOG_DEBUG, "single file mode");
         filelist = filelist_alloc(1);
-        sprintf(filelist->files[0], "%s", path);
+        snprintf(filelist->files[0], MAX_FILENAME_LENGTH, "%s", path);
         return filelist;
     }
 
@@ -140,7 +140,7 @@ filelist_t *get_filelist(const char *path, const char *filter) {
             break;
         }
 
-        strcpy(names[cnt++], de->d_name);
+        snprintf(names[cnt++], strlen(de->d_name) + 1, "%s", de->d_name);
         OPENDCP_LOG(LOG_DEBUG, "Found %s", de->d_name);
     }
 
@@ -152,7 +152,7 @@ filelist_t *get_filelist(const char *path, const char *filter) {
     if (names) {
         while (cnt-- > 0) {
             OPENDCP_LOG(LOG_DEBUG, "Adding file %s", names[cnt]);
-            sprintf(filelist->files[cnt], "%s/%s", path, names[cnt]);
+            snprintf(filelist->files[cnt], MAX_FILENAME_LENGTH, "%s/%s", path, names[cnt]);
             free(names[cnt]);
         }
 
