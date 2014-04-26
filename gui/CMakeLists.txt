@@ -34,7 +34,7 @@ SET(OPENDCP_GUI_H_SRC
     mainwindow.h
     generate_title.h
     conversion_dialog.h
-    mxf_Writer.h
+    mxf_writer.h
     settings.h
     translator.h
 )
