@@ -71,7 +71,7 @@ extern "C" {
         OPENDCP_ERROR_MSG(OPENDCP_INVALID_SOUND_TRACK,     "Invalid sound track type") \
         OPENDCP_ERROR_MSG(OPENDCP_NO_SOUND_TRACK,          "Reel does not contain a sound track") \
         OPENDCP_ERROR_MSG(OPENDCP_MULTIPLE_SOUND_TRACK,    "Reel contains multiple sound tracks") \
-        OPENDCP_ERROR_MSG(OPENDCP_SPECIFICATION_MISMATCH,  "DCP contains MXF and SMPTE track") \
+        OPENDCP_ERROR_MSG(OPENDCP_SPECIFICATION_MISMATCH,  "DCP contains MXF Interop and SMPTE track") \
         OPENDCP_ERROR_MSG(OPENDCP_TRACK_NO_DURATION,       "Track has no duration") \
         OPENDCP_ERROR_MSG(OPENDCP_J2K_ERROR,               "JPEG2000 error") \
         OPENDCP_ERROR_MSG(OPENDCP_CALC_DIGEST,             "Could not calculate MXF digest") \
