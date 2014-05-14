@@ -581,6 +581,17 @@ int validate_reel(opendcp_t *opendcp, reel_t *reel, int reel_number) {
         return OPENDCP_MULTIPLE_PICTURE_TRACK;
     }
 
+    /* check specification */
+    if (reel->main_sound.duration && reel->main_picture.xml_ns != reel->main_sound.xml_ns) {
+        OPENDCP_LOG(LOG_ERROR, "Warning DCP specification mismatch in assets. Please make sure all assets are MXF Interop or SMPTE");
+        return OPENDCP_SPECIFICATION_MISMATCH;
+    }
+
+    if (reel->main_subtitle.duration && reel->main_picture.xml_ns != reel->main_subtitle.xml_ns) {
+        OPENDCP_LOG(LOG_ERROR, "Warning DCP specification mismatch in assets. Please make sure all assets are MXF Interop or SMPTE");
+        return OPENDCP_SPECIFICATION_MISMATCH;
+    }
+
     d = reel->main_picture.duration;
 
     /* check durations */

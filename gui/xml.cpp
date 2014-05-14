@@ -96,6 +96,8 @@ void MainWindow::startDcp()
     QString     path;
     QMessageBox msgBox;
     QString     DCP_FAIL_MSG;
+    QString     message; 
+    int         rc;
 
     // get dcp destination directory
     path = QFileDialog::getExistingDirectory(this, tr("Choose destination folder"), lastDir);
@@ -119,6 +121,7 @@ void MainWindow::startDcp()
     }
 
     opendcp_log_init(xmlContext->log_level);
+    xmlContext->ns = XML_NS_UNKNOWN;
 
     // set XML attribues
     strncpy(xmlContext->dcp.title, ui->cplTitleEdit->text().toUtf8().constData(), sizeof(xmlContext->dcp.title));
@@ -206,8 +209,10 @@ void MainWindow::startDcp()
     xmlContext->dcp.pkl[0].cpl[0].reel[0].main_subtitle.duration    = ui->reelSubtitleDurationSpinBox->value();
     xmlContext->dcp.pkl[0].cpl[0].reel[0].main_subtitle.entry_point = ui->reelSubtitleOffsetSpinBox->value();
 
-    if (validate_reel(xmlContext, &xmlContext->dcp.pkl[0].cpl[0].reel[0], 0) != OPENDCP_NO_ERROR) {
-        QMessageBox::critical(this, DCP_FAIL_MSG, tr("Could not valiate reel."));
+    rc = validate_reel(xmlContext, &xmlContext->dcp.pkl[0].cpl[0].reel[0], 0);
+    if (rc) {
+        message = tr(OPENDCP_ERROR_STRING[rc]);
+        QMessageBox::critical(this, DCP_FAIL_MSG, message);
         goto Done;
     }
 
@@ -251,7 +256,6 @@ void MainWindow::startDcp()
 
     msgBox.setText("DCP Created successfully");
     msgBox.exec();
-
 
 Done:
     opendcp_delete(xmlContext);
