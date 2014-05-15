@@ -211,6 +211,7 @@ int ensure_sequential(char *files[], int nfiles) {
 
     for (i = 0; i < nfiles - 1; i++) {
         if (get_index(files[i], prefix_len) + 1 != get_index(files[i + 1], prefix_len)) {
+            if (!i) { i++; }
             return i;
         }
     }
@@ -227,7 +228,7 @@ This function will order a list of filenames of the form:
   <index>N* or N*<index>
 
 where:
-  <index> is the longest (though possibly empty) common prefix/suffic of all the
+  <index> is the longest (though possibly empty) common prefix/suffix of all the
   files.
   N is some decimal number which I call its "index".
   N is unique for each file.
@@ -592,9 +593,9 @@ int validate_reel(opendcp_t *opendcp, reel_t *reel, int reel_number) {
         return OPENDCP_SPECIFICATION_MISMATCH;
     }
 
+    /* check durations */
     d = reel->main_picture.duration;
 
-    /* check durations */
     if (reel->main_sound.duration && reel->main_sound.duration != d) {
         duration_mismatch = 1;
 

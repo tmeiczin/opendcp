@@ -124,11 +124,11 @@ void MainWindow::startDcp()
     xmlContext->ns = XML_NS_UNKNOWN;
 
     // set XML attribues
-    strncpy(xmlContext->dcp.title, ui->cplTitleEdit->text().toUtf8().constData(), sizeof(xmlContext->dcp.title));
-    strncpy(xmlContext->dcp.annotation, ui->cplAnnotationEdit->text().toUtf8().constData(), sizeof(xmlContext->dcp.annotation));
-    strncpy(xmlContext->dcp.issuer, ui->cplIssuerEdit->text().toUtf8().constData(), sizeof(xmlContext->dcp.issuer));
-    strncpy(xmlContext->dcp.kind, ui->cplKindComboBox->currentText().toUtf8().constData(), sizeof(xmlContext->dcp.kind));
-    strncpy(xmlContext->dcp.rating, ui->cplRatingComboBox->currentText().toUtf8().constData(), sizeof(xmlContext->dcp.rating));
+    snprintf(xmlContext->dcp.title, sizeof(xmlContext->dcp.title), "%s", ui->cplTitleEdit->text().toUtf8().constData());
+    snprintf(xmlContext->dcp.annotation, sizeof(xmlContext->dcp.annotation), "%s", ui->cplAnnotationEdit->text().toUtf8().constData());
+    snprintf(xmlContext->dcp.issuer, sizeof(xmlContext->dcp.issuer), "%s", ui->cplIssuerEdit->text().toUtf8().constData());
+    snprintf(xmlContext->dcp.kind, sizeof(xmlContext->dcp.kind), "%s", ui->cplKindComboBox->currentText().toUtf8().constData());
+    snprintf(xmlContext->dcp.rating, sizeof(xmlContext->dcp.rating), "%s", ui->cplRatingComboBox->currentText().toUtf8().constData());
 
     // check picture track is supplied
     if (ui->reelPictureEdit->text().isEmpty()) {
@@ -216,8 +216,8 @@ void MainWindow::startDcp()
         goto Done;
     }
 
-    snprintf(xmlContext->dcp.pkl[0].cpl[0].filename, sizeof(xmlContext->dcp.pkl[0].cpl[0].filename), "%s/%s_cpl.xml", path.toUtf8().constData(), xmlContext->dcp.pkl[0].cpl[0].uuid);
-    snprintf(xmlContext->dcp.pkl[0].filename, sizeof(xmlContext->dcp.pkl[0].filename), "%s/%s_pkl.xml", path.toUtf8().constData(), xmlContext->dcp.pkl[0].uuid);
+    snprintf(xmlContext->dcp.pkl[0].cpl[0].filename, sizeof(xmlContext->dcp.pkl[0].cpl[0].filename), "%s/CPL_%s.xml", path.toUtf8().constData(), xmlContext->dcp.pkl[0].cpl[0].uuid);
+    snprintf(xmlContext->dcp.pkl[0].filename, sizeof(xmlContext->dcp.pkl[0].filename), "%s/PKL_%s.xml", path.toUtf8().constData(), xmlContext->dcp.pkl[0].uuid);
 
     if (xmlContext->ns == XML_NS_SMPTE) {
         snprintf(xmlContext->dcp.assetmap.filename, sizeof(xmlContext->dcp.assetmap.filename), "%s/ASSETMAP.xml",path.toUtf8().constData());
@@ -300,7 +300,7 @@ void MainWindow::setPictureTrack()
                               tr("The selected file is not a valid MXF picture track."));
     } else {
         ui->reelPictureEdit->setProperty("text", path);
-        strncpy(pictureAsset.filename, ui->reelPictureEdit->text().toUtf8().constData(), sizeof(pictureAsset.filename));
+        snprintf(pictureAsset.filename, sizeof(pictureAsset.filename), "%s", ui->reelPictureEdit->text().toUtf8().constData());
         read_asset_info(&pictureAsset);
         ui->reelPictureDurationSpinBox->setMaximum(pictureAsset.intrinsic_duration);
         ui->reelPictureDurationSpinBox->setValue(pictureAsset.duration);
@@ -330,7 +330,7 @@ void MainWindow::setSoundTrack()
                              tr("The selected file is not a valid MXF sound track."));
     } else {
         ui->reelSoundEdit->setProperty("text", path);
-        strncpy(soundAsset.filename, ui->reelSoundEdit->text().toUtf8().constData(), sizeof(soundAsset.filename));
+        snprintf(soundAsset.filename, sizeof(soundAsset.filename), "%s", ui->reelSoundEdit->text().toUtf8().constData());
         read_asset_info(&soundAsset);
         ui->reelSoundDurationSpinBox->setMaximum(soundAsset.intrinsic_duration);
         ui->reelSoundDurationSpinBox->setValue(soundAsset.duration);
@@ -360,7 +360,7 @@ void MainWindow::setSubtitleTrack()
                               tr("The selected file is not a valid MXF subtitle track."));
     } else {
         ui->reelSubtitleEdit->setProperty("text", path);
-        strncpy(subtitleAsset.filename, ui->reelSubtitleEdit->text().toUtf8().constData(), sizeof(subtitleAsset.filename));
+        snprintf(subtitleAsset.filename, sizeof(subtitleAsset.filename), "%s", ui->reelSubtitleEdit->text().toUtf8().constData());
         read_asset_info(&subtitleAsset);
         ui->reelSubtitleDurationSpinBox->setMaximum(subtitleAsset.intrinsic_duration);
         ui->reelSubtitleDurationSpinBox->setValue(subtitleAsset.duration);

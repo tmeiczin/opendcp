@@ -165,7 +165,7 @@ int write_pkl_asset(opendcp_t *opendcp, xmlTextWriterPtr xml, asset_t asset) {
         }
     }
 
-    xmlTextWriterWriteFormatElement(xml, BAD_CAST "OriginalFileName", "%s", asset.filename);
+    xmlTextWriterWriteFormatElement(xml, BAD_CAST "OriginalFileName", "%s", basename(asset.filename));
     xmlTextWriterEndElement(xml);      /* end asset */
 
     return OPENDCP_NO_ERROR;
@@ -383,7 +383,7 @@ int write_pkl(opendcp_t *opendcp, pkl_t *pkl) {
             xmlTextWriterWriteFormatElement(xml, BAD_CAST "Type", "%s", "text/xml;asdcpKind=CPL");
         }
 
-        xmlTextWriterWriteFormatElement(xml, BAD_CAST "OriginalFileName", "%s", cpl.filename);
+        xmlTextWriterWriteFormatElement(xml, BAD_CAST "OriginalFileName", "%s", basename(cpl.filename));
         xmlTextWriterEndElement(xml);      /* end cpl asset */
     }
 

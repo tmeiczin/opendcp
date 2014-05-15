@@ -331,7 +331,7 @@ typedef struct {
     char           annotation[128];
     char           title[80];
     char           kind[15];
-    char           rating[5];
+    char           rating[6];
     char           aspect_ratio[20];
     int            digest_flag;
     int            pkl_count;
