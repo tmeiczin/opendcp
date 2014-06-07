@@ -77,7 +77,7 @@ void dcp_fatal(opendcp_t *opendcp, char *format, ...) {
     va_list args;
     va_start(args, format);
     vsnprintf(msg, sizeof(msg), format, args);
-    OPENDCP_LOG(LOG_ERROR, msg);
+    fprintf(stderr, "%s\n", msg);
     va_end(args);
     opendcp_delete(opendcp);
     exit(OPENDCP_ERROR);
@@ -102,6 +102,80 @@ char *base64(const unsigned char *data, int length) {
 }
 */
 
+int htob(int x) {
+    if (x >= '0' && x <= '9')
+        return x - '0';
+
+    if (x >= 'A' && x <= 'F')
+        return x - 'A' + 10;
+
+    if (x >= 'a' && x <= 'f')
+        return x - 'a' + 10;
+
+    return 0;
+}
+
+int hex2bin(const char *str, byte_t *buf, unsigned int buf_len) {
+    int i, x = 0;
+
+    /* nothing to do */
+    if (str[0] == 0) {
+        return 0;
+    }
+
+    /* buffer isn't big enough */
+    if (strlen(str)/2 > buf_len) {
+        return 1;
+    }
+
+    /* iterate and convert */
+    for ( i = 0; str[i]; i+=2 ) {
+        if (!isxdigit(str[i]) || !isxdigit(str[i+1])) {
+            return 1;
+        }
+        buf[x++] = (htob(str[i]) << 4) | htob(str[i+1]);
+    }
+
+    return OPENDCP_NO_ERROR;
+}
+
+int is_key_value_set(byte_t *key, int len) {
+    int i;
+
+    for(i = 0; i < len / (int)sizeof(byte_t); i++) {
+        if (key[i]) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+int is_uuid(const char *s) {
+    return is_key(s);
+}
+
+int is_key(const char *s) {
+    int i, len;
+    char strip[40] = "";
+
+    strnchrdel(s, strip, sizeof(strip), '-');
+
+    len = strlen(strip);
+
+    if (len != 32) {
+        return 0;
+    }
+
+    for (i = 0; i < len; i++) {
+        if (isxdigit(strip[i]) == 0) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
 int is_filename_ascii(const char *s) {
     int i, len;
 
@@ -114,6 +188,27 @@ int is_filename_ascii(const char *s) {
     }
 
     return 1;
+}
+
+void strnchrdel(const char *src, char *dst, int dst_len, char d) {
+    int count = 0;
+
+    /* get the number of occurrences */
+    for (int i = 0; src[i]; i++) {
+        count = src[i] == d ? count++ : count;
+    }
+
+    /* adjust length to be the smaller of the two */
+    int len = dst_len > (int)strlen(src) - count ? strlen(src) - count : dst_len;
+
+    for (int i = 0; i < len; i++) {
+        if (src[i] != d) {
+            *dst++ = src[i];
+        } else {
+            len++;
+        }
+    }
+    *dst = '\0';
 }
 
 int strcasefind(const char *s, const char *find) {
@@ -406,6 +501,7 @@ opendcp_t *opendcp_create() {
     sprintf(opendcp->dcp.title, "%.80s", DCP_TITLE);
     sprintf(opendcp->dcp.kind, "%.15s", DCP_KIND);
     get_timestamp(opendcp->dcp.timestamp);
+    opendcp->mxf.write_hmac = 1;
 
     /* initialize callbacks */
     opendcp->mxf.frame_done.callback  = opendcp_callback_null;

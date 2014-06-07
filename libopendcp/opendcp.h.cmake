@@ -247,6 +247,8 @@ typedef struct {
     char           aspect_ratio[20];
     char           digest[40];
     char           filename[MAX_FILENAME_LENGTH];
+    int            encrypted;
+    char           key_id[40];
 } asset_t;
 
 typedef struct {
@@ -392,8 +394,13 @@ int         ensure_sequential(char *files[], int nfiles);
 int         order_indexed_files(char *files[], int nfiles);
 filelist_t *filelist_alloc(int nfiles);
 void        filelist_free(filelist_t *filelist);
+void        strnchrdel(const char *src, char *dst, int dst_len, char d);
 int         strcasefind(const char *s, const char *find);
-void opendcp_log_subscribe(opendcp_log_cb_t *cb);
+void        opendcp_log_subscribe(opendcp_log_cb_t *cb);
+int         hex2bin(const char* str, byte_t* buf, unsigned int buf_len);
+int         is_key(const char *s);
+int         is_uuid(const char *s);
+int         is_key_value_set(byte_t *key, int len);
 
 /* opendcp context */
 opendcp_t *opendcp_create();

@@ -56,6 +56,8 @@ void dcp_usage() {
     fprintf(fp, "       -d | --end  <frame>            - end frame\n");
     fprintf(fp, "       -p | --slideshow  <duration>   - create slideshow with each image having duration specified (in seconds)\n");
     fprintf(fp, "       -l | --log_level <level>       - Sets the log level 0:Quiet, 1:Error, 2:Warn (default),  3:Info, 4:Debug\n");
+    fprintf(fp, "       -k | --key <key>               - set encryption key (this enables encryption)\n");
+    fprintf(fp, "       -u | --key_id <key id>         - set encryption key id (leaving blank generates a random uuid)\n");
     fprintf(fp, "       -h | --help                    - show help\n");
     fprintf(fp, "       -v | --version                 - show version\n");
     fprintf(fp, "\n\n");
@@ -166,6 +168,8 @@ int main (int argc, char **argv) {
     char *in_path_right = NULL;
     char *out_path = NULL;
     filelist_t *filelist;
+    char key_id[40];
+    int key_id_flag = 0;
 
     if (argc <= 1) {
         dcp_usage();
@@ -184,6 +188,8 @@ int main (int argc, char **argv) {
     {
         static struct option long_options[] =
         {
+            {"key_id",         required_argument, 0, 'u'},
+            {"key",            required_argument, 0, 'k'},
             {"help",           required_argument, 0, 'h'},
             {"input",          required_argument, 0, 'i'},
             {"left",           required_argument, 0, '1'},
@@ -202,7 +208,7 @@ int main (int argc, char **argv) {
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "1:2:d:i:n:o:r:s:p:l:3hv",
+        c = getopt_long (argc, argv, "1:2:d:i:k:n:o:r:s:p:u:l:3hv",
                          long_options, &option_index);
 
         /* Detect the end of the options. */
@@ -305,6 +311,33 @@ int main (int argc, char **argv) {
 
                 break;
 
+            case 'k':
+                if (!is_key(optarg)) {
+                   dcp_fatal(opendcp, "Invalid encryption key format");
+                }
+
+                if (hex2bin(optarg, opendcp->mxf.key_value, 16)) {
+                   dcp_fatal(opendcp, "Invalid encryption key format");
+                }
+
+                opendcp->mxf.key_flag = 1;
+
+                break;
+
+            case 'u':
+                if (!is_uuid(optarg)) {
+                   dcp_fatal(opendcp, "Invalid encryption key id format");
+                }
+
+                strnchrdel(optarg, key_id, sizeof(key_id), '-');
+
+                if (hex2bin(key_id, opendcp->mxf.key_id, 16)) {
+                   dcp_fatal(opendcp, "Invalid encryption key format");
+                }
+
+                key_id_flag = 1;
+                break;
+
             case 'v':
                 version();
                 break;
@@ -359,6 +392,10 @@ int main (int argc, char **argv) {
 
     if (filelist->nfiles < 1) {
         dcp_fatal(opendcp, "No input files located");
+    }
+
+    if (opendcp->mxf.key_flag && key_id_flag == 0) {
+        memset(opendcp->mxf.key_id, 0, sizeof(opendcp->mxf.key_id));
     }
 
 #ifdef _WIN32

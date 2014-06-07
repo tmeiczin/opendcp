@@ -121,6 +121,9 @@ int write_cpl_asset(opendcp_t *opendcp, xmlTextWriterPtr xml, asset_t asset) {
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "IntrinsicDuration", "%d", asset.intrinsic_duration);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "EntryPoint", "%d", asset.entry_point);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "Duration", "%d", asset.duration);
+    if ( asset.encrypted ) {
+        xmlTextWriterWriteFormatElement(xml, BAD_CAST "KeyId", "%s%s", "urn:uuid:", asset.key_id);
+    }
     if ( opendcp->dcp.digest_flag ) {
         xmlTextWriterWriteFormatElement(xml, BAD_CAST "Hash", "%s", asset.digest);
     }

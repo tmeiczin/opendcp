@@ -384,6 +384,14 @@ extern "C" int read_asset_info(asset_t *asset) {
         }
     }
 
+    /* add encrypted info, if applicable */
+    if (info.EncryptedEssence) {
+        asset->encrypted  = 1;
+        sprintf(asset->key_id, "%.36s", Kumu::bin2UUIDhex(info.CryptographicKeyID, 16, uuid_buffer, 64));
+    } else {
+        asset->encrypted  = 0;
+    }
+
     return OPENDCP_NO_ERROR;
 }
 
@@ -469,7 +477,7 @@ Result_t fill_writer_info(opendcp_t *opendcp, writer_info_t *writer_info) {
         Kumu::GenRandomUUID(writer_info->info.ContextID);
         writer_info->info.EncryptedEssence = true;
 
-        if (opendcp->mxf.key_id) {
+        if (is_key_value_set(opendcp->mxf.key_id, sizeof(opendcp->mxf.key_id))) {
             memcpy(writer_info->info.CryptographicKeyID, opendcp->mxf.key_id, UUIDlen);
         } else {
             rng.FillRandom(writer_info->info.CryptographicKeyID, UUIDlen);
