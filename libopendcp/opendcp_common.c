@@ -195,7 +195,9 @@ void strnchrdel(const char *src, char *dst, int dst_len, char d) {
 
     /* get the number of occurrences */
     for (i = 0; src[i]; i++) {
-        count = src[i] == d ? count++ : count;
+        if (src[i] == d) {
+            count++;
+        }
     }
 
     /* adjust length to be the smaller of the two */
