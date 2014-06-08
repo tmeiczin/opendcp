@@ -1275,6 +1275,9 @@
              <bold>false</bold>
             </font>
            </property>
+           <property name="toolTip">
+            <string>Enter a valid UUID, leave blank to auto-generate one</string>
+           </property>
            <property name="inputMask">
             <string notr="true">HHHHHHHH-HHHH-HHHH-HHHH-HHHHHHHHHHHH; </string>
            </property>
@@ -1311,6 +1314,9 @@
              <bold>false</bold>
             </font>
            </property>
+           <property name="toolTip">
+            <string>Enter a 32 character hex string</string>
+           </property>
            <property name="inputMethodHints">
             <set>Qt::ImhNone</set>
            </property>
@@ -1341,6 +1347,9 @@
              <width>145</width>
              <height>18</height>
             </rect>
+           </property>
+           <property name="toolTip">
+            <string>Enable to encrypt MXF. This requires a KDM tool to generate keys.</string>
            </property>
            <property name="text">
             <string>Enable Encryption</string>

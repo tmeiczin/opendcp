@@ -191,17 +191,17 @@ int is_filename_ascii(const char *s) {
 }
 
 void strnchrdel(const char *src, char *dst, int dst_len, char d) {
-    int count = 0;
+    int i, len, count = 0;
 
     /* get the number of occurrences */
-    for (int i = 0; src[i]; i++) {
+    for (i = 0; src[i]; i++) {
         count = src[i] == d ? count++ : count;
     }
 
     /* adjust length to be the smaller of the two */
-    int len = dst_len > (int)strlen(src) - count ? strlen(src) - count : dst_len;
+    len = dst_len > (int)strlen(src) - count ? (int)strlen(src) - count : dst_len;
 
-    for (int i = 0; i < len; i++) {
+    for (i = 0; i < len; i++) {
         if (src[i] != d) {
             *dst++ = src[i];
         } else {
