@@ -68,6 +68,7 @@ public slots:
     void mxfSourceTypeUpdate();
     void mxfSetStereoscopicState();
     void mxfSetSlideState();
+    void mxfSetEncryptionState();
     void mxfSetHVState();
     void mxfSetSoundState();
     void mxfSetSound71State(int state);

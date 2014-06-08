@@ -63,6 +63,7 @@ void MainWindow::mxfConnectSlots() {
     connect(ui->mxfButton,               SIGNAL(clicked()),                this, SLOT(mxfStart()));
     connect(ui->subCreateButton,         SIGNAL(clicked()),                this, SLOT(mxfCreateSubtitle()));
     connect(ui->mxfSlideCheckBox,        SIGNAL(stateChanged(int)),        this, SLOT(mxfSetSlideState()));
+    connect(ui->mxfEncryptionCheckBox,   SIGNAL(stateChanged(int)),        this, SLOT(mxfSetEncryptionState()));
 
     // Picture input
     signalMapper.setMapping(ui->pictureLeftButton,  ui->pictureLeftEdit);
@@ -120,6 +121,7 @@ void MainWindow::mxfSetInitialState() {
     mxfSetHVState();
     mxfSetSoundState();
     mxfSetSlideState();
+    mxfSetEncryptionState();
 }
 
 void MainWindow::mxfSoundOutputSlot() {
@@ -202,6 +204,14 @@ void MainWindow::mxfSetSlideState() {
 
     ui->mxfSlideSpinBox->setEnabled(value);
     ui->mxfSlideDurationLabel->setEnabled(value);
+}
+
+void MainWindow::mxfSetEncryptionState() {
+    int value;
+
+    value = ui->mxfEncryptionCheckBox->checkState();
+    ui->mxfKeyEdit->setEnabled(value);
+    ui->mxfKeyIdEdit->setEnabled(value);
 }
 
 void MainWindow::mxfSourceTypeUpdate() {
@@ -515,6 +525,15 @@ void MainWindow::mxfCreateSubtitle() {
     inputList.append(QFileInfo(ui->subInEdit->text()));
     outputFile = ui->sMxfOutEdit->text();
 
+    // copy keys if encrypted, and set flag
+    if (ui->mxfEncryptionCheckBox->isChecked()) {
+        QString keyId = ui->mxfKeyIdEdit->text().replace("-", "");
+        QString keyValue = ui->mxfKeyIdEdit->text();
+        memcpy(opendcp->mxf.key_id, QByteArray::fromHex(keyId.toLatin1()), 16);
+        memcpy(opendcp->mxf.key_value, QByteArray::fromHex(keyValue.toLatin1()), 16);
+        opendcp->mxf.key_flag = 1;
+    }
+
     mxfStartThread(opendcp, inputList, outputFile);
 
     opendcp_delete(opendcp);
@@ -550,6 +569,16 @@ void MainWindow::mxfCreateAudio() {
                                              opendcp->frame_rate);
 
     outputFile = ui->aMxfOutEdit->text();
+
+    // copy keys if encrypted, and set flag
+    if (ui->mxfEncryptionCheckBox->isChecked()) {
+        QString keyId = ui->mxfKeyIdEdit->text().replace("-", "");
+        QString keyValue = ui->mxfKeyIdEdit->text();
+        memcpy(opendcp->mxf.key_id, QByteArray::fromHex(keyId.toLatin1()), 16);
+        memcpy(opendcp->mxf.key_value, QByteArray::fromHex(keyValue.toLatin1()), 16);
+        opendcp->mxf.key_flag = 1;
+    }
+
     mxfStartThread(opendcp, inputList, outputFile);
 
     opendcp_delete(opendcp);
@@ -623,6 +652,15 @@ void MainWindow::mxfCreatePicture() {
         opendcp->mxf.duration = ui->mxfSlideSpinBox->value() * opendcp->frame_rate * inputList.size();
     } else {
         opendcp->mxf.duration = inputList.size();
+    }
+
+    // copy keys if encrypted, and set flag
+    if (ui->mxfEncryptionCheckBox->isChecked()) {
+        QString keyId = ui->mxfKeyIdEdit->text().replace("-", "");
+        QString keyValue = ui->mxfKeyIdEdit->text();
+        memcpy(opendcp->mxf.key_id, QByteArray::fromHex(keyId.toLatin1()), 16);
+        memcpy(opendcp->mxf.key_value, QByteArray::fromHex(keyValue.toLatin1()), 16);
+        opendcp->mxf.key_flag = 1;
     }
 
     if (inputList.size() < 1) {

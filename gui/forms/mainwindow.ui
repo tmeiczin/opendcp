@@ -60,8 +60,11 @@
           <height>800</height>
          </rect>
         </property>
+        <property name="inputMethodHints">
+         <set>Qt::ImhNone</set>
+        </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="j2kTab">
          <attribute name="title">
@@ -1112,10 +1115,10 @@
           <widget class="QComboBox" name="mxfTypeComboBox">
            <property name="geometry">
             <rect>
-             <x>130</x>
+             <x>100</x>
              <y>60</y>
              <width>120</width>
-             <height>27</height>
+             <height>26</height>
             </rect>
            </property>
            <item>
@@ -1145,10 +1148,10 @@
           <widget class="QComboBox" name="mxfFrameRateComboBox">
            <property name="geometry">
             <rect>
-             <x>130</x>
+             <x>100</x>
              <y>90</y>
              <width>120</width>
-             <height>27</height>
+             <height>26</height>
             </rect>
            </property>
            <item>
@@ -1198,11 +1201,17 @@
           <widget class="QComboBox" name="mxfSourceTypeComboBox">
            <property name="geometry">
             <rect>
-             <x>130</x>
+             <x>100</x>
              <y>30</y>
              <width>120</width>
-             <height>27</height>
+             <height>26</height>
             </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>25</verstretch>
+            </sizepolicy>
            </property>
            <item>
             <property name="text">
@@ -1219,6 +1228,123 @@
              <string notr="true">WAV</string>
             </property>
            </item>
+          </widget>
+          <widget class="QLabel" name="mxfKeyLabel">
+           <property name="geometry">
+            <rect>
+             <x>235</x>
+             <y>60</y>
+             <width>51</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Key:</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="mxfKeyIdLabel">
+           <property name="geometry">
+            <rect>
+             <x>235</x>
+             <y>90</y>
+             <width>51</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Key ID:</string>
+           </property>
+          </widget>
+          <widget class="QLineEdit" name="mxfKeyIdEdit">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="geometry">
+            <rect>
+             <x>285</x>
+             <y>90</y>
+             <width>300</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <family>Courier New</family>
+             <pointsize>13</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="inputMask">
+            <string notr="true">HHHHHHHH-HHHH-HHHH-HHHH-HHHHHHHHHHHH; </string>
+           </property>
+           <property name="text">
+            <string notr="true">00000000-0000-0000-0000-000000000000</string>
+           </property>
+           <property name="maxLength">
+            <number>36</number>
+           </property>
+           <property name="cursorPosition">
+            <number>36</number>
+           </property>
+           <property name="placeholderText">
+            <string notr="true"/>
+           </property>
+          </widget>
+          <widget class="QLineEdit" name="mxfKeyEdit">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="geometry">
+            <rect>
+             <x>285</x>
+             <y>60</y>
+             <width>300</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <family>Courier New</family>
+             <pointsize>13</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="inputMethodHints">
+            <set>Qt::ImhNone</set>
+           </property>
+           <property name="inputMask">
+            <string notr="true">HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH; </string>
+           </property>
+           <property name="text">
+            <string notr="true">00000000000000000000000000000000</string>
+           </property>
+           <property name="maxLength">
+            <number>32</number>
+           </property>
+           <property name="frame">
+            <bool>true</bool>
+           </property>
+           <property name="cursorPosition">
+            <number>32</number>
+           </property>
+           <property name="placeholderText">
+            <string notr="true"/>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="mxfEncryptionCheckBox">
+           <property name="geometry">
+            <rect>
+             <x>235</x>
+             <y>35</y>
+             <width>145</width>
+             <height>18</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Enable Encryption</string>
+           </property>
           </widget>
          </widget>
          <widget class="QPushButton" name="mxfButton">
@@ -1244,7 +1370,7 @@
            </rect>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="page_1">
            <widget class="QGroupBox" name="inputPGroupBox">
@@ -1509,6 +1635,9 @@
                <height>25</height>
               </rect>
              </property>
+             <property name="specialValueText">
+              <string notr="true"/>
+             </property>
              <property name="suffix">
               <string notr="true">s</string>
              </property>
@@ -1555,7 +1684,7 @@
               <rect>
                <x>10</x>
                <y>29</y>
-               <width>202</width>
+               <width>203</width>
                <height>24</height>
               </rect>
              </property>
@@ -1620,7 +1749,7 @@
                  <x>10</x>
                  <y>25</y>
                  <width>581</width>
-                 <height>326</height>
+                 <height>352</height>
                 </rect>
                </property>
                <layout class="QGridLayout" name="gridLayout_2">
@@ -2082,7 +2211,7 @@
                 <rect>
                  <x>10</x>
                  <y>31</y>
-                 <width>399</width>
+                 <width>437</width>
                  <height>24</height>
                 </rect>
                </property>
@@ -2397,7 +2526,7 @@
              <x>130</x>
              <y>60</y>
              <width>120</width>
-             <height>27</height>
+             <height>26</height>
             </rect>
            </property>
            <item>
@@ -2425,7 +2554,7 @@
              <x>130</x>
              <y>30</y>
              <width>171</width>
-             <height>27</height>
+             <height>26</height>
             </rect>
            </property>
            <item>
