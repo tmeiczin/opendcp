@@ -46,22 +46,13 @@ ENDIF()
 #-----------------------------------------------------------------------------
 
 #--google parameters----------------------------------------------------------
-SET(UPLOADER ${PROJECT_SOURCE_DIR}/scripts/googlecode_upload.py)
-SET(GOOGLE_PROJECT ${PROJECT_NAME})
-SET(USER terrence72@gmail.com)
-SET(SUMMARY "OpenDCP ${OPENDCP_VERSION} ${SYSTEM_STRING}")
+SET(UPLOADER ${PROJECT_SOURCE_DIR}/scripts/publish.py)
 SET(UPLOAD_FILE ${PROJECT_BINARY_DIR}/${PACKAGE_FILE_NAME})
-SET(CONFIG_FILE "$ENV{HOME}/.opendcp/google.txt")
-IF(EXISTS ${CONFIG_FILE})
-    FILE(READ ${CONFIG_FILE} PASSWORD)
-    STRING(REGEX REPLACE "\n" "" PASSWORD "${PASSWORD}")
-    SET(PASSWORD "--password=${PASSWORD}")    
-ENDIF()
 #-----------------------------------------------------------------------------
 
 #--upload target--------------------------------------------------------------
-MESSAGE(STATUS "${UPLOADER} -s \"${SUMMARY}\" -p \"${GOOGLE_PROJECT}\" -u \"${USER}\" ${PASSWORD} -l \"${LABELS}\" ${UPLOAD_FILE}")
+MESSAGE(STATUS "${UPLOADER} ${UPLOAD_FILE}")
 ADD_CUSTOM_TARGET(upload
-  COMMAND ${UPLOADER} -s "${SUMMARY}" -p "${GOOGLE_PROJECT}" -u "${USER}" ${PASSWORD} -l "${LABELS}" ${UPLOAD_FILE}
+  COMMAND ${UPLOADER} ${UPLOAD_FILE}
 )
 #-----------------------------------------------------------------------------

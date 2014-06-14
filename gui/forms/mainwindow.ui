@@ -1291,9 +1291,6 @@
            <property name="cursorPosition">
             <number>36</number>
            </property>
-           <property name="placeholderText">
-            <string notr="true"/>
-           </property>
           </widget>
           <widget class="QLineEdit" name="mxfKeyEdit">
            <property name="enabled">
@@ -1335,9 +1332,6 @@
            </property>
            <property name="cursorPosition">
             <number>32</number>
-           </property>
-           <property name="placeholderText">
-            <string notr="true"/>
            </property>
           </widget>
           <widget class="QCheckBox" name="mxfEncryptionCheckBox">

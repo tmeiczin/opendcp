@@ -6,6 +6,7 @@ import urllib
 import hashlib 
 import os
 import re
+import sys
 
 
 class BinTray(object):
@@ -203,13 +204,20 @@ class Publish(object):
         bintray = BinTray()
         bintray.upload(self.downloaded_files)
 
+package = None
+if len(sys.argv) > 1:
+    package = sys.argv[1]
+
 print '---------------'
 print 'OpenDCP Publish'
 print '---------------'
 p = Publish()
 
-print 'Downloading OpenDCP files from build.opensuse.org'
-p.download()
+if not package:
+    print 'Downloading OpenDCP files from build.opensuse.org'
+    p.download()
+else:
+    p.downloaded_files = [package]
 
 print '\nUploading OpenDCP files to bintray.com'
 p.upload()
