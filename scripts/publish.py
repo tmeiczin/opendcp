@@ -148,6 +148,9 @@ class Publish(object):
         self.downloaded_files = []
         
     def md5_checksum(self, filename, md5):
+        if not md5:
+            return True
+
         with open(filename, 'rb') as fh:
             m = hashlib.md5()
             while True:
@@ -161,16 +164,14 @@ class Publish(object):
 
         return False
 
+    def replace_os(self, filename):
+        filename = filename.replace('centos_centos-6', 'centos_6')
+        filename = filename.replace('redhat_rhel-6', 'rhel_6')
+
+        return filename
+
     def get_links(self):
         print 'Getting OpenDCP URLs'
-        self.ob_files = [
-                {'name': 'xUbuntu_10.04',
-                 'url': 'http://download.opensuse.org/repositories/home:/tmeiczin:/opendcp/xUbuntu_10.04/amd64/opendcp_0.29.0_amd64.deb',
-                 'md5': '8caedb81b54b44b47484ec5978003153'},
-                {'name': 'Fedora_20',
-                 'url': 'http://download.opensuse.org/repositories/home:/tmeiczin:/opendcp/Fedora_20/x86_64/opendcp-0.29.0-279.3.x86_64.rpm',
-                 'md5': '1c0dd3fcc51171c783f7c456334310d1'},
-                ]
         self.ob_files = OpenBuild().links()
 
     def download(self):
@@ -191,6 +192,7 @@ class Publish(object):
             else:
                 replacement = '%s-%s' % (version, l['name'])
             filename = '%s/%s' % (self.tmp_path, re.sub(search, replacement, basename).lower())
+            filename = self.replace_os(filename)
 
             urllib.urlretrieve (l['url'], filename)
 
