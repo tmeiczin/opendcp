@@ -133,7 +133,7 @@ class OpenBuild(object):
                     soup = Soup(r.text)
                     binaries = [x['filename'] for x in soup.findAll('binary')]
                     for binary in binaries:
-                        if any(ext in binary for ext in ['i386.deb', 'amd64.deb','i586.rpm', 'x86_64.rpm']):
+                        if any(ext in binary for ext in ['i386.deb', 'amd64.deb', 'i586.rpm', 'i686.rpm', 'x86_64.rpm']):
                             link = 'http://download.opensuse.org/repositories/home:/tmeiczin:/opendcp'
                             link = '%s/%s/%s/%s' % (link, repo, self._arch(arch, binary), binary)
                             md5 = self._get_md5(link)
@@ -167,6 +167,10 @@ class Publish(object):
     def replace_os(self, filename):
         filename = filename.replace('centos_centos-6', 'centos_6')
         filename = filename.replace('redhat_rhel-6', 'rhel_6')
+        if 'opensuse' in filename:
+            filename = re.sub(r'(opendcp-\d+.\d+.\d+-\w+_\d+.\d+)(-\d+.\d+)', r'\1', filename)
+        else:
+            filename = re.sub(r'(opendcp-\d+.\d+.\d+-\w+_\d+)(-\d+.\d+)', r'\1', filename)
 
         return filename
 
