@@ -12,6 +12,12 @@ ENDIF()
 
 #--set os specifc linking mode-------------------------------------------------
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules/)
+SET(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST
+    /usr
+    /usr/bin
+    /usr/share
+    /usr/share/man
+)
 
 FIND_LIBRARY(ZLIB REQUIRED)
 FIND_PACKAGE(ZLIB REQUIRED)
