@@ -68,6 +68,7 @@ class OpenBuild(object):
         url = 'https://api.opensuse.org/build/home:tmeiczin:opendcp'
         
         r = requests.get(url, auth=self.auth)
+        print r.text
         
         if not r.ok:
             return []
