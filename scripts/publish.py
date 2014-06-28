@@ -3,13 +3,14 @@
 import requests
 from BeautifulSoup import BeautifulStoneSoup as Soup
 import urllib
-import hashlib 
+import hashlib
 import os
 import re
 import sys
 
 
 class BinTray(object):
+
     def __init__(self):
         self.base_url = 'https://api.bintray.com/{section}/tmeiczin/opendcp/opendcp/{command}/'
         self.auth = None
@@ -17,9 +18,9 @@ class BinTray(object):
     def version_exists(self):
         url = self.base_url.format(section='packages', command='versions')
         url += self.version
-        
+
         r = requests.get(url, auth=self.auth)
-        
+
         if r.ok:
             print 'version found'
             return True
@@ -27,7 +28,7 @@ class BinTray(object):
     def publish(self, version):
         url = self.base_url.format(section='content', command=version)
         url += '/publish'
-        
+
         r = requests.post(url, auth=self.auth)
 
         if r.ok:
@@ -38,9 +39,9 @@ class BinTray(object):
     def do_upload(self, filename, version):
         url = self.base_url.format(section='content', command=version)
         url += os.path.basename(filename)
-        files = {'file': open(filename, 'rb')}
-        
-        r = requests.put(url, files=files, auth=self.auth)
+
+        with open(filename, 'rb') as f:
+            r = requests.put(url, data=f, auth=self.auth)
 
         if r.ok:
             return True
@@ -50,7 +51,9 @@ class BinTray(object):
     def upload(self, files):
         for filename in files:
             basename = os.path.basename(filename)
-            version = re.search('opendcp(?:-|_)(\d+.\d+.\d+)', basename).group(1)
+            version = re.search(
+                'opendcp(?:-|_)(\d+.\d+.\d+)',
+                basename).group(1)
 
             if self.do_upload(filename, version):
                 print 'uploading %s... ok' % (filename)
@@ -60,34 +63,34 @@ class BinTray(object):
 
 
 class OpenBuild(object):
+
     def __init__(self):
         self.base_url = 'https://api.opensuse.org/build/home:tmeiczin:opendcp'
         self.auth = None
 
     def _get_repositories(self):
         url = 'https://api.opensuse.org/build/home:tmeiczin:opendcp'
-        
+
         r = requests.get(url, auth=self.auth)
-        print r.text
-        
+
         if not r.ok:
             return []
-        
+
         soup = Soup(r.text)
         entries = soup.findAll('entry')
         return [x['name'] for x in entries]
 
     def _get_arch(self, repo):
         url = 'https://api.opensuse.org/build/home:tmeiczin:opendcp/' + repo
-        
+
         r = requests.get(url, auth=self.auth)
-        
+
         if not r.ok:
             return []
 
         soup = Soup(r.text)
         entries = soup.findAll('entry')
-        
+
         return [x['name'] for x in entries]
 
     def _get_paths(self):
@@ -102,11 +105,12 @@ class OpenBuild(object):
         return data
 
     def _arch(self, arch, binary):
-        deb  = {'i586': 'i386', 'x86_64': 'amd64'}
+        deb = {'i586': 'i386', 'x86_64': 'amd64'}
+        rpm = {'i586': 'i686', 'x86_64': 'x86_64'}
         if 'deb' in binary:
             return deb[arch]
         else:
-            return arch
+            return rpm[arch]
 
     def _get_md5(self, link):
         md5_url = '%s.md5' % (link)
@@ -125,7 +129,7 @@ class OpenBuild(object):
         base = 'https://api.opensuse.org/build/home:tmeiczin:opendcp/'
 
         paths = self._get_paths()
-        
+
         for path in paths:
             for repo, v in path.items():
                 for arch in v:
@@ -134,50 +138,88 @@ class OpenBuild(object):
                     soup = Soup(r.text)
                     binaries = [x['filename'] for x in soup.findAll('binary')]
                     for binary in binaries:
-                        if any(ext in binary for ext in ['i386.deb', 'amd64.deb', 'i586.rpm', 'i686.rpm', 'x86_64.rpm']):
+                        if any(
+                            ext in binary for ext in [
+                                'i386.deb',
+                                'amd64.deb',
+                                'i586.rpm',
+                                'i686.rpm',
+                                'x86_64.rpm']):
                             link = 'http://download.opensuse.org/repositories/home:/tmeiczin:/opendcp'
-                            link = '%s/%s/%s/%s' % (link, repo, self._arch(arch, binary), binary)
+                            link = '%s/%s/%s/%s' % (link,
+                                                    repo,
+                                                    self._arch(
+                                                        arch,
+                                                        binary),
+                                                    binary)
                             md5 = self._get_md5(link)
-                            links.append({'name': repo, 'url':link, 'md5':md5})
+                            links.append(
+                                {'name': repo, 'url': link, 'md5': md5})
 
         return links
 
 
 class Publish(object):
+
     def __init__(self):
         self.tmp_path = '/tmp'
         self.downloaded_files = []
-        
+
     def md5_checksum(self, filename, md5):
         if not md5:
+            print 'No MD5 found, skipping'
             return True
 
-        with open(filename, 'rb') as fh:
+        with open(filename, 'rb') as f:
             m = hashlib.md5()
             while True:
-                data = fh.read(8192)
+                data = f.read(8192)
                 if not data:
                     break
                 m.update(data)
+        f.close()
 
-        if md5 == m.hexdigest():
-            return True
+        if md5 != m.hexdigest():
+            print 'MD5 mismatch %s (%s -> %s)' % (filename, md5, m.hexdigest())
+            return False
 
-        return False
+        return True
 
     def replace_os(self, filename):
         filename = filename.replace('centos_centos-6', 'centos_6')
         filename = filename.replace('redhat_rhel-6', 'rhel_6')
         if 'opensuse' in filename:
-            filename = re.sub(r'(opendcp-\d+.\d+.\d+-\w+_\d+.\d+)(-\d+.\d+)', r'\1', filename)
+            filename = re.sub(
+                r'(opendcp-\d+.\d+.\d+-\w+_\d+.\d+)(-\d+.\d+)',
+                r'\1',
+                filename)
         else:
-            filename = re.sub(r'(opendcp-\d+.\d+.\d+-\w+_\d+)(-\d+.\d+)', r'\1', filename)
+            filename = re.sub(
+                r'(opendcp-\d+.\d+.\d+-\w+_\d+)(-\d+.\d+)',
+                r'\1',
+                filename)
 
         return filename
 
     def get_links(self):
         print 'Getting OpenDCP URLs'
         self.ob_files = OpenBuild().links()
+
+    def download_file(self, url, filename):
+        with open(filename, 'wb') as f:
+            r = requests.get(url, stream=True)
+
+            if not r.ok:
+                print 'bad http request %s %s (%s)' % (url, filename, r.status_code)
+                return False
+
+            for block in r.iter_content(1024):
+                if not block:
+                    break
+                f.write(block)
+        f.close()
+
+        return True
 
     def download(self):
         self.downloaded_files = []
@@ -196,16 +238,22 @@ class Publish(object):
                 replacement = '%s_%s' % (version, l['name'])
             else:
                 replacement = '%s-%s' % (version, l['name'])
-            filename = '%s/%s' % (self.tmp_path, re.sub(search, replacement, basename).lower())
+            filename = '%s/%s' % (self.tmp_path,
+                                  re.sub(
+                                      search,
+                                      replacement,
+                                      basename).lower())
             filename = self.replace_os(filename)
 
-            urllib.urlretrieve (l['url'], filename)
+            if not self.download_file(l['url'], filename):
+                continue
 
             if self.md5_checksum(filename, l['md5']):
                 print 'downloading %s... ok' % (filename)
                 self.downloaded_files.append(filename)
             else:
                 print 'downloading %s... not ok' % (filename)
+                self.downloaded_files.append(filename)
 
     def upload(self):
         bintray = BinTray()

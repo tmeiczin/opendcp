@@ -102,6 +102,12 @@ IF(RPM)
     SET(CPACK_RPM_PACKAGE_ARCHITECTURE ${TARGET_ARCH})
     SET(CPACK_RPM_PACKAGE_LICENSE "GPLv3")
     SET(DOCUMENTATION_PATH share/doc/${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION})
+    SET(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST
+        /usr
+        /usr/bin
+        /usr/share
+        /usr/share/man
+    )
 ENDIF()
 #-----------------------------------------------------------------------------
 
