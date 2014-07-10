@@ -26,9 +26,6 @@
 #endif
 #include "opendcp.h"
 
-#define OPJ_CPRL CPRL
-#define OPJ_CLRSPC_SRGB CLRSPC_SRGB
-
 void set_cinema_encoder_parameters(opendcp_t *opendcp, opj_cparameters_t *parameters);
 static int initialize_4K_poc(opj_poc_t *POC, int numres);
 int opendcp_to_opj(opendcp_image_t *opendcp, opj_image_t **opj_ptr);
@@ -52,7 +49,7 @@ static int initialize_4K_poc(opj_poc_t *POC, int numres) {
 }
 
 void set_cinema_encoder_parameters(opendcp_t *opendcp, opj_cparameters_t *parameters) {
-    parameters->tile_size_on = false;
+    parameters->tile_size_on = OPJ_FALSE;
     parameters->cp_tdx=1;
     parameters->cp_tdy=1;
 
@@ -66,7 +63,7 @@ void set_cinema_encoder_parameters(opendcp_t *opendcp, opj_cparameters_t *parame
     parameters->image_offset_x0 = 0;
     parameters->image_offset_y0 = 0;
 
-    /*Codeblock size = 32*32*/
+    /* Codeblock size = 32*32 */
     parameters->cblockw_init = 32;
     parameters->cblockh_init = 32;
     parameters->csty |= 0x01;
@@ -87,8 +84,10 @@ void set_cinema_encoder_parameters(opendcp_t *opendcp, opj_cparameters_t *parame
     parameters->tcp_numlayers++;
     parameters->cp_disto_alloc = 1;
 
-    parameters->cp_rsiz = opendcp->cinema_profile;
+    parameters->rsiz = OPJ_PROFILE_CINEMA_2K;
+
     if ( opendcp->cinema_profile == DCP_CINEMA4K ) {
+            parameters->rsiz = OPJ_PROFILE_CINEMA_4K;
             parameters->numpocs = initialize_4K_poc(parameters->POC,parameters->numresolution);
     }
 }
@@ -98,7 +97,7 @@ int opendcp_to_opj(opendcp_image_t *opendcp, opj_image_t **opj_ptr) {
     OPJ_COLOR_SPACE color_space;
     opj_image_cmptparm_t cmptparm[3];
     opj_image_t *opj = NULL;
-    int j,size;
+    int j, size;
 
     color_space = OPJ_CLRSPC_SRGB;
 
@@ -117,7 +116,7 @@ int opendcp_to_opj(opendcp_image_t *opendcp, opj_image_t **opj_ptr) {
     /* create the image */
     opj = opj_image_create(opendcp->n_components, &cmptparm[0], color_space);
 
-    if(!opj) {
+    if (!opj) {
         OPENDCP_LOG(LOG_ERROR,"Failed to create image");
         return OPENDCP_ERROR;
     }
@@ -149,14 +148,12 @@ int opendcp_to_opj(opendcp_image_t *opendcp, opj_image_t **opj_ptr) {
 */
 int opendcp_encode_openjpeg(opendcp_t *opendcp, opendcp_image_t *opendcp_image, char *dfile) {
     bool result;
-    int codestream_length;
     int max_comp_size;
     int max_cs_len;
     opj_cparameters_t parameters;
+    opj_codec_t* l_codec = 00;
     opj_image_t *opj_image = NULL;
-    opj_cio_t *cio = NULL;
-    opj_cinfo_t *cinfo = NULL;
-    FILE *f = NULL;
+    opj_stream_t *l_stream = 00;
     int bw;
 
     if (opendcp->j2k.bw) {
@@ -178,6 +175,7 @@ int opendcp_encode_openjpeg(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
     opendcp_to_opj(opendcp_image, &opj_image);
 
     /* set encoding parameters to default values */
+    opj_setup_encoder(l_codec, &parameters, opj_image);
     opj_set_default_encoder_parameters(&parameters);
 
     /* set default cinema parameters */
@@ -186,15 +184,8 @@ int opendcp_encode_openjpeg(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
     parameters.cp_comment = (char*)malloc(strlen(OPENDCP_NAME)+1);
     sprintf(parameters.cp_comment,"%s", OPENDCP_NAME);
 
-    /* adjust cinema enum type */
-    if (opendcp->cinema_profile == DCP_CINEMA4K) {
-        parameters.cp_cinema = CINEMA4K_24;
-    } else {
-        parameters.cp_cinema = CINEMA2K_24;
-    }
-
     /* Decide if MCT should be used */
-    parameters.tcp_mct = opj_image->numcomps == 3 ? 1 : 0;
+    parameters.tcp_mct = opj_image->numcomps >= 3 ? 1 : 0;
 
     /* set max image */
     parameters.max_comp_size = max_comp_size;
@@ -203,50 +194,56 @@ int opendcp_encode_openjpeg(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
 
     /* get a J2K compressor handle */
     OPENDCP_LOG(LOG_DEBUG, "creating compressor %s", dfile);
-    cinfo = opj_create_compress(CODEC_J2K);
-
-    /* set event manager to null (openjpeg 1.3 bug) */
-    cinfo->event_mgr = NULL;
+    l_codec = opj_create_compress(OPJ_CODEC_J2K);
 
     /* setup the encoder parameters using the current image and user parameters */
     OPENDCP_LOG(LOG_DEBUG, "setting up j2k encoder");
-    opj_setup_encoder(cinfo, &parameters, opj_image);
+    opj_setup_encoder(l_codec, &parameters, opj_image);
 
     /* open a byte stream for writing */
     /* allocate memory for all tiles */
     OPENDCP_LOG(LOG_DEBUG, "opening J2k output stream");
-    cio = opj_cio_open((opj_common_ptr)cinfo, NULL, 0);
+    l_stream = opj_stream_create_default_file_stream(dfile, OPJ_FALSE);
 
-    OPENDCP_LOG(LOG_INFO,"encoding file %s", dfile);
-    result = opj_encode(cinfo, cio, opj_image, NULL);
-    OPENDCP_LOG(LOG_DEBUG, "encoding file %s complete", dfile);
+    if (! l_stream){
+        return OPENDCP_ERROR;
+    }
+
+    OPENDCP_LOG(LOG_INFO,"starting compression %s", dfile);
+    result = opj_start_compress(l_codec, opj_image, l_stream);
+    OPENDCP_LOG(LOG_DEBUG, "compression started %s", dfile);
+
+    if (!result) {
+        OPENDCP_LOG(LOG_ERROR,"unable to start compression jpeg2000 file %s", dfile);
+        opj_stream_destroy(l_stream);
+        opj_destroy_codec(l_codec);
+        opj_image_destroy(opj_image);
+        return OPENDCP_ERROR;
+    }
+
+    OPENDCP_LOG(LOG_INFO,"starting encoding %s", dfile);
+    result = opj_encode(l_codec, l_stream);
+    OPENDCP_LOG(LOG_INFO,"encoding started %s", dfile);
 
     if (!result) {
         OPENDCP_LOG(LOG_ERROR,"unable to encode jpeg2000 file %s", dfile);
-        opj_cio_close(cio);
-        opj_destroy_compress(cinfo);
+        opj_stream_destroy(l_stream);
+        opj_destroy_codec(l_codec);
         opj_image_destroy(opj_image);
         return OPENDCP_ERROR;
     }
 
-    codestream_length = cio_tell(cio);
+    OPENDCP_LOG(LOG_DEBUG, "finishing compression %s", dfile);
+    result = opj_end_compress(l_codec, l_stream);
 
-    f = fopen(dfile, "wb");
-
-    if (!f) {
-        OPENDCP_LOG(LOG_ERROR,"unable to write jpeg2000 file %s", dfile);
-        opj_cio_close(cio);
-        opj_destroy_compress(cinfo);
-        opj_image_destroy(opj_image);
-        return OPENDCP_ERROR;
+    if (!result) {
+        OPENDCP_LOG(LOG_ERROR,"unable to finish compression jpeg2000 file %s", dfile);
     }
 
-    fwrite(cio->buffer, 1, codestream_length, f);
-    fclose(f);
-
+    OPENDCP_LOG(LOG_DEBUG, "encoding complete %s", dfile);
     /* free openjpeg structure */
-    opj_cio_close(cio);
-    opj_destroy_compress(cinfo);
+    opj_stream_destroy(l_stream);
+    opj_destroy_codec(l_codec);
     opj_image_destroy(opj_image);
 
     /* free user parameters structure */

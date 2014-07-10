@@ -19,7 +19,7 @@
 #define FOREACH_OPENDCP_DECODER(OPENDCP_DECODER) \
             OPENDCP_DECODER(OPENDCP_DECODER_BMP,  bmp, "bmp", 1)  \
             OPENDCP_DECODER(OPENDCP_DECODER_DPX,  dpx, "dpx", 1)  \
-            OPENDCP_DECODER(OPENDCP_DECODER_OPENJPEG,  openjpeg, "j2c;j2k;jp2;jpf", 1)  \
+            OPENDCP_DECODER(OPENDCP_DECODER_OPENJPEG,  openjpeg, "j2c;j2k;jp2;jpf", 1) \
             OPENDCP_DECODER(OPENDCP_DECODER_TIFF, tif, "tif;tiff", 1)  \
             OPENDCP_DECODER(OPENDCP_DECODER_NONE, none, "none", 1)
 
