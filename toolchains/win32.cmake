@@ -6,6 +6,7 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 
 #--set os specifc linking mode-------------------------------------------------
 SET(SYSROOT_PATH ${CMAKE_INSTALL_PREFIX})
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/contrib/include)
 SET(LIB_DIR_SYS ${SYSROOT_PATH}/lib)
 SET(LIB_DIR ${PREFIX}/lib)
 SET(PREFIX ${SYSROOT_PATH})
