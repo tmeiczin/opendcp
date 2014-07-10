@@ -33,7 +33,7 @@ SET(COMPILE_EXPAT 0)
 SET(LIBS ${LIBS} -L${LIB_DIR} -lexpat)
 
 SET(COMPILE_OPENJPEG 1)
-SET(LIBS ${LIBS} ${LIB_DIR}/libopenjpeg.a)
+SET(LIBS ${LIBS} ${LIB_DIR}/libjp2.a)
 
 SET(LIBS ${LIBS} ${LIB_DIR}/libtiff.a ${LIB_DIR}/libjpeg.a)
 SET(LIBS ${LIBS} -L${LIB_DIR} -lcrypto -lssl)
