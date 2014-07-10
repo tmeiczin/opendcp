@@ -12,6 +12,8 @@ ENDIF()
 
 #--set os specifc linking mode-------------------------------------------------
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules/)
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/contrib/include)
+SET(LIB_DIR ${PREFIX}/lib)
 
 FIND_LIBRARY(ZLIB REQUIRED)
 FIND_PACKAGE(ZLIB REQUIRED)
