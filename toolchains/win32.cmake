@@ -7,10 +7,8 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 #--set os specifc linking mode-------------------------------------------------
 SET(SYSROOT_PATH ${CMAKE_INSTALL_PREFIX})
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/contrib/include)
-SET(LIB_DIR_SYS ${SYSROOT_PATH}/lib)
 SET(LIB_DIR ${PREFIX}/lib)
-SET(PREFIX ${SYSROOT_PATH})
-SET(PREFIX_ARG --prefix=${PREFIX})
+SET(LIB_DIR_SYS ${SYSROOT_PATH}/lib)
 
 IF(TARGET_ARCH STREQUAL "i686")
     SET(CMAKE_RC_COMPILER /usr/bin/i686-w64-mingw32-windres) 
@@ -24,7 +22,7 @@ IF(ENABLE_XMLSEC)
     INCLUDE_DIRECTORIES(${SYSROOT_PATH}/include/libxslt)
     INCLUDE_DIRECTORIES(${SYSROOT_PATH}/include/xmlsec1)
     SET(COMPILE_XMLSEC 1)
-    SET(LIBS ${LIBS} ${LIB_DIR_SYS}/libxmlsec1-openssl.a ${LIB_DIR}/libxmlsec1.a)
+    SET(LIBS ${LIBS} ${LIB_DIR_SYS}/libxmlsec1-openssl.a ${LIB_DIR_SYS}/libxmlsec1.a)
     SET(LIBS ${LIBS} -L${LIB_DIR_SYS} -lxslt)
 ENDIF(ENABLE_XMLSEC)
 
@@ -35,9 +33,9 @@ SET(COMPILE_EXPAT 0)
 SET(LIBS ${LIBS} -L${LIB_DIR_SYS} -lexpat)
 
 SET(COMPILE_OPENJPEG 1)
-SET(LIBS ${LIBS} ${LIB_DIR}/libjp2.a)
+SET(LIBS ${LIBS} ${LIB_DIR}/libopenjp2.a)
 
-SET(LIBS ${LIBS} ${LIB_DIR_SYS}/libtiff.a ${LIB_DIR}/libjpeg.a)
+SET(LIBS ${LIBS} ${LIB_DIR_SYS}/libtiff.a ${LIB_DIR_SYS}/libjpeg.a)
 SET(LIBS ${LIBS} -L${LIB_DIR_SYS} -lcrypto -lssl)
 SET(LIBS ${LIBS} -L${LIB_DIR_SYS} -lz -lws2_32)
 #-------------------------------------------------------------------------------
