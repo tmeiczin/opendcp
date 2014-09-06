@@ -35,11 +35,11 @@ static int initialize_4K_poc(opj_poc_t *POC, int numres) {
     POC[0].resno0  = 0;
     POC[0].compno0 = 0;
     POC[0].layno1  = 1;
-    POC[0].resno1  = numres-1;
+    POC[0].resno1  = numres - 1;
     POC[0].compno1 = 3;
     POC[0].prg1    = OPJ_CPRL;
     POC[1].tile    = 1;
-    POC[1].resno0  = numres-1;
+    POC[1].resno0  = numres - 1;
     POC[1].compno0 = 0;
     POC[1].layno1  = 1;
     POC[1].resno1  = numres;
@@ -50,8 +50,8 @@ static int initialize_4K_poc(opj_poc_t *POC, int numres) {
 
 void set_cinema_encoder_parameters(opendcp_t *opendcp, opj_cparameters_t *parameters) {
     parameters->tile_size_on = OPJ_FALSE;
-    parameters->cp_tdx=1;
-    parameters->cp_tdy=1;
+    parameters->cp_tdx = 1;
+    parameters->cp_tdy = 1;
 
     /* Tile part */
     parameters->tp_flag = 'C';
@@ -87,8 +87,8 @@ void set_cinema_encoder_parameters(opendcp_t *opendcp, opj_cparameters_t *parame
     parameters->rsiz = OPJ_PROFILE_CINEMA_2K;
 
     if ( opendcp->cinema_profile == DCP_CINEMA4K ) {
-            parameters->rsiz = OPJ_PROFILE_CINEMA_4K;
-            parameters->numpocs = initialize_4K_poc(parameters->POC,parameters->numresolution);
+        parameters->rsiz = OPJ_PROFILE_CINEMA_4K;
+        parameters->numpocs = initialize_4K_poc(parameters->POC, parameters->numresolution);
     }
 }
 
@@ -103,21 +103,22 @@ int opendcp_to_opj(opendcp_image_t *opendcp, opj_image_t **opj_ptr) {
 
     /* initialize image components */
     memset(&cmptparm[0], 0, opendcp->n_components * sizeof(opj_image_cmptparm_t));
-    for (j = 0;j <  opendcp->n_components;j++) {
-            cmptparm[j].w = opendcp->w;
-            cmptparm[j].h = opendcp->h;
-            cmptparm[j].prec = opendcp->precision;
-            cmptparm[j].bpp = opendcp->bpp;
-            cmptparm[j].sgnd = opendcp->signed_bit;
-            cmptparm[j].dx = opendcp->dx;
-            cmptparm[j].dy = opendcp->dy;
+
+    for (j = 0; j <  opendcp->n_components; j++) {
+        cmptparm[j].w = opendcp->w;
+        cmptparm[j].h = opendcp->h;
+        cmptparm[j].prec = opendcp->precision;
+        cmptparm[j].bpp = opendcp->bpp;
+        cmptparm[j].sgnd = opendcp->signed_bit;
+        cmptparm[j].dx = opendcp->dx;
+        cmptparm[j].dy = opendcp->dy;
     }
 
     /* create the image */
     opj = opj_image_create(opendcp->n_components, &cmptparm[0], color_space);
 
     if (!opj) {
-        OPENDCP_LOG(LOG_ERROR,"Failed to create image");
+        OPENDCP_LOG(LOG_ERROR, "Failed to create image");
         return OPENDCP_ERROR;
     }
 
@@ -129,9 +130,9 @@ int opendcp_to_opj(opendcp_image_t *opendcp, opj_image_t **opj_ptr) {
 
     size = opendcp->w * opendcp->h;
 
-    memcpy(opj->comps[0].data,opendcp->component[0].data,size*sizeof(int));
-    memcpy(opj->comps[1].data,opendcp->component[1].data,size*sizeof(int));
-    memcpy(opj->comps[2].data,opendcp->component[2].data,size*sizeof(int));
+    memcpy(opj->comps[0].data, opendcp->component[0].data, size * sizeof(int));
+    memcpy(opj->comps[1].data, opendcp->component[1].data, size * sizeof(int));
+    memcpy(opj->comps[2].data, opendcp->component[2].data, size * sizeof(int));
 
     *opj_ptr = opj;
     return OPENDCP_NO_ERROR;
@@ -163,14 +164,14 @@ int opendcp_encode_openjpeg(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
     }
 
     /* set the max image and component sizes based on frame_rate */
-    max_cs_len = ((float)bw)/8/opendcp->frame_rate;
+    max_cs_len = ((float)bw) / 8 / opendcp->frame_rate;
 
     /* adjust cs for 3D */
     if (opendcp->stereoscopic) {
-        max_cs_len = max_cs_len/2;
+        max_cs_len = max_cs_len / 2;
     }
 
-    max_comp_size = ((float)max_cs_len)/1.25;
+    max_comp_size = ((float)max_cs_len) / 1.25;
 
     opendcp_to_opj(opendcp_image, &opj_image);
 
@@ -181,15 +182,15 @@ int opendcp_encode_openjpeg(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
     /* set default cinema parameters */
     set_cinema_encoder_parameters(opendcp, &parameters);
 
-    parameters.cp_comment = (char*)malloc(strlen(OPENDCP_NAME)+1);
-    sprintf(parameters.cp_comment,"%s", OPENDCP_NAME);
+    parameters.cp_comment = (char*)malloc(strlen(OPENDCP_NAME) + 1);
+    sprintf(parameters.cp_comment, "%s", OPENDCP_NAME);
 
     /* Decide if MCT should be used */
     parameters.tcp_mct = opj_image->numcomps >= 3 ? 1 : 0;
 
     /* set max image */
     parameters.max_comp_size = max_comp_size;
-    parameters.tcp_rates[0]= ((float) (opj_image->numcomps * opj_image->comps[0].w * opj_image->comps[0].h * opj_image->comps[0].prec))/
+    parameters.tcp_rates[0] = ((float) (opj_image->numcomps * opj_image->comps[0].w * opj_image->comps[0].h * opj_image->comps[0].prec)) /
                               (max_cs_len * 8 * opj_image->comps[0].dx * opj_image->comps[0].dy);
 
     /* get a J2K compressor handle */
@@ -205,28 +206,28 @@ int opendcp_encode_openjpeg(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
     OPENDCP_LOG(LOG_DEBUG, "opening J2k output stream");
     l_stream = opj_stream_create_default_file_stream(dfile, OPJ_FALSE);
 
-    if (! l_stream){
+    if (! l_stream) {
         return OPENDCP_ERROR;
     }
 
-    OPENDCP_LOG(LOG_INFO,"starting compression %s", dfile);
+    OPENDCP_LOG(LOG_INFO, "starting compression %s", dfile);
     result = opj_start_compress(l_codec, opj_image, l_stream);
     OPENDCP_LOG(LOG_DEBUG, "compression started %s", dfile);
 
     if (!result) {
-        OPENDCP_LOG(LOG_ERROR,"unable to start compression jpeg2000 file %s", dfile);
+        OPENDCP_LOG(LOG_ERROR, "unable to start compression jpeg2000 file %s", dfile);
         opj_stream_destroy(l_stream);
         opj_destroy_codec(l_codec);
         opj_image_destroy(opj_image);
         return OPENDCP_ERROR;
     }
 
-    OPENDCP_LOG(LOG_INFO,"starting encoding %s", dfile);
+    OPENDCP_LOG(LOG_INFO, "starting encoding %s", dfile);
     result = opj_encode(l_codec, l_stream);
-    OPENDCP_LOG(LOG_INFO,"encoding started %s", dfile);
+    OPENDCP_LOG(LOG_INFO, "encoding started %s", dfile);
 
     if (!result) {
-        OPENDCP_LOG(LOG_ERROR,"unable to encode jpeg2000 file %s", dfile);
+        OPENDCP_LOG(LOG_ERROR, "unable to encode jpeg2000 file %s", dfile);
         opj_stream_destroy(l_stream);
         opj_destroy_codec(l_codec);
         opj_image_destroy(opj_image);
@@ -237,7 +238,7 @@ int opendcp_encode_openjpeg(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
     result = opj_end_compress(l_codec, l_stream);
 
     if (!result) {
-        OPENDCP_LOG(LOG_ERROR,"unable to finish compression jpeg2000 file %s", dfile);
+        OPENDCP_LOG(LOG_ERROR, "unable to finish compression jpeg2000 file %s", dfile);
     }
 
     OPENDCP_LOG(LOG_DEBUG, "encoding complete %s", dfile);
@@ -247,8 +248,9 @@ int opendcp_encode_openjpeg(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
     opj_image_destroy(opj_image);
 
     /* free user parameters structure */
-    if(parameters.cp_comment) free(parameters.cp_comment);
-    if(parameters.cp_matrice) free(parameters.cp_matrice);
+    if(parameters.cp_comment) { free(parameters.cp_comment); }
+
+    if(parameters.cp_matrice) { free(parameters.cp_matrice); }
 
     return OPENDCP_NO_ERROR;
 }

@@ -50,8 +50,9 @@ opendcp_decoder_t *opendcp_decoder_find(char *name, char *ext, int id) {
 
     for (x = 0; x < OPENDCP_DECODER_NONE; x++) {
         if (!opendcp_decoders[x].enabled) {
-           continue;
+            continue;
         }
+
         if (name != NULL) {
             if (!strncasecmp(opendcp_decoders[x].name, name, 3)) {
                 return &opendcp_decoders[x];

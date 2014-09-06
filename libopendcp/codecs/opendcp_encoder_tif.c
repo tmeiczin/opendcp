@@ -68,7 +68,7 @@ int opendcp_encode_tif(opendcp_t *opendcp, opendcp_image_t *image, const char *d
     }
 
     /* write each row */
-    for (y = 0; y<image->h; y++) {
+    for (y = 0; y < image->h; y++) {
         opendcp_image_readline(image, y, data);
         TIFFWriteScanline(tif, data, y, 0);
     }

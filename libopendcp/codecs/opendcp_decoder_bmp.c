@@ -82,29 +82,29 @@ static inline int invert_row(bmp_image_t bmp, int index) {
     int h = bmp.image.height;
 
     if (bmp.row_order == BMP_BOTTOM) {
-      index = (h - index / w) * w + ((index % w) - w);
+        index = (h - index / w) * w + ((index % w) - w);
     }
 
     return index;
 }
 
 void print_bmp_header(bmp_image_t *bmp) {
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: file size:    %d","read_bmp",bmp->file.size);
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: data offset:  %d","read_bmp",bmp->file.offset);
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: file size:    %d", "read_bmp", bmp->file.size);
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: data offset:  %d", "read_bmp", bmp->file.offset);
 
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: header_size:  %d","read_bmp",bmp->image.header_size);
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: width:        %d","read_bmp",bmp->image.width);
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: height:       %d","read_bmp",bmp->image.height);
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: planes:       %d","read_bmp",bmp->image.planes);
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: bpp:          %d","read_bmp",bmp->image.bpp);
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: compression:  %d","read_bmp",bmp->image.compression);
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: size:         %d","read_bmp",bmp->image.image_size);
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: x:            %d","read_bmp",bmp->image.x_ppm);
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: y:            %d","read_bmp",bmp->image.y_ppm);
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: colors_used:  %d","read_bmp",bmp->image.colors_used);
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: colors_impor: %d","read_bmp",bmp->image.colors_important);
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: header_size:  %d", "read_bmp", bmp->image.header_size);
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: width:        %d", "read_bmp", bmp->image.width);
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: height:       %d", "read_bmp", bmp->image.height);
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: planes:       %d", "read_bmp", bmp->image.planes);
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: bpp:          %d", "read_bmp", bmp->image.bpp);
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: compression:  %d", "read_bmp", bmp->image.compression);
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: size:         %d", "read_bmp", bmp->image.image_size);
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: x:            %d", "read_bmp", bmp->image.x_ppm);
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: y:            %d", "read_bmp", bmp->image.y_ppm);
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: colors_used:  %d", "read_bmp", bmp->image.colors_used);
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: colors_impor: %d", "read_bmp", bmp->image.colors_important);
 
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: row_order:    %d","read_bmp",bmp->row_order);
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: row_order:    %d", "read_bmp", bmp->row_order);
 }
 
 /*!
@@ -122,35 +122,38 @@ int opendcp_decode_bmp(opendcp_image_t **image_ptr, const char *sfile) {
     FILE            *bmp_fp;
     opendcp_image_t *image = 00;
     int             pixels = 0;
-    int             i,w,h;
+    int             i, w, h;
     size_t          readsize;
 
     /* open bmp using filename or file descriptor */
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: opening bmp file %s","read_bmp",sfile);
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: opening bmp file %s", "read_bmp", sfile);
 
     bmp_fp = fopen(sfile, "rb");
 
     if (!bmp_fp) {
-        OPENDCP_LOG(LOG_ERROR,"%-15.15s: opening bmp file %s","read_bmp",sfile);
+        OPENDCP_LOG(LOG_ERROR, "%-15.15s: opening bmp file %s", "read_bmp", sfile);
         return OPENDCP_FATAL;
     }
 
     readsize = fread(&magic, 1, sizeof(bmp_magic_num_t), bmp_fp);
+
     if (readsize != sizeof(bmp_magic_num_t)) {
-        OPENDCP_LOG(LOG_ERROR,"%-15.15s: failed to read magic number expected %d read %d","read_bmp", sizeof(bmp_magic_num_t), readsize);
+        OPENDCP_LOG(LOG_ERROR, "%-15.15s: failed to read magic number expected %d read %d", "read_bmp", sizeof(bmp_magic_num_t), readsize);
     }
 
     readsize = fread(&bmp, 1, sizeof(bmp_image_t), bmp_fp);
+
     if (readsize != sizeof(bmp_image_t)) {
-        OPENDCP_LOG(LOG_ERROR,"%-15.15s: failed to header expected %d read %d","read_bmp", sizeof(bmp_image_t), readsize);
+        OPENDCP_LOG(LOG_ERROR, "%-15.15s: failed to header expected %d read %d", "read_bmp", sizeof(bmp_image_t), readsize);
     }
 
     if (magic.magic_num != MAGIC_NUMBER) {
-         OPENDCP_LOG(LOG_ERROR,"%s is not a valid BMP file", sfile);
+        OPENDCP_LOG(LOG_ERROR, "%s is not a valid BMP file", sfile);
     }
 
     if (bmp.image.height < 0) {
         bmp.row_order = BMP_TOP;
+
     } else {
         bmp.row_order = BMP_BOTTOM;
     }
@@ -164,6 +167,7 @@ int opendcp_decode_bmp(opendcp_image_t **image_ptr, const char *sfile) {
     switch (bmp.image.compression) {
         case BMP_RGB:
             break;
+
         case BMP_RLE8:
         case BMP_RLE4:
         case BMP_BITFIELDS:
@@ -182,14 +186,14 @@ int opendcp_decode_bmp(opendcp_image_t **image_ptr, const char *sfile) {
     }
 
     if (bmp.image.bpp < 24 || bmp.image.bpp > 32) {
-        OPENDCP_LOG(LOG_ERROR, "%d-bit depth is not supported.",bmp.image.bpp);
+        OPENDCP_LOG(LOG_ERROR, "%d-bit depth is not supported.", bmp.image.bpp);
         return OPENDCP_FATAL;
     }
 
     /* create the image */
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: allocating opendcp image","read_bmp");
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: allocating opendcp image", "read_bmp");
     image = opendcp_image_create(3, w, h);
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: image allocated","read_bmp");
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: image allocated", "read_bmp");
 
     int row_size = ((bmp.image.bpp * w + 31) / 32) * 4;
     OPENDCP_LOG(LOG_DEBUG, "%-15,15s: row size %d data size %d", "read_bmp", row_size, sizeof(uint8_t));
@@ -201,27 +205,34 @@ int opendcp_decode_bmp(opendcp_image_t **image_ptr, const char *sfile) {
         /* 16-bits per pixel */
         if (bmp.image.bpp == 16 ) {
             uint8_t data[2];
-            for (i=0; i<pixels; i++) {
-                fread(&data,sizeof(data),1,bmp_fp);
+
+            for (i = 0; i < pixels; i++) {
+                fread(&data, sizeof(data), 1, bmp_fp);
                 int p = invert_row(bmp, i);
                 image->component[BMP_B].data[p] = data[0] << 2;
                 image->component[BMP_G].data[p] = data[0] << 4;
                 image->component[BMP_R].data[p] = data[1] << 2;
             }
-        /* 24-bits per pixel */
+
+            /* 24-bits per pixel */
+
         } else if (bmp.image.bpp == 24 ) {
             uint8_t data[3];
-            for (i=0; i<pixels; i++) {
+
+            for (i = 0; i < pixels; i++) {
                 fread(&data, sizeof(uint8_t), sizeof(data), bmp_fp);
                 int p = invert_row(bmp, i);
                 image->component[BMP_B].data[p] = data[0] << 4;
                 image->component[BMP_G].data[p] = data[1] << 4;
                 image->component[BMP_R].data[p] = data[2] << 4;;
             }
-        /* 32-bits per pixel */
+
+            /* 32-bits per pixel */
+
         } else if (bmp.image.bpp == 32 ) {
             uint8_t data[4];
-            for (i=0; i<pixels; i++) {
+
+            for (i = 0; i < pixels; i++) {
                 fread(&data, sizeof(uint8_t), sizeof(data), bmp_fp);
                 int p = invert_row(bmp, i);
                 image->component[BMP_B].data[p] = data[0] << 4;
@@ -230,11 +241,12 @@ int opendcp_decode_bmp(opendcp_image_t **image_ptr, const char *sfile) {
             }
         }
     }
+
     /* RGB(A) */
 
     fclose(bmp_fp);
 
-    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: BMP read complete","read_bmp");
+    OPENDCP_LOG(LOG_DEBUG, "%-15.15s: BMP read complete", "read_bmp");
     *image_ptr = image;
 
     return OPENDCP_NO_ERROR;

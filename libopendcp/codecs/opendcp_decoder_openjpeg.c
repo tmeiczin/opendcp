@@ -64,15 +64,15 @@ int detect_format(const char *sfile) {
     fp = fopen(sfile, "rb");
 
     if (!fp) {
-        OPENDCP_LOG(LOG_DEBUG,"failed to open %s for reading", sfile);
+        OPENDCP_LOG(LOG_DEBUG, "failed to open %s for reading", sfile);
         return OPENDCP_ERROR;
     }
 
     fread(&j2k, sizeof(j2k_header_t), 1, fp);
-    OPENDCP_LOG(LOG_DEBUG,"reading file header %s", sfile);
+    OPENDCP_LOG(LOG_DEBUG, "reading file header %s", sfile);
     fclose(fp);
 
-    OPENDCP_LOG(LOG_DEBUG,"magic_number %d (0x%x)", j2k.magic_num, j2k.magic_num);
+    OPENDCP_LOG(LOG_DEBUG, "magic_number %d (0x%x)", j2k.magic_num, j2k.magic_num);
 
     if (j2k.magic_num == JP2_MAGIC_NUMBER || j2k.magic_num == JPF_MAGIC_NUMBER) {
         return OPJ_CODEC_JP2;
@@ -93,7 +93,7 @@ int detect_format(const char *sfile) {
  @return OPENDCP_ERROR value
 */
 int opendcp_decode_openjpeg(opendcp_image_t **image_ptr, const char *sfile) {
-    opj_stream_t      *l_stream = NULL; 
+    opj_stream_t      *l_stream = NULL;
     opj_codec_t       *l_codec = NULL;
     opj_image_t       *opj_image = NULL;
     opendcp_image_t   *image = 00;
@@ -104,37 +104,41 @@ int opendcp_decode_openjpeg(opendcp_image_t **image_ptr, const char *sfile) {
     int format = detect_format(sfile);
 
     if (format < 0) {
-        OPENDCP_LOG(LOG_DEBUG,"unkown j2k format %d", format);
+        OPENDCP_LOG(LOG_DEBUG, "unkown j2k format %d", format);
         return OPENDCP_ERROR;
     }
 
     opj_set_default_decoder_parameters(&parameters);
 
-    l_stream = opj_stream_create_default_file_stream(sfile,1);
+    l_stream = opj_stream_create_default_file_stream(sfile, 1);
+
     if (!l_stream) {
-        OPENDCP_LOG(LOG_ERROR,"could not create input file stream %s", sfile);
+        OPENDCP_LOG(LOG_ERROR, "could not create input file stream %s", sfile);
         return OPENDCP_ERROR;
     }
 
 
     l_codec = opj_create_decompress(format);
+
     if (!l_codec) {
-        OPENDCP_LOG(LOG_ERROR,"failed to create decoder");
+        OPENDCP_LOG(LOG_ERROR, "failed to create decoder");
         opj_stream_destroy(l_stream);
         return OPENDCP_ERROR;
     }
 
     result = opj_setup_decoder(l_codec, &parameters);
+
     if (!result) {
-        OPENDCP_LOG(LOG_ERROR,"could setup decoder %s", sfile);
+        OPENDCP_LOG(LOG_ERROR, "could setup decoder %s", sfile);
         opj_stream_destroy(l_stream);
         opj_destroy_codec(l_codec);
         return OPENDCP_ERROR;
     }
-  
+
     result = opj_read_header(l_stream, l_codec, &opj_image);
+
     if (!result) {
-        OPENDCP_LOG(LOG_ERROR,"failed to read header %s", sfile);
+        OPENDCP_LOG(LOG_ERROR, "failed to read header %s", sfile);
         opj_stream_destroy(l_stream);
         opj_destroy_codec(l_codec);
         opj_image_destroy(opj_image);
@@ -142,8 +146,9 @@ int opendcp_decode_openjpeg(opendcp_image_t **image_ptr, const char *sfile) {
     }
 
     result = opj_decode(l_codec, l_stream, opj_image);
+
     if (!result) {
-        OPENDCP_LOG(LOG_ERROR,"failed decode %s", sfile);
+        OPENDCP_LOG(LOG_ERROR, "failed decode %s", sfile);
         opj_stream_destroy(l_stream);
         opj_destroy_codec(l_codec);
         opj_image_destroy(opj_image);
@@ -151,8 +156,9 @@ int opendcp_decode_openjpeg(opendcp_image_t **image_ptr, const char *sfile) {
     }
 
     result = opj_end_decompress(l_codec, l_stream);
+
     if (!result) {
-        OPENDCP_LOG(LOG_ERROR,"failed close decompressor  %s", sfile);
+        OPENDCP_LOG(LOG_ERROR, "failed close decompressor  %s", sfile);
         opj_stream_destroy(l_stream);
         opj_destroy_codec(l_codec);
         opj_image_destroy(opj_image);
@@ -162,7 +168,7 @@ int opendcp_decode_openjpeg(opendcp_image_t **image_ptr, const char *sfile) {
     fill_j2k_image(opj_image, &j2k);
 
     /* create the image */
-    OPENDCP_LOG(LOG_DEBUG,"allocating opendcp image %d bits", j2k.bps);
+    OPENDCP_LOG(LOG_DEBUG, "allocating opendcp image %d bits", j2k.bps);
     image = opendcp_image_create(3, j2k.w, j2k.h);
 
     for (index = 0; index < j2k.size; index++) {
@@ -172,12 +178,14 @@ int opendcp_decode_openjpeg(opendcp_image_t **image_ptr, const char *sfile) {
                 image->component[1].data[index] = opj_image->comps[1].data[index] << 4;
                 image->component[2].data[index] = opj_image->comps[2].data[index] << 4;
                 break;
+
             case 12:
                 image->component[0].data[index] = opj_image->comps[0].data[index];
                 image->component[1].data[index] = opj_image->comps[1].data[index];
                 image->component[2].data[index] = opj_image->comps[2].data[index];
                 break;
-           case 16:
+
+            case 16:
                 image->component[0].data[index] = opj_image->comps[0].data[index] >> 4;
                 image->component[1].data[index] = opj_image->comps[1].data[index] >> 4;
                 image->component[2].data[index] = opj_image->comps[2].data[index] >> 4;
@@ -185,7 +193,7 @@ int opendcp_decode_openjpeg(opendcp_image_t **image_ptr, const char *sfile) {
         }
     }
 
-    OPENDCP_LOG(LOG_DEBUG,"done reading image");
+    OPENDCP_LOG(LOG_DEBUG, "done reading image");
     opj_stream_destroy(l_stream);
     opj_destroy_codec(l_codec);
     opj_image_destroy(opj_image);

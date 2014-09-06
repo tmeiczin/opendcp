@@ -50,8 +50,9 @@ opendcp_encoder_t *opendcp_encoder_find(char *name, char *ext, int id) {
 
     for (x = 0; x < OPENDCP_ENCODER_NONE; x++) {
         if (!opendcp_encoders[x].enabled) {
-           continue;
+            continue;
         }
+
         if (name != NULL) {
             if (!strncasecmp(opendcp_encoders[x].name, name, 3)) {
                 return &opendcp_encoders[x];
@@ -85,7 +86,7 @@ int opendcp_encoder_enable(char *ext, char *name, int id) {
 
     for (x = 0; x < OPENDCP_ENCODER_NONE; x++) {
         if (strcasefind(opendcp_encoders[x].extensions, ext)) {
-            if (name !=NULL) {
+            if (name != NULL) {
                 if (!strncasecmp(opendcp_encoders[x].name, name, 3)) {
                     opendcp_encoders[x].enabled = 1;
                 } else {

@@ -48,9 +48,9 @@ int opendcp_encode_kakadu(opendcp_t *opendcp, opendcp_image_t *simage, char *dfi
     }
 
     if (opendcp->tmp_path == NULL) {
-        sprintf(temp_path,"./");
+        sprintf(temp_path, "./");
     } else {
-        sprintf(temp_path,"%s", opendcp->tmp_path);
+        sprintf(temp_path, "%s", opendcp->tmp_path);
     }
 
     sprintf(temp_file, "%s/tmp_%s.tif", temp_path, basename(dfile));
@@ -58,31 +58,31 @@ int opendcp_encode_kakadu(opendcp_t *opendcp, opendcp_image_t *simage, char *dfi
     result = opendcp_encode_tif(opendcp, simage, temp_file);
 
     if (result != OPENDCP_NO_ERROR) {
-        OPENDCP_LOG(LOG_ERROR,"writing temporary tif failed");
+        OPENDCP_LOG(LOG_ERROR, "writing temporary tif failed");
         return OPENDCP_ERROR;
     }
 
     /* set the max image and component sizes based on frame_rate */
-    max_cs_len = ((float)bw)/8/opendcp->frame_rate;
+    max_cs_len = ((float)bw) / 8 / opendcp->frame_rate;
 
     /* adjust cs for 3D */
     if (opendcp->stereoscopic) {
-        max_cs_len = max_cs_len/2;
+        max_cs_len = max_cs_len / 2;
     }
 
-    max_comp_size = ((float)max_cs_len)/1.25;
+    max_comp_size = ((float)max_cs_len) / 1.25;
 
-    sprintf(k_lengths,"Creslengths=%d Creslengths:C0=%d,%d Creslengths:C1=%d,%d Creslengths:C2=%d,%d",max_cs_len,max_cs_len,max_comp_size,max_cs_len,max_comp_size,max_cs_len,max_comp_size);
+    sprintf(k_lengths, "Creslengths=%d Creslengths:C0=%d,%d Creslengths:C1=%d,%d Creslengths:C2=%d,%d", max_cs_len, max_cs_len, max_comp_size, max_cs_len, max_comp_size, max_cs_len, max_comp_size);
 
     if (opendcp->cinema_profile == DCP_CINEMA2K) {
-        sprintf(cmd,"kdu_compress -i \"%s\" -o \"%s\" Sprofile=CINEMA2K %s -quiet",temp_file, dfile, k_lengths);
+        sprintf(cmd, "kdu_compress -i \"%s\" -o \"%s\" Sprofile=CINEMA2K %s -quiet", temp_file, dfile, k_lengths);
     } else {
-        sprintf(cmd,"kdu_compress -i \"%s\" -o \"%s\" Sprofile=CINEMA4K %s -quiet",temp_file, dfile, k_lengths);
+        sprintf(cmd, "kdu_compress -i \"%s\" -o \"%s\" Sprofile=CINEMA4K %s -quiet", temp_file, dfile, k_lengths);
     }
 
     OPENDCP_LOG(LOG_DEBUG, cmd);
 
-    cmdfp = popen(cmd,"r");
+    cmdfp = popen(cmd, "r");
     result = pclose(cmdfp);
 
     remove(temp_file);

@@ -34,7 +34,7 @@
  @abstract An enum of decoders used as the id in an opendcp_decoder_t struct.
 */
 enum OPENDCP_DECODERS {
-     FOREACH_OPENDCP_DECODER(GENERATE_DECODER_ENUM)
+    FOREACH_OPENDCP_DECODER(GENERATE_DECODER_ENUM)
 };
 
 //static const char *OPENDCP_DECODER_NAME[] = {

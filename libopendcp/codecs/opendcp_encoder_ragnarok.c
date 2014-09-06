@@ -46,11 +46,11 @@ int opendcp_encode_ragnarok(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
     }
 
     /* set the max image and component sizes based on frame_rate */
-    max_cs_len = ((float)bw)/8/opendcp->frame_rate;
+    max_cs_len = ((float)bw) / 8 / opendcp->frame_rate;
 
     /* adjust cs for 3D */
     if (opendcp->stereoscopic) {
-        max_cs_len = max_cs_len/2;
+        max_cs_len = max_cs_len / 2;
     }
 
 #ifdef HAVE_RAGNAROK
@@ -72,7 +72,7 @@ int opendcp_encode_ragnarok(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
         b[i++] = opendcp_image->component[2].data[x] >> 4;
     }
 
-    ragnarok_encode(&ragnarok, b, dfile); 
+    ragnarok_encode(&ragnarok, b, dfile);
 
     free(b);
 #endif
