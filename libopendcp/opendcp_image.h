@@ -75,4 +75,4 @@ opendcp_image_t *opendcp_image_create(int n_components, int w, int h);
 }
 #endif
 
-#endif  //_OPENDCP_H_
+#endif  //_OPENDCP_IMAGE_H_

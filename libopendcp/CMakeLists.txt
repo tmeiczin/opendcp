@@ -17,8 +17,9 @@ SET(OPENDCP_LIB_SRC
      opendcp_common.c
      opendcp_error.c
      opendcp_log.c
-     asdcp_intf.cpp
+     opendcp_decode_video.c
      opendcp_image.c
+     asdcp_intf.cpp
 )
 
 SET(OPENDCP_CODEC_SRC

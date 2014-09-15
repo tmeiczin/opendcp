@@ -24,18 +24,24 @@
 #include <WavFileWriter.h>
 #include <iostream>
 #include <assert.h>
-
 #include "opendcp.h"
+#include <asdcp_intf.h>
 
 using namespace ASDCP;
 
 const ui32_t FRAME_BUFFER_SIZE = 4 * Kumu::Megabyte;
 
-int write_j2k_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file);
-int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file);
-int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file);
-int write_tt_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file);
-int write_mpeg2_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file);
+int write_j2k_mxf(opendcp_t *opendcp, filelist_t *filelist);
+int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist);
+int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist);
+int write_tt_mxf(opendcp_t *opendcp, filelist_t *filelist);
+int write_mpeg2_mxf(opendcp_t *opendcp, filelist_t *filelist);
+
+int j2k_context_create(opendcp_t *opendcp, filelist_t *filelist, char *output_file);
+int j2k_s_context_create(opendcp_t *opendcp, filelist_t *filelist, char *output_file);
+
+/* Function pointers - UNKOWN, MPEG, JPEG2000, PCM_24_48, PCM_24_96, TIMED_TEXT, JPEG2000_S) */
+int (*f_context[3])(opendcp_t *, filelist_t *, char *) = {NULL, NULL, j2k_context_create};
 
 /* generate a random UUID */
 extern "C" void uuid_random(char *uuid) {
@@ -396,41 +402,33 @@ extern "C" int read_asset_info(asset_t *asset) {
 }
 
 /* write the asset to an mxf file */
-extern "C" int write_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
+extern "C" int write_mxf(opendcp_t *opendcp, char *mxf_ptr, filelist_t *filelist) {
     Result_t      result = RESULT_OK;
-    EssenceType_t essence_type;
 
-    result = ASDCP::RawEssenceType(filelist->files[0], essence_type);
-
-    if (ASDCP_FAILURE(result)) {
-        return OPENDCP_DETECT_TRACK_TYPE;
-    }
-
-    switch (essence_type) {
+    switch (opendcp->mxf.type) {
         case ESS_JPEG_2000:
-            if ( opendcp->stereoscopic ) {
-                return write_j2k_s_mxf(opendcp, filelist, output_file);
+            if (opendcp->stereoscopic) {
+                return write_j2k_s_mxf(opendcp, filelist);
             } else {
-                return write_j2k_mxf(opendcp, filelist, output_file);
+                return write_j2k_mxf(opendcp, filelist);
             }
-
             break;
 
         case ESS_JPEG_2000_S:
-            return write_j2k_s_mxf(opendcp, filelist, output_file);
+            return write_j2k_s_mxf(opendcp, filelist);
             break;
 
         case ESS_PCM_24b_48k:
         case ESS_PCM_24b_96k:
-            return write_pcm_mxf(opendcp, filelist, output_file);
+            return write_pcm_mxf(opendcp, filelist);
             break;
 
         case ESS_MPEG2_VES:
-            return write_mpeg2_mxf(opendcp, filelist, output_file);
+            return write_mpeg2_mxf(opendcp, filelist);
             break;
 
         case ESS_TIMED_TEXT:
-            return write_tt_mxf(opendcp, filelist, output_file);
+            return write_tt_mxf(opendcp, filelist);
             break;
 
         case ESS_UNKNOWN:
@@ -444,12 +442,6 @@ extern "C" int write_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_
 
     return OPENDCP_UNKNOWN_TRACK_TYPE;
 }
-
-typedef struct {
-    WriterInfo    info;
-    AESEncContext *aes_context;
-    HMACContext   *hmac_context;
-} writer_info_t;
 
 Result_t fill_writer_info(opendcp_t *opendcp, writer_info_t *writer_info) {
     Kumu::FortunaRNG        rng;
@@ -510,90 +502,173 @@ Result_t fill_writer_info(opendcp_t *opendcp, writer_info_t *writer_info) {
     return result;
 }
 
-/* write out j2k mxf file */
-int write_j2k_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
-    JP2K::MXFWriter         mxf_writer;
-    JP2K::PictureDescriptor picture_desc;
-    JP2K::CodestreamParser  j2k_parser;
-    JP2K::FrameBuffer       frame_buffer(FRAME_BUFFER_SIZE);
-    writer_info_t           writer_info;
+int j2k_context_create(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
     Result_t                result = RESULT_OK;
-    ui32_t                  start_frame;
-    ui32_t                  mxf_duration;
-    ui32_t                  slide_duration = 0;
+    JP2K::FrameBuffer       frame_buffer(FRAME_BUFFER_SIZE);
 
-    /* set the starting frame */
-    if (opendcp->mxf.start_frame && filelist->nfiles >= (opendcp->mxf.start_frame - 1)) {
-        start_frame = opendcp->mxf.start_frame - 1;  /* adjust for zero base */
-    } else {
-        start_frame = 0;
-    }
+    j2k_context_t *j2k = new j2k_context_t;
 
-    OPENDCP_LOG(LOG_DEBUG, "j2k_parser.OpenReadFrame(%s)", filelist->files[start_frame]);
-    result = j2k_parser.OpenReadFrame(filelist->files[start_frame], frame_buffer);
+    fill_writer_info(opendcp, &j2k->writer_info);
+
+    result = j2k->parser.OpenReadFrame(filelist->files[opendcp->mxf.start_frame], frame_buffer);
 
     if (ASDCP_FAILURE(result)) {
-        return OPENDCP_FILEOPEN_J2K;
+        return OPENDCP_ERROR;
     }
 
-    Rational edit_rate(opendcp->frame_rate, 1);
-    j2k_parser.FillPictureDescriptor(picture_desc);
-    picture_desc.EditRate = edit_rate;
+    Rational edit_rate(opendcp->mxf.edit_rate, 1);
+    j2k->parser.FillPictureDescriptor(j2k->picture_desc);
+    j2k->picture_desc.EditRate = edit_rate;
 
-    fill_writer_info(opendcp, &writer_info);
-
-    result = mxf_writer.OpenWrite(output_file, writer_info.info, picture_desc);
+    result = j2k->mxf_writer.OpenWrite(output_file, j2k->writer_info.info, j2k->picture_desc);
 
     if (ASDCP_FAILURE(result)) {
         return OPENDCP_FILEWRITE_MXF;
     }
 
-    /* set the duration of the output mxf */
-    if (opendcp->mxf.slide) {
-        mxf_duration = opendcp->mxf.duration;
-        slide_duration = mxf_duration / filelist->nfiles;
-    } else if (opendcp->mxf.duration && (filelist->nfiles >= opendcp->mxf.duration)) {
-        mxf_duration = opendcp->mxf.duration;
-    } else {
-        mxf_duration = filelist->nfiles;
+    opendcp->mxf.asdcp = (char *)j2k;
+
+    return OPENDCP_NO_ERROR;
+}
+
+int j2k_s_context_create(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
+    Result_t                result = RESULT_OK;
+    JP2K::FrameBuffer       frame_buffer(FRAME_BUFFER_SIZE);
+
+    j2k_s_context_t *j2k = new j2k_s_context_t;
+
+    fill_writer_info(opendcp, &j2k->writer_info);
+
+    result = j2k->parser.OpenReadFrame(filelist->files[0], frame_buffer);
+
+    if (ASDCP_FAILURE(result)) {
+        return OPENDCP_FILEOPEN_J2K;
     }
 
-    ui32_t read  = 1;
-    ui32_t i = start_frame;
+    Rational edit_rate(opendcp->mxf.edit_rate, 1);
+    j2k->parser.FillPictureDescriptor(j2k->picture_desc);
+    j2k->picture_desc.EditRate = edit_rate;
+
+    result = j2k->mxf_writer.OpenWrite(output_file, j2k->writer_info.info, j2k->picture_desc);
+
+    if (ASDCP_FAILURE(result)) {
+        return OPENDCP_FILEWRITE_MXF;
+    }
+
+    opendcp->mxf.asdcp = (char *)j2k;
+
+    return OPENDCP_NO_ERROR;
+}
+
+extern "C" int mxf_create(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
+    Result_t      result = RESULT_OK;
+    EssenceType_t essence_type;
+
+    result = ASDCP::RawEssenceType(filelist->files[0], essence_type);
+
+    if (ASDCP_FAILURE(result)) {
+        return OPENDCP_DETECT_TRACK_TYPE;
+    }
+
+    opendcp->mxf.type = essence_type;
+
+    /* set the starting frame */
+    if (opendcp->mxf.start_frame && filelist->nfiles >= (opendcp->mxf.start_frame - 1)) {
+        opendcp->mxf.start_frame = opendcp->mxf.start_frame - 1;  /* adjust for zero base */
+    } else {
+        opendcp->mxf.start_frame = 0;
+    }
+
+
+    // (*f_context[opendcp->mxf.type])(opendcp, filelist, output_file);
+
+    OPENDCP_LOG(LOG_INFO, "write_j2k_mxf: %x", opendcp->mxf.asdcp);
+    OPENDCP_LOG(LOG_INFO, "Returning MXF Context");
+
+    switch (opendcp->mxf.type) {
+        case ESS_JPEG_2000:
+            if (opendcp->stereoscopic) {
+                OPENDCP_LOG(LOG_INFO, "Creating J2K 3D MXF Context");
+                if (j2k_s_context_create(opendcp, filelist, output_file) != OPENDCP_NO_ERROR) {
+                    return OPENDCP_ERROR;
+                }
+            } else {
+                OPENDCP_LOG(LOG_INFO, "Creating J2K MXF Context");
+                if (j2k_context_create(opendcp, filelist, output_file) != OPENDCP_NO_ERROR) {
+                    return OPENDCP_ERROR;
+                }
+            }
+            break;
+
+        case ESS_JPEG_2000_S:
+            OPENDCP_LOG(LOG_INFO, "Creating J2K 3D MXF Context");
+            if (j2k_s_context_create(opendcp, filelist, output_file) != OPENDCP_NO_ERROR) {
+                return OPENDCP_ERROR;
+            }
+            break;
+/*
+        case ESS_PCM_24b_48k:
+        case ESS_PCM_24b_96k:
+            return write_pcm_mxf(opendcp, filelist, output_file);
+            break;
+
+        case ESS_MPEG2_VES:
+            return write_mpeg2_mxf(opendcp, filelist, output_file);
+            break;
+
+        case ESS_TIMED_TEXT:
+            return write_tt_mxf(opendcp, filelist, output_file);
+            break;
+
+        case ESS_UNKNOWN:
+            return OPENDCP_UNKNOWN_TRACK_TYPE;
+            break;
+*/
+        default:
+            return OPENDCP_UNKNOWN_TRACK_TYPE;
+            break;
+    }
+
+    OPENDCP_LOG(LOG_INFO, "write_j2k_mxf: %x", opendcp->mxf.asdcp);
+    OPENDCP_LOG(LOG_INFO, "Returning MXF Context");
+
+    return OPENDCP_NO_ERROR;
+}
+
+int write_mxf_frame(opendcp_t *opendcp, char *frame) {
+    UNUSED(frame);
+    UNUSED(opendcp);
+    return 0;
+}
+
+/* write out j2k mxf file */
+int write_j2k_mxf(opendcp_t *opendcp, filelist_t *filelist) {
+    Result_t               result = RESULT_OK;
+    JP2K::FrameBuffer      frame_buffer(FRAME_BUFFER_SIZE);
+    int                    i, j;
+
+    j2k_context_t *j2k = (j2k_context_t *)opendcp->mxf.asdcp;
 
     /* read each input frame and write to the output mxf until duration is reached */
-    while ( ASDCP_SUCCESS(result) && mxf_duration--) {
-        if (read) {
-            result = j2k_parser.OpenReadFrame(filelist->files[i], frame_buffer);
+    for (i = opendcp->mxf.start_frame; i < opendcp->mxf.end_frame && ASDCP_SUCCESS(result); i++) {
+        result = j2k->parser.OpenReadFrame(filelist->files[i], frame_buffer);
 
-            if (opendcp->mxf.delete_intermediate) {
-                unlink(filelist->files[i]);
-            }
-
-            if (ASDCP_FAILURE(result)) {
-                return OPENDCP_FILEOPEN_J2K;
-            }
-
-            if (opendcp->mxf.encrypt_header_flag) {
-                frame_buffer.PlaintextOffset(0);
-            }
-
-            if (opendcp->mxf.slide) {
-                read = 0;
-            }
+        if (opendcp->mxf.delete_intermediate) {
+            unlink(filelist->files[i]);
         }
 
-        if (opendcp->mxf.slide) {
-            if (mxf_duration % slide_duration == 0) {
-                i++;
-                read = 1;
-            }
-        } else {
-            i++;
+        if (ASDCP_FAILURE(result)) {
+            return OPENDCP_FILEOPEN_J2K;
         }
 
-        /* write the frame */
-        result = mxf_writer.WriteFrame(frame_buffer, writer_info.aes_context, writer_info.hmac_context);
+        if (opendcp->mxf.encrypt_header_flag) {
+            frame_buffer.PlaintextOffset(0);
+        }
+
+        /* write frame(s) */
+        for (j = 0; j < opendcp->mxf.frame_duration; j++) {
+            result = j2k->mxf_writer.WriteFrame(frame_buffer, j2k->writer_info.aes_context, j2k->writer_info.hmac_context);
+        }
 
         /* frame done callback (also check for interrupt) */
         if (opendcp->mxf.frame_done.callback(opendcp->mxf.frame_done.argument)) {
@@ -609,7 +684,7 @@ int write_j2k_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
         return OPENDCP_FILEWRITE_MXF;
     }
 
-    result = mxf_writer.Finalize();
+    result = j2k->mxf_writer.Finalize();
 
     /* file done callback */
     opendcp->mxf.file_done.callback(opendcp->mxf.file_done.argument);
@@ -622,125 +697,45 @@ int write_j2k_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
 }
 
 /* write out 3D j2k mxf file */
-int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
-    JP2K::MXFSWriter        mxf_writer;
-    JP2K::PictureDescriptor picture_desc;
-    JP2K::CodestreamParser  j2k_parser_left;
-    JP2K::CodestreamParser  j2k_parser_right;
-    JP2K::FrameBuffer       frame_buffer_left(FRAME_BUFFER_SIZE);
-    JP2K::FrameBuffer       frame_buffer_right(FRAME_BUFFER_SIZE);
-    writer_info_t           writer_info;
-    Result_t                result = RESULT_OK;
-    ui32_t                  start_frame;
-    ui32_t                  mxf_duration;
-    ui32_t                  slide_duration = 0;
+int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist) {
+    Result_t                    result = RESULT_OK;
+    JP2K::FrameBuffer           frame_buffer_left(FRAME_BUFFER_SIZE);
+    JP2K::FrameBuffer           frame_buffer_right(FRAME_BUFFER_SIZE);
+    int                         i, j;
+    JP2K::StereoscopicPhase_t   frame_side;
 
-    /* set the starting frame */
-    if (opendcp->mxf.start_frame && filelist->nfiles >= (opendcp->mxf.start_frame - 1)) {
-        start_frame = opendcp->mxf.start_frame - 1; /* adjust for zero base */
-    } else {
-        start_frame = 0;
-    }
-
-    result = j2k_parser_left.OpenReadFrame(filelist->files[0], frame_buffer_left);
-
-    if (ASDCP_FAILURE(result)) {
-        return OPENDCP_FILEOPEN_J2K;
-    }
-
-    result = j2k_parser_right.OpenReadFrame(filelist->files[1], frame_buffer_right);
-
-    if (ASDCP_FAILURE(result)) {
-        return OPENDCP_FILEOPEN_J2K;
-    }
-
-    Rational edit_rate(opendcp->frame_rate, 1);
-    j2k_parser_left.FillPictureDescriptor(picture_desc);
-    picture_desc.EditRate = edit_rate;
-
-    fill_writer_info(opendcp, &writer_info);
-
-    result = mxf_writer.OpenWrite(output_file, writer_info.info, picture_desc);
-
-    if (ASDCP_FAILURE(result)) {
-        return OPENDCP_FILEWRITE_MXF;
-    }
-
-    /* set the duration of the output mxf, set to half the filecount since it is 3D */
-    if ((filelist->nfiles / 2) < opendcp->duration || !opendcp->duration) {
-        mxf_duration = filelist->nfiles / 2;
-    } else {
-        mxf_duration = opendcp->duration;
-    }
-
-    /* set the duration of the output mxf, set to half the filecount since it is 3D */
-    if (opendcp->mxf.slide) {
-        mxf_duration = opendcp->mxf.duration;
-        slide_duration = mxf_duration / (filelist->nfiles / 2);
-    } else if (opendcp->mxf.duration && (filelist->nfiles / 2 >= opendcp->mxf.duration)) {
-        mxf_duration = opendcp->mxf.duration;
-    } else {
-        mxf_duration = filelist->nfiles / 2;
-    }
-
-    ui32_t read = 1;
-    ui32_t i = start_frame;
+    j2k_s_context_t *j2k = (j2k_s_context_t *)opendcp->mxf.asdcp;
 
     /* read each input frame and write to the output mxf until duration is reached */
-    while (ASDCP_SUCCESS(result) && mxf_duration--) {
-        if (read) {
-            result = j2k_parser_left.OpenReadFrame(filelist->files[i], frame_buffer_left);
-
-            if (opendcp->mxf.delete_intermediate) {
-                unlink(filelist->files[i]);
-            }
-
-            if (ASDCP_FAILURE(result)) {
-                return OPENDCP_FILEOPEN_J2K;
-            }
-
-            i++;
-
-            result = j2k_parser_right.OpenReadFrame(filelist->files[i], frame_buffer_right);
-
-            if (opendcp->mxf.delete_intermediate) {
-                unlink(filelist->files[i]);
-            }
-
-            if (ASDCP_FAILURE(result)) {
-                return OPENDCP_FILEOPEN_J2K;
-            }
-
-            if (opendcp->mxf.encrypt_header_flag) {
-                frame_buffer_left.PlaintextOffset(0);
-            }
-
-            if (opendcp->mxf.encrypt_header_flag) {
-                frame_buffer_right.PlaintextOffset(0);
-            }
-
-            if (opendcp->mxf.slide) {
-                read = 0;
-            }
-        }
-
-        if (opendcp->mxf.slide) {
-            if (mxf_duration % slide_duration == 0) {
-                i++;
-                read = 1;
-            }
+    for (i = opendcp->mxf.start_frame; i < opendcp->mxf.end_frame && ASDCP_SUCCESS(result); i+=2) {
+        if (i % 2) {
+            frame_side = JP2K::SP_LEFT;
         } else {
-            i++;
+            frame_side = JP2K::SP_RIGHT;
         }
 
-        /* write the frame */
-        result = mxf_writer.WriteFrame(frame_buffer_left, JP2K::SP_LEFT, writer_info.aes_context, writer_info.hmac_context);
+        result = j2k->parser.OpenReadFrame(filelist->files[i], frame_buffer_left);
 
-        /* frame done callback (also check for interrupt) */
-        opendcp->mxf.frame_done.callback(opendcp->mxf.frame_done.argument);
+        if (ASDCP_FAILURE(result)) {
+            return OPENDCP_FILEOPEN_J2K;
+        }
 
-        /* write the frame */
-        result = mxf_writer.WriteFrame(frame_buffer_right, JP2K::SP_RIGHT, writer_info.aes_context, writer_info.hmac_context);
+        result = j2k->parser.OpenReadFrame(filelist->files[i+1], frame_buffer_right);
+
+        if (ASDCP_FAILURE(result)) {
+            return OPENDCP_FILEOPEN_J2K;
+        }
+
+        if (opendcp->mxf.encrypt_header_flag) {
+            frame_buffer_left.PlaintextOffset(0);
+            frame_buffer_right.PlaintextOffset(0);
+        }
+
+        /* write frame(s) */
+        for (j = 0; j < opendcp->mxf.frame_duration; j++) {
+            result = j2k->mxf_writer.WriteFrame(frame_buffer_left, JP2K::SP_LEFT, j2k->writer_info.aes_context, j2k->writer_info.hmac_context);
+            result = j2k->mxf_writer.WriteFrame(frame_buffer_right, JP2K::SP_RIGHT, j2k->writer_info.aes_context, j2k->writer_info.hmac_context);
+        }
 
         /* frame done callback (also check for interrupt) */
         opendcp->mxf.frame_done.callback(opendcp->mxf.frame_done.argument);
@@ -754,7 +749,7 @@ int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file)
         return OPENDCP_FILEWRITE_MXF;
     }
 
-    result = mxf_writer.Finalize();
+    result = j2k->mxf_writer.Finalize();
 
     opendcp->mxf.file_done.callback(opendcp->mxf.file_done.argument);
 
@@ -766,7 +761,7 @@ int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file)
 }
 
 /* write out pcm audio mxf file */
-int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
+int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist) {
     PCM::FrameBuffer     frame_buffer;
     PCM::AudioDescriptor audio_desc;
     PCM::MXFWriter       mxf_writer;
@@ -774,6 +769,8 @@ int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
     Result_t             result = RESULT_OK;
     ui32_t               mxf_duration;
     i32_t                file_index = 0;
+
+    char *output_file = NULL;
 
     PCM::WAVParser       pcm_parser_channel[MAX_AUDIO_CHANNELS];
     PCM::FrameBuffer     frame_buffer_channel[MAX_AUDIO_CHANNELS];
@@ -918,7 +915,7 @@ int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
 }
 
 /* write out timed text mxf file */
-int write_tt_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
+int write_tt_mxf(opendcp_t *opendcp, filelist_t *filelist) {
     TimedText::DCSubtitleParser    tt_parser;
     TimedText::MXFWriter           mxf_writer;
     TimedText::FrameBuffer         frame_buffer(FRAME_BUFFER_SIZE);
@@ -927,6 +924,8 @@ int write_tt_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
     writer_info_t                  writer_info;
     std::string                    xml_doc;
     Result_t                       result = RESULT_OK;
+
+    char *output_file = NULL;
 
     result = tt_parser.OpenRead(filelist->files[0]);
 
@@ -981,7 +980,7 @@ int write_tt_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
 }
 
 /* write out mpeg2 mxf file */
-int write_mpeg2_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
+int write_mpeg2_mxf(opendcp_t *opendcp, filelist_t *filelist) {
     MPEG2::FrameBuffer     frame_buffer(FRAME_BUFFER_SIZE);
     MPEG2::Parser          mpeg2_parser;
     MPEG2::MXFWriter       mxf_writer;
@@ -990,6 +989,7 @@ int write_mpeg2_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file)
     Result_t               result = RESULT_OK;
     ui32_t                 mxf_duration;
 
+char *output_file = NULL;
     result = mpeg2_parser.OpenRead(filelist->files[0]);
 
     if (ASDCP_FAILURE(result)) {

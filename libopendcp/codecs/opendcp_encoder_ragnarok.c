@@ -36,6 +36,7 @@
  @return An OPENDCP_ERROR value
 */
 int opendcp_encode_ragnarok(opendcp_t *opendcp, opendcp_image_t *opendcp_image, char *dfile) {
+#ifdef HAVE_RAGNAROK
     int max_cs_len;
     int bw, i, x;
 
@@ -53,7 +54,6 @@ int opendcp_encode_ragnarok(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
         max_cs_len = max_cs_len / 2;
     }
 
-#ifdef HAVE_RAGNAROK
     ragnarok_t ragnarok;
 
     ragnarok.h = opendcp_image->h;
@@ -75,6 +75,10 @@ int opendcp_encode_ragnarok(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
     ragnarok_encode(&ragnarok, b, dfile);
 
     free(b);
+#else
+    UNUSED(opendcp);
+    UNUSED(opendcp_image);
+    UNUSED(dfile);
 #endif
 
     return OPENDCP_NO_ERROR;

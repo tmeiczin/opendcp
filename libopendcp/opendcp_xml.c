@@ -38,8 +38,9 @@ char *strsep (char **stringp, const char *delim) {
     register int c, sc;
     char *tok;
 
-    if ((s = *stringp) == NULL)
+    if ((s = *stringp) == NULL) {
         return (NULL);
+    }
 
     for (tok = s;;) {
         c = *s++;
@@ -47,10 +48,12 @@ char *strsep (char **stringp, const char *delim) {
 
         do {
             if ((sc = *spanp++) == c) {
-                if (c == 0)
+                if (c == 0) {
                     s = NULL;
-                else
+                }
+                else {
                     s[-1] = 0;
+                }
 
                 *stringp = s;
                 return (tok);
@@ -121,9 +124,11 @@ int write_cpl_asset(opendcp_t *opendcp, xmlTextWriterPtr xml, asset_t asset) {
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "IntrinsicDuration", "%d", asset.intrinsic_duration);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "EntryPoint", "%d", asset.entry_point);
     xmlTextWriterWriteFormatElement(xml, BAD_CAST "Duration", "%d", asset.duration);
+
     if ( asset.encrypted ) {
         xmlTextWriterWriteFormatElement(xml, BAD_CAST "KeyId", "%s%s", "urn:uuid:", asset.key_id);
     }
+
     if ( opendcp->dcp.digest_flag ) {
         xmlTextWriterWriteFormatElement(xml, BAD_CAST "Hash", "%s", asset.digest);
     }

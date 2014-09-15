@@ -50,6 +50,8 @@ void  build_j2k_filename(const char *in, char *path, char *out);
 void  progress_bar(int val, int total);
 void  version();
 void  dcp_usage();
+int   frame_count;
+int   frame_index;
 
 void version() {
     FILE *fp;
@@ -157,6 +159,14 @@ int is_dir(char *path) {
     }
 
     return 0;
+}
+
+int frame_done(void *p) {
+    UNUSED(p);
+    frame_index++;
+    progress_bar(frame_index, frame_count);
+
+    return OPENDCP_NO_ERROR;
 }
 
 void progress_bar(int val, int total) {
@@ -420,6 +430,10 @@ int main (int argc, char **argv) {
     /* set log level */
     opendcp_log_init(opendcp->log_level);
 
+    if (opendcp->log_level > 0 && opendcp->log_level < 3) {
+        opendcp->j2k.frame_done.callback  = frame_done;
+    }
+
     if (opendcp_encoder_enable("j2c", NULL, opendcp->j2k.encoder)) {
         dcp_fatal(opendcp, "Could not enabled encoder");
     }
@@ -553,7 +567,7 @@ int main (int argc, char **argv) {
     OPENDCP_LOG(LOG_DEBUG, "OpenMP Enable");
 #endif
 
-    count = opendcp->j2k.start_frame;
+    frame_index = opendcp->j2k.start_frame;
 
     #pragma omp parallel for private(c)
 
@@ -577,17 +591,18 @@ int main (int argc, char **argv) {
             OPENDCP_LOG(LOG_INFO, "JPEG2000 conversion %s started OPENMP: %d", filelist->files[c], openmp_flag);
 
             if(access(out, F_OK) != 0 || opendcp->j2k.no_overwrite == 0) {
-                result = convert_to_j2k(opendcp, filelist->files[c], out);
+                result = decode_video(opendcp, filelist->files[c]);
+                //result = convert_to_j2k(opendcp, filelist->files[c], out);
             }
             else {
                 result = OPENDCP_NO_ERROR;
             }
 
-            if (count) {
-                if (opendcp->log_level > 0 && opendcp->log_level < 3) {
-                    progress_bar(count, opendcp->j2k.end_frame);
-                }
-            }
+            //if (count) {
+            //    if (opendcp->log_level > 0 && opendcp->log_level < 3) {
+            //        progress_bar(count, opendcp->j2k.end_frame);
+            //    }
+            //}
 
             if (result == OPENDCP_ERROR) {
                 OPENDCP_LOG(LOG_ERROR, "JPEG2000 conversion %s failed", filelist->files[c]);
@@ -597,12 +612,12 @@ int main (int argc, char **argv) {
                 OPENDCP_LOG(LOG_INFO, "JPEG2000 conversion %s complete", filelist->files[c]);
             }
 
-            count++;
+            //count++;
         }
     }
 
     if (opendcp->log_level > 0 && opendcp->log_level < 3) {
-        progress_bar(count - 1, opendcp->j2k.end_frame);
+        progress_bar(frame_count - 1, opendcp->j2k.end_frame);
     }
 
     filelist_free(filelist);

@@ -114,7 +114,7 @@ extern const char *DS_DMA;   /* digest method */
 extern const char *DS_TMA;   /* transport method */
 extern const char *DS_SMA[]; /* signature method */
 
-extern const char *RATING_AGENCY[]; 
+extern const char *RATING_AGENCY[];
 extern const char *OPENDCP_LOGLEVEL_NAME[];
 
 /* error messages */
@@ -302,6 +302,7 @@ typedef struct {
     int            xyz;
     int            xyz_method;
     int            resize;
+    opendcp_cb_t   frame_done;
 } j2k_t;
 
 typedef struct {
@@ -311,16 +312,20 @@ typedef struct {
 } remote_t;
 
 typedef struct {
+    int            type;
     int            start_frame;
     int            end_frame;
     int            duration;
+    int            frame_duration;
     int            slide;
-    int            encrypt_header_flag;
+    int            edit_rate;
     int            key_flag;
+    int            encrypt_header_flag;
     int            delete_intermediate;
     byte_t         key_id[16];
     byte_t         key_value[16];
     int            write_hmac;
+    char           *asdcp;
     opendcp_cb_t   frame_done;
     opendcp_cb_t   file_done;
 } mxf_t;
@@ -418,7 +423,8 @@ int get_wav_info(const char *filename, int frame_rate, wav_info_t *wav);
 int get_file_essence_type(char *in_path);
 
 /* MXF functions */
-int write_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file);
+int write_mxf(opendcp_t *opendcp, char *mxf, filelist_t *filelist);
+int mxf_create(opendcp_t *opendcp, filelist_t *filelist, char *output_file);
 
 /* XML functions */
 int write_cpl(opendcp_t *opendcp, cpl_t *cpl);
@@ -430,6 +436,9 @@ int xml_sign(opendcp_t *opendcp, char *filename);
 
 /* J2K functions */
 int convert_to_j2k(opendcp_t *opendcp, char *in_file, char *out_file);
+
+/* decode video */
+int decode_video(opendcp_t *opendcp, char *in_file);
 
 /* retrieve error string */
 char *error_string(int error_code);

@@ -54,6 +54,8 @@ SET(LIBS ${LIBS} -L${LIB_DIR} -ltiff)
 SET(COMPILE_OPENJPEG 1)
 SET(LIBS ${LIBS} -L${LIB_DIR} -lopenjp2)
 
+SET(COMPILE_FFMPEG 0)
+SET(LIBS ${LIBS} -L${LIB_DIR} -lavcodec -lavformat -lswscale -lavutil)
 #SET(COMPILE_SNDFILE 0)
 #SET(LIBS ${LIBS} -L${LIB_DIR} -lsndfile)
 #-------------------------------------------------------------------------------

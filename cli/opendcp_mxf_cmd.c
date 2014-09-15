@@ -112,8 +112,8 @@ filelist_t *get_filelist_3d(char *in_path_left, char *in_path_right) {
     filelist = filelist_alloc(left->nfiles + right->nfiles);
 
     for (x = 0; x < filelist->nfiles; y++, x += 2) {
-        snprintf(filelist->files[x], sizeof(filelist->files[x]), "%s", left->files[y]);
-        snprintf(filelist->files[x + 1], sizeof(filelist->files[x + 1]), "%s", right->files[y]);
+        snprintf(filelist->files[x], MAX_FILENAME_LENGTH, "%s", left->files[y]);
+        snprintf(filelist->files[x + 1], MAX_FILENAME_LENGTH, "%s", right->files[y]);
     }
 
     filelist_free(left);
@@ -246,9 +246,9 @@ int main (int argc, char **argv) {
 
             case 'p':
                 opendcp->mxf.slide = 1;
-                opendcp->mxf.duration = atoi(optarg);
+                opendcp->mxf.frame_duration = atoi(optarg);
 
-                if (opendcp->mxf.duration < 1) {
+                if (opendcp->mxf.frame_duration < 1) {
                     dcp_fatal(opendcp, "Slide duration  must be greater than 0");
                 }
 
@@ -399,7 +399,6 @@ int main (int argc, char **argv) {
     }
 
 #ifdef _WIN32
-
     /* check for non-ascii filenames under windows */
     for (c = 0; c < filelist->nfiles; c++) {
         if (is_filename_ascii(filelist->files[c]) == 0) {
@@ -407,8 +406,9 @@ int main (int argc, char **argv) {
             dcp_fatal(opendcp, "Filenames cannot contain non-ascii characters");
         }
     }
-
 #endif
+
+    opendcp->mxf.edit_rate = opendcp->frame_rate;
 
     if (opendcp->mxf.end_frame) {
         if (opendcp->mxf.end_frame > filelist->nfiles) {
@@ -429,9 +429,11 @@ int main (int argc, char **argv) {
     }
 
     if (opendcp->mxf.slide) {
-        opendcp->mxf.duration = opendcp->mxf.duration * opendcp->frame_rate * filelist->nfiles;
+        opendcp->mxf.duration = opendcp->mxf.end_frame - (opendcp->mxf.start_frame - 1);
+        opendcp->mxf.frame_duration = opendcp->mxf.frame_duration * opendcp->frame_rate;
     }
     else {
+        opendcp->mxf.frame_duration = 1;
         opendcp->mxf.duration = opendcp->mxf.end_frame - (opendcp->mxf.start_frame - 1);
     }
 
@@ -445,6 +447,7 @@ int main (int argc, char **argv) {
         opendcp->mxf.file_done.callback  = write_done_cb;
     }
 
+    OPENDCP_LOG(LOG_INFO, "Getting essence type of %s", filelist->files[0]);
     int class = get_file_essence_class(filelist->files[0], 1);
 
     if (opendcp->log_level > 0 && opendcp->log_level < 3) { progress_bar(); }
@@ -456,8 +459,12 @@ int main (int argc, char **argv) {
         total = opendcp->mxf.duration;
     }
 
-    if (write_mxf(opendcp, filelist, out_path) != 0 )  {
-        OPENDCP_LOG(LOG_INFO, "Could not create MXF file");
+    if (mxf_create(opendcp, filelist, out_path)) {
+        OPENDCP_LOG(LOG_ERROR, "Could not create MXF context");
+    }
+
+    if (write_mxf(opendcp, opendcp->mxf.asdcp, filelist) != 0 )  {
+        OPENDCP_LOG(LOG_INFO, "Could not write MXF file");
     }
     else {
         OPENDCP_LOG(LOG_INFO, "MXF creation complete");
