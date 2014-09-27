@@ -75,6 +75,7 @@ filelist_t *get_filelist_3d(char *in_path_left, char *in_path_right) {
     left  = get_filelist(in_path_left, "j2c,j2k");
     right = get_filelist(in_path_right, "j2c,j2k");
 
+    /* check that equal number of left and right files */
     if (left->nfiles != right->nfiles) {
         OPENDCP_LOG(LOG_ERROR, "Mismatching file count for 3D images left: %d right: %d", left->nfiles, right->nfiles);
         filelist_free(left);
@@ -82,7 +83,7 @@ filelist_t *get_filelist_3d(char *in_path_left, char *in_path_right) {
         return NULL;
     }
 
-    /* Sort files by index, and make sure they're sequential. */
+    /* sort files by index */
     if (order_indexed_files(left->files, left->nfiles) != OPENDCP_NO_ERROR ||
             order_indexed_files(right->files, right->nfiles) != OPENDCP_NO_ERROR) {
         OPENDCP_LOG(LOG_WARN, "Could not order image files");
@@ -91,8 +92,8 @@ filelist_t *get_filelist_3d(char *in_path_left, char *in_path_right) {
         return NULL;
     }
 
+    /* check if left files are sequential */
     rc = ensure_sequential(left->files, left->nfiles);
-
     if (rc != OPENDCP_NO_ERROR) {
         OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", left->files[rc], left->files[rc + 1]);
         filelist_free(left);
@@ -100,8 +101,8 @@ filelist_t *get_filelist_3d(char *in_path_left, char *in_path_right) {
         return NULL;
     }
 
+    /* check if left files are sequential */
     rc = ensure_sequential(right->files, left->nfiles);
-
     if (rc != OPENDCP_NO_ERROR) {
         OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", right->files[rc], right->files[rc + 1]);
         filelist_free(left);
@@ -111,6 +112,7 @@ filelist_t *get_filelist_3d(char *in_path_left, char *in_path_right) {
 
     filelist = filelist_alloc(left->nfiles + right->nfiles);
 
+    /* intervleave left and right files */
     for (x = 0; x < filelist->nfiles; y++, x += 2) {
         snprintf(filelist->files[x], MAX_FILENAME_LENGTH, "%s", left->files[y]);
         snprintf(filelist->files[x + 1], MAX_FILENAME_LENGTH, "%s", right->files[y]);
@@ -170,6 +172,7 @@ int main (int argc, char **argv) {
     filelist_t *filelist;
     char key_id[40];
     int key_id_flag = 0;
+    int class;
 
     if (argc <= 1) {
         dcp_usage();
@@ -211,7 +214,7 @@ int main (int argc, char **argv) {
         c = getopt_long (argc, argv, "1:2:d:i:k:n:o:r:s:p:u:l:3hv",
                          long_options, &option_index);
 
-        /* Detect the end of the options. */
+        /* detect the end of the options. */
         if (c == -1)
         { break; }
 
@@ -219,7 +222,7 @@ int main (int argc, char **argv) {
         {
             case 0:
 
-                /* If this option set a flag, do nothing else now. */
+                /* if this option set a flag, do nothing else now. */
                 if (long_options[option_index].flag != 0)
                 { break; }
 
@@ -374,7 +377,7 @@ int main (int argc, char **argv) {
     else {
         filelist = get_filelist(in_path, "j2c,j2k,wav");
 
-        /* Sort files by index, and make sure they're sequential. */
+        /* sort files by index, and make sure they're sequential. */
         if (order_indexed_files(filelist->files, filelist->nfiles) != OPENDCP_NO_ERROR) {
             dcp_fatal(opendcp, "Could not order image files");
         }
@@ -408,6 +411,7 @@ int main (int argc, char **argv) {
     }
 #endif
 
+    class = get_file_essence_class(filelist->files[0], 1);
     opendcp->mxf.edit_rate = opendcp->frame_rate;
 
     if (opendcp->mxf.end_frame) {
@@ -416,9 +420,15 @@ int main (int argc, char **argv) {
         }
     }
     else {
-        opendcp->mxf.end_frame = filelist->nfiles;
+        if (class == ACT_SOUND) {
+            opendcp->mxf.end_frame = get_wav_duration(filelist->files[0], opendcp->frame_rate);
+        }
+        else {
+            opendcp->mxf.end_frame = filelist->nfiles;
+        }
     }
 
+    /* check frame endpoints */
     if (opendcp->mxf.start_frame) {
         if (opendcp->mxf.start_frame > opendcp->mxf.end_frame) {
             dcp_fatal(opendcp, "Start frame must be less than end frame");
@@ -428,13 +438,19 @@ int main (int argc, char **argv) {
         opendcp->mxf.start_frame = 1;
     }
 
+    /* calculate durations */
     if (opendcp->mxf.slide) {
-        opendcp->mxf.duration = opendcp->mxf.end_frame - (opendcp->mxf.start_frame - 1);
         opendcp->mxf.frame_duration = opendcp->mxf.frame_duration * opendcp->frame_rate;
+        opendcp->mxf.duration = (opendcp->mxf.end_frame - (opendcp->mxf.start_frame - 1)) * opendcp->mxf.frame_duration;
     }
     else {
         opendcp->mxf.frame_duration = 1;
         opendcp->mxf.duration = opendcp->mxf.end_frame - (opendcp->mxf.start_frame - 1);
+    }
+
+    /* adjust for 3D */
+    if (opendcp->stereoscopic) {
+        opendcp->mxf.duration = opendcp->mxf.duration / 2;
     }
 
     if (opendcp->mxf.duration < 1) {
@@ -447,22 +463,16 @@ int main (int argc, char **argv) {
         opendcp->mxf.file_done.callback  = write_done_cb;
     }
 
-    OPENDCP_LOG(LOG_INFO, "Getting essence type of %s", filelist->files[0]);
-    int class = get_file_essence_class(filelist->files[0], 1);
-
     if (opendcp->log_level > 0 && opendcp->log_level < 3) { progress_bar(); }
 
-    if (class == ACT_SOUND) {
-        total = get_wav_duration(filelist->files[0], opendcp->frame_rate);
-    }
-    else {
-        total = opendcp->mxf.duration;
-    }
+    total = opendcp->mxf.duration;
 
+    /* create an mxf context */
     if (mxf_create(opendcp, filelist, out_path)) {
         OPENDCP_LOG(LOG_ERROR, "Could not create MXF context");
     }
 
+    /* write the mxf */
     if (write_mxf(opendcp, opendcp->mxf.asdcp, filelist) != 0 )  {
         OPENDCP_LOG(LOG_INFO, "Could not write MXF file");
     }

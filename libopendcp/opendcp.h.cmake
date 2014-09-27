@@ -33,6 +33,7 @@ extern "C" {
 #define MAX_CPL             5    /* Soft limit */
 #define MAX_PATH_LENGTH     4095
 #define MAX_FILENAME_LENGTH 254
+#define MIN_AUDIO_CHANNELS  6    /* minimum allowed audio channels */
 #define MAX_AUDIO_CHANNELS  16   /* maximum allowed audio channels */
 
 #define FILE_READ_SIZE      16384

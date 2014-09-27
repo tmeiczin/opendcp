@@ -7,6 +7,15 @@
 
 #include <stdio.h>
 
+typedef struct {
+    AVFormatContext   *p_format_ctx;
+    AVCodecContext    *p_codec_ctx ;
+    AVCodec           *pCodec;
+    int                v_stream;
+} av_context_t;
+
+void video_decoder_delete(av_context_t *av);
+int  video_decoder_create(av_context_t *av, char *file);
 
 static int copy_frame(const AVFrame *frame, opendcp_image_t *image) {
     int i, x, y;
@@ -48,6 +57,89 @@ static int copy_frame_16(const AVFrame *frame, opendcp_image_t *image) {
     return 0;
 }
 
+static int video_decoder_find(char *file) {
+    av_context_t    *av = NULL;
+    int             supported = 0;
+
+    if (video_decoder_create(av, file)) {
+        supported = 1;
+    }
+
+    video_decoder_delete(av);
+
+    return supported;
+}
+
+void video_decoder_delete(av_context_t *av) {
+    /* close the codec */
+    if (av->p_codec_ctx) {
+        avcodec_close(av->p_codec_ctx);
+    }
+
+    /* close the video file */
+    if (av->p_format_ctx) {
+        avformat_close_input(&av->p_format_ctx);
+    }
+
+    if (av) {
+        free(av);
+    }
+}
+
+int video_decoder_create(av_context_t *av, char *file) {
+    unsigned int    i;
+
+    av->p_format_ctx = NULL;
+    av->p_codec_ctx = NULL;
+    av->pCodec = NULL;
+    av->v_stream = -1;
+
+    /* register all formats and codecs */
+    av_register_all();
+
+    /* open file */
+    if (avformat_open_input(&av->p_format_ctx, file, NULL, NULL) != 0) {
+        OPENDCP_LOG(LOG_ERROR, "unable to open input file %s", file);
+        return OPENDCP_ERROR;
+    }
+
+    /* get stream information */
+    if(avformat_find_stream_info(av->p_format_ctx, NULL) < 0) {
+        OPENDCP_LOG(LOG_ERROR, "could not get stream information %s", file);
+        return OPENDCP_ERROR;
+    }
+
+    /* locate video stream */
+    for (i = 0; i < av->p_format_ctx->nb_streams; i++) {
+        if (av->p_format_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+            av->v_stream = i;
+            break;
+        }
+    }
+
+    /* check if stream found */
+    if (av->v_stream == -1) {
+        OPENDCP_LOG(LOG_ERROR, "no video stream found %s", file);
+        return OPENDCP_ERROR;
+    }
+
+    /* get a pointer to the codec context for the video stream */
+    av->p_codec_ctx = av->p_format_ctx->streams[av->v_stream]->codec;
+
+    /* find the decoder for the video stream */
+    av->pCodec = avcodec_find_decoder(av->p_codec_ctx->codec_id);
+
+    if(av->pCodec == NULL) {
+        OPENDCP_LOG(LOG_ERROR, "unsupported codec");
+        return OPENDCP_ERROR;
+    }
+
+    printf("time: %lld\n", av->p_format_ctx->duration);
+    printf("frames: %lld\n", av->p_format_ctx->streams[i]->nb_frames);
+
+    return OPENDCP_NO_ERROR;
+}
+
 void save_frame(opendcp_t *opendcp, AVCodecContext *av_ctx, const AVFrame *frame, int frame_number) {
     char dfile[255];
     opendcp_image_t *image = 00;
@@ -58,75 +150,39 @@ void save_frame(opendcp_t *opendcp, AVCodecContext *av_ctx, const AVFrame *frame
     OPENDCP_LOG(LOG_DEBUG, "copying frame from video");
     copy_frame(frame, image);
 
-    OPENDCP_LOG(LOG_DEBUG, "encoding eimage");
-    sprintf(dfile, "frame%08d.j2c", frame_number);
+    OPENDCP_LOG(LOG_DEBUG, "encoding image");
+    sprintf(dfile, "frame_%08d.j2c", frame_number);
     opendcp_encode_ragnarok(opendcp, image, dfile);
     opendcp_image_free(image);
 }
 
-int decode_video(opendcp_t *opendcp,  char *sfile) {
-    AVFormatContext   *p_format_ctx = NULL;
-    AVCodecContext    *p_codec_ctx = NULL;
-    AVCodec           *pCodec = NULL;
+int decode_video(opendcp_t *opendcp,  char *file) {
+    av_context_t      *av;
     AVFrame           *p_frame = NULL;
     AVFrame           *p_frame_rgb = NULL;
     AVPacket          packet;
     unsigned int      i;
-    int               v_stream, frame_done;
+    int               frame_done;
     int               n_bytes;
     uint8_t           *buffer = NULL;
 
     AVDictionary      *options = NULL;
     struct SwsContext *sws_ctx = NULL;
 
-    /* register all formats and codecs */
-    av_register_all();
+    OPENDCP_LOG(LOG_INFO, "creating video decoder");
+    av = malloc(sizeof(av_context_t));
 
-    /* open file */
-    if (avformat_open_input(&p_format_ctx, sfile, NULL, NULL) != 0) {
-        OPENDCP_LOG(LOG_ERROR, "unable to open input file %s", sfile);
-        return OPENDCP_ERROR;
-    }
+    if (video_decoder_create(av, file) != OPENDCP_NO_ERROR) {
+        OPENDCP_LOG(LOG_ERROR, "could not create video decoder: %s", file);
+        video_decoder_delete(av);
 
-    /* get stream information */
-    if(avformat_find_stream_info(p_format_ctx, NULL) < 0) {
-        OPENDCP_LOG(LOG_ERROR, "could not get stream information %s", sfile);
-        return OPENDCP_ERROR;
-    }
-
-    /* print information about file onto standard error */
-    // av_dump_format(p_format_ctx, 0, sfile, 0);
-
-    /* locate video stream */
-    v_stream = -1;
-
-    for (i = 0; i < p_format_ctx->nb_streams; i++) {
-        if (p_format_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
-            v_stream = i;
-            break;
-        }
-    }
-
-    /* check if stream found */
-    if (v_stream == -1) {
-        OPENDCP_LOG(LOG_ERROR, "no video stream found %s", sfile);
-        return OPENDCP_ERROR;
-    }
-
-    /* get a pointer to the codec context for the video stream */
-    p_codec_ctx = p_format_ctx->streams[v_stream]->codec;
-
-    /* find the decoder for the video stream */
-    pCodec = avcodec_find_decoder(p_codec_ctx->codec_id);
-
-    if(pCodec == NULL) {
-        OPENDCP_LOG(LOG_ERROR, "unsupported codec");
         return OPENDCP_ERROR;
     }
 
     /* start codec */
-    if (avcodec_open2(p_codec_ctx, pCodec, &options) < 0) {
+    if (avcodec_open2(av->p_codec_ctx, av->pCodec, &options) < 0) {
         OPENDCP_LOG(LOG_ERROR, "could not open codec");
+        video_decoder_delete(av);
         return OPENDCP_ERROR;
     }
 
@@ -141,17 +197,17 @@ int decode_video(opendcp_t *opendcp,  char *sfile) {
     }
 
     /* determine required buffer size and allocate buffer */
-    n_bytes = avpicture_get_size(PIX_FMT_RGB24, p_codec_ctx->width, p_codec_ctx->height);
+    n_bytes = avpicture_get_size(PIX_FMT_RGB24, av->p_codec_ctx->width, av->p_codec_ctx->height);
     buffer = (uint8_t *)av_malloc(n_bytes * sizeof(uint8_t));
 
     sws_ctx =
         sws_getContext
         (
-            p_codec_ctx->width,
-            p_codec_ctx->height,
-            p_codec_ctx->pix_fmt,
-            p_codec_ctx->width,
-            p_codec_ctx->height,
+            av->p_codec_ctx->width,
+            av->p_codec_ctx->height,
+            av->p_codec_ctx->pix_fmt,
+            av->p_codec_ctx->width,
+            av->p_codec_ctx->height,
             PIX_FMT_RGB24,
             SWS_BILINEAR,
             NULL,
@@ -160,19 +216,19 @@ int decode_video(opendcp_t *opendcp,  char *sfile) {
         );
 
     /* Assign appropriate parts of buffer to image planes in p_frame_rgb */
-    avpicture_fill((AVPicture *)p_frame_rgb, buffer, PIX_FMT_RGB24, p_codec_ctx->width, p_codec_ctx->height);
+    avpicture_fill((AVPicture *)p_frame_rgb, buffer, PIX_FMT_RGB24, av->p_codec_ctx->width, av->p_codec_ctx->height);
 
     /* Read frames and save first five frames to disk */
     i = 1;
 
-    while(av_read_frame(p_format_ctx, &packet) >= 0) {
+    while(av_read_frame(av->p_format_ctx, &packet) >= 0) {
         /* is this part of the stream */
-        if (packet.stream_index != v_stream) {
+        if (packet.stream_index != av->v_stream) {
             continue;
         }
 
         /* Decode video frame */
-        avcodec_decode_video2(p_codec_ctx, p_frame, &frame_done, &packet);
+        avcodec_decode_video2(av->p_codec_ctx, p_frame, &frame_done, &packet);
 
         /* check if valid frame */
         if (frame_done) {
@@ -183,14 +239,14 @@ int decode_video(opendcp_t *opendcp,  char *sfile) {
                 (uint8_t const * const *)p_frame->data,
                 p_frame->linesize,
                 0,
-                p_codec_ctx->height,
+                av->p_codec_ctx->height,
                 p_frame_rgb->data,
                 p_frame_rgb->linesize
             );
 
             /* save the frame to disk */
-            save_frame(opendcp, p_codec_ctx, p_frame_rgb, i++);
- 
+            save_frame(opendcp, av->p_codec_ctx, p_frame_rgb, i++);
+
             /* emit callback, if set */
             if (opendcp->j2k.frame_done.callback) {
                 opendcp->j2k.frame_done.callback(opendcp->j2k.frame_done.argument);
@@ -208,11 +264,8 @@ int decode_video(opendcp_t *opendcp,  char *sfile) {
     /* free the original frame */
     av_free(p_frame);
 
-    /* close the codec */
-    avcodec_close(p_codec_ctx);
-
-    /* close the video file */
-    avformat_close_input(&p_format_ctx);
+    /* delete decoder */;
+    video_decoder_delete(av);
 
     return OPENDCP_NO_ERROR;
 }

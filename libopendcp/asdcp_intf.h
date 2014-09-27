@@ -26,6 +26,15 @@ typedef struct {
     writer_info_t                   writer_info;
 } j2k_s_context_t;
 
+typedef struct {
+    ASDCP::PCM::WAVParser           parser;
+    ASDCP::PCM::AudioDescriptor     audio_desc;
+    ASDCP::PCM::MXFWriter           mxf_writer;
+    writer_info_t                   writer_info;
+    ASDCP::PCM::AudioDescriptor     audio_desc_channel[MAX_AUDIO_CHANNELS];
+    ASDCP::PCM::WAVParser           parser_channel[MAX_AUDIO_CHANNELS];
+} pcm_context_t;
+
 #ifdef __cplusplus
 }
 #endif

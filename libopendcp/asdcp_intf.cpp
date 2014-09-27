@@ -39,9 +39,7 @@ int write_mpeg2_mxf(opendcp_t *opendcp, filelist_t *filelist);
 
 int j2k_context_create(opendcp_t *opendcp, filelist_t *filelist, char *output_file);
 int j2k_s_context_create(opendcp_t *opendcp, filelist_t *filelist, char *output_file);
-
-/* Function pointers - UNKOWN, MPEG, JPEG2000, PCM_24_48, PCM_24_96, TIMED_TEXT, JPEG2000_S) */
-int (*f_context[3])(opendcp_t *, filelist_t *, char *) = {NULL, NULL, j2k_context_create};
+int pcm_context_create(opendcp_t *opendcp, filelist_t *filelist, char *output_file);
 
 /* generate a random UUID */
 extern "C" void uuid_random(char *uuid) {
@@ -401,6 +399,82 @@ extern "C" int read_asset_info(asset_t *asset) {
     return OPENDCP_NO_ERROR;
 }
 
+extern "C" int mxf_create(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
+    Result_t      result = RESULT_OK;
+    EssenceType_t essence_type;
+
+    result = ASDCP::RawEssenceType(filelist->files[0], essence_type);
+
+    if (ASDCP_FAILURE(result)) {
+        return OPENDCP_DETECT_TRACK_TYPE;
+    }
+
+    opendcp->mxf.type = essence_type;
+
+    /* set the starting frame */
+    if (opendcp->mxf.start_frame && filelist->nfiles >= (opendcp->mxf.start_frame - 1)) {
+        opendcp->mxf.start_frame = opendcp->mxf.start_frame - 1;  /* adjust for zero base */
+    } else {
+        opendcp->mxf.start_frame = 0;
+    }
+
+    OPENDCP_LOG(LOG_INFO, "write_j2k_mxf: %x", opendcp->mxf.asdcp);
+    OPENDCP_LOG(LOG_INFO, "Returning MXF Context");
+
+    switch (opendcp->mxf.type) {
+        case ESS_JPEG_2000:
+            if (opendcp->stereoscopic) {
+                OPENDCP_LOG(LOG_INFO, "Creating J2K 3D MXF Context");
+                if (j2k_s_context_create(opendcp, filelist, output_file) != OPENDCP_NO_ERROR) {
+                    return OPENDCP_ERROR;
+                }
+            } else {
+                OPENDCP_LOG(LOG_INFO, "Creating J2K MXF Context");
+                if (j2k_context_create(opendcp, filelist, output_file) != OPENDCP_NO_ERROR) {
+                    return OPENDCP_ERROR;
+                }
+            }
+            break;
+
+        case ESS_JPEG_2000_S:
+            OPENDCP_LOG(LOG_INFO, "Creating J2K 3D MXF Context");
+            if (j2k_s_context_create(opendcp, filelist, output_file) != OPENDCP_NO_ERROR) {
+                return OPENDCP_ERROR;
+            }
+            break;
+
+        case ESS_PCM_24b_48k:
+        case ESS_PCM_24b_96k:
+            OPENDCP_LOG(LOG_INFO, "Creating J2K 3D MXF Context");
+            if (pcm_context_create(opendcp, filelist, output_file) != OPENDCP_NO_ERROR) {
+                return OPENDCP_ERROR;
+            }
+            break;
+
+/*
+        case ESS_MPEG2_VES:
+            return write_mpeg2_mxf(opendcp, filelist, output_file);
+            break;
+
+        case ESS_TIMED_TEXT:
+            return write_tt_mxf(opendcp, filelist, output_file);
+            break;
+
+        case ESS_UNKNOWN:
+            return OPENDCP_UNKNOWN_TRACK_TYPE;
+            break;
+*/
+        default:
+            return OPENDCP_UNKNOWN_TRACK_TYPE;
+            break;
+    }
+
+    OPENDCP_LOG(LOG_INFO, "write_j2k_mxf: %x", opendcp->mxf.asdcp);
+    OPENDCP_LOG(LOG_INFO, "Returning MXF Context");
+
+    return OPENDCP_NO_ERROR;
+}
+
 /* write the asset to an mxf file */
 extern "C" int write_mxf(opendcp_t *opendcp, char *mxf_ptr, filelist_t *filelist) {
     Result_t      result = RESULT_OK;
@@ -560,81 +634,6 @@ int j2k_s_context_create(opendcp_t *opendcp, filelist_t *filelist, char *output_
     return OPENDCP_NO_ERROR;
 }
 
-extern "C" int mxf_create(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
-    Result_t      result = RESULT_OK;
-    EssenceType_t essence_type;
-
-    result = ASDCP::RawEssenceType(filelist->files[0], essence_type);
-
-    if (ASDCP_FAILURE(result)) {
-        return OPENDCP_DETECT_TRACK_TYPE;
-    }
-
-    opendcp->mxf.type = essence_type;
-
-    /* set the starting frame */
-    if (opendcp->mxf.start_frame && filelist->nfiles >= (opendcp->mxf.start_frame - 1)) {
-        opendcp->mxf.start_frame = opendcp->mxf.start_frame - 1;  /* adjust for zero base */
-    } else {
-        opendcp->mxf.start_frame = 0;
-    }
-
-
-    // (*f_context[opendcp->mxf.type])(opendcp, filelist, output_file);
-
-    OPENDCP_LOG(LOG_INFO, "write_j2k_mxf: %x", opendcp->mxf.asdcp);
-    OPENDCP_LOG(LOG_INFO, "Returning MXF Context");
-
-    switch (opendcp->mxf.type) {
-        case ESS_JPEG_2000:
-            if (opendcp->stereoscopic) {
-                OPENDCP_LOG(LOG_INFO, "Creating J2K 3D MXF Context");
-                if (j2k_s_context_create(opendcp, filelist, output_file) != OPENDCP_NO_ERROR) {
-                    return OPENDCP_ERROR;
-                }
-            } else {
-                OPENDCP_LOG(LOG_INFO, "Creating J2K MXF Context");
-                if (j2k_context_create(opendcp, filelist, output_file) != OPENDCP_NO_ERROR) {
-                    return OPENDCP_ERROR;
-                }
-            }
-            break;
-
-        case ESS_JPEG_2000_S:
-            OPENDCP_LOG(LOG_INFO, "Creating J2K 3D MXF Context");
-            if (j2k_s_context_create(opendcp, filelist, output_file) != OPENDCP_NO_ERROR) {
-                return OPENDCP_ERROR;
-            }
-            break;
-/*
-        case ESS_PCM_24b_48k:
-        case ESS_PCM_24b_96k:
-            return write_pcm_mxf(opendcp, filelist, output_file);
-            break;
-
-        case ESS_MPEG2_VES:
-            return write_mpeg2_mxf(opendcp, filelist, output_file);
-            break;
-
-        case ESS_TIMED_TEXT:
-            return write_tt_mxf(opendcp, filelist, output_file);
-            break;
-
-        case ESS_UNKNOWN:
-            return OPENDCP_UNKNOWN_TRACK_TYPE;
-            break;
-*/
-        default:
-            return OPENDCP_UNKNOWN_TRACK_TYPE;
-            break;
-    }
-
-    OPENDCP_LOG(LOG_INFO, "write_j2k_mxf: %x", opendcp->mxf.asdcp);
-    OPENDCP_LOG(LOG_INFO, "Returning MXF Context");
-
-    return OPENDCP_NO_ERROR;
-}
-
 int write_mxf_frame(opendcp_t *opendcp, char *frame) {
     UNUSED(frame);
     UNUSED(opendcp);
@@ -668,11 +667,11 @@ int write_j2k_mxf(opendcp_t *opendcp, filelist_t *filelist) {
         /* write frame(s) */
         for (j = 0; j < opendcp->mxf.frame_duration; j++) {
             result = j2k->mxf_writer.WriteFrame(frame_buffer, j2k->writer_info.aes_context, j2k->writer_info.hmac_context);
-        }
 
-        /* frame done callback (also check for interrupt) */
-        if (opendcp->mxf.frame_done.callback(opendcp->mxf.frame_done.argument)) {
-            return OPENDCP_NO_ERROR;
+            /* frame done callback (also check for interrupt) */
+            if (opendcp->mxf.frame_done.callback(opendcp->mxf.frame_done.argument)) {
+                return OPENDCP_NO_ERROR;
+            }
         }
     }
 
@@ -702,18 +701,11 @@ int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist) {
     JP2K::FrameBuffer           frame_buffer_left(FRAME_BUFFER_SIZE);
     JP2K::FrameBuffer           frame_buffer_right(FRAME_BUFFER_SIZE);
     int                         i, j;
-    JP2K::StereoscopicPhase_t   frame_side;
 
     j2k_s_context_t *j2k = (j2k_s_context_t *)opendcp->mxf.asdcp;
 
     /* read each input frame and write to the output mxf until duration is reached */
     for (i = opendcp->mxf.start_frame; i < opendcp->mxf.end_frame && ASDCP_SUCCESS(result); i+=2) {
-        if (i % 2) {
-            frame_side = JP2K::SP_LEFT;
-        } else {
-            frame_side = JP2K::SP_RIGHT;
-        }
-
         result = j2k->parser.OpenReadFrame(filelist->files[i], frame_buffer_left);
 
         if (ASDCP_FAILURE(result)) {
@@ -735,10 +727,10 @@ int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist) {
         for (j = 0; j < opendcp->mxf.frame_duration; j++) {
             result = j2k->mxf_writer.WriteFrame(frame_buffer_left, JP2K::SP_LEFT, j2k->writer_info.aes_context, j2k->writer_info.hmac_context);
             result = j2k->mxf_writer.WriteFrame(frame_buffer_right, JP2K::SP_RIGHT, j2k->writer_info.aes_context, j2k->writer_info.hmac_context);
-        }
 
-        /* frame done callback (also check for interrupt) */
-        opendcp->mxf.frame_done.callback(opendcp->mxf.frame_done.argument);
+            /* frame done callback (also check for interrupt) */
+            opendcp->mxf.frame_done.callback(opendcp->mxf.frame_done.argument);
+        }
     }
 
     if (result == RESULT_ENDOFFILE) {
@@ -760,125 +752,137 @@ int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist) {
     return OPENDCP_NO_ERROR;
 }
 
-/* write out pcm audio mxf file */
-int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist) {
-    PCM::FrameBuffer     frame_buffer;
-    PCM::AudioDescriptor audio_desc;
-    PCM::MXFWriter       mxf_writer;
-    writer_info_t        writer_info;
-    Result_t             result = RESULT_OK;
-    ui32_t               mxf_duration;
-    i32_t                file_index = 0;
+int pcm_context_create(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
+    Result_t                result = RESULT_OK;
+    PCM::FrameBuffer        frame_buffer(FRAME_BUFFER_SIZE);
+    PCM::WAVParser          parser;
+    PCM::AudioDescriptor    audio_desc;
+    int                     i;
 
-    char *output_file = NULL;
+    pcm_context_t *pcm = new pcm_context_t;
 
-    PCM::WAVParser       pcm_parser_channel[MAX_AUDIO_CHANNELS];
-    PCM::FrameBuffer     frame_buffer_channel[MAX_AUDIO_CHANNELS];
-    PCM::AudioDescriptor audio_desc_channel[MAX_AUDIO_CHANNELS];
+    fill_writer_info(opendcp, &pcm->writer_info);
 
-    Rational edit_rate(opendcp->frame_rate, 1);
+    Rational edit_rate(opendcp->mxf.edit_rate, 1);
 
     /* read first file */
-    result = pcm_parser_channel[0].OpenRead(filelist->files[0], edit_rate);
+    result = pcm->parser.OpenRead(filelist->files[0], edit_rate);
 
     if (ASDCP_FAILURE(result)) {
         return OPENDCP_FILEOPEN_WAV;
     }
 
     /* read audio descriptor */
-    pcm_parser_channel[0].FillAudioDescriptor(audio_desc);
-    audio_desc.ChannelCount = 0;
-    audio_desc.BlockAlign   = 0;
+    pcm->parser.FillAudioDescriptor(pcm->audio_desc);
+    pcm->audio_desc.ChannelCount = 0;
+    pcm->audio_desc.BlockAlign   = 0;
 
-    for (file_index = 0; file_index < filelist->nfiles; file_index++) {
-        result = pcm_parser_channel[file_index].OpenRead(filelist->files[file_index], edit_rate);
+    for (i = 0; i < filelist->nfiles; i++) {
+        result = pcm->parser_channel[i].OpenRead(filelist->files[i], edit_rate);
 
         if (ASDCP_FAILURE(result)) {
-            OPENDCP_LOG(LOG_ERROR, "could not open %s", filelist->files[file_index]);
+            OPENDCP_LOG(LOG_ERROR, "could not open %s", filelist->files[i]);
             return OPENDCP_FILEOPEN_WAV;
         }
 
-        pcm_parser_channel[file_index].FillAudioDescriptor(audio_desc_channel[file_index]);
+        pcm->parser_channel[i].FillAudioDescriptor(audio_desc);
 
-        if (audio_desc_channel[file_index].AudioSamplingRate != audio_desc.AudioSamplingRate) {
+        if (audio_desc.AudioSamplingRate != pcm->audio_desc.AudioSamplingRate) {
             OPENDCP_LOG(LOG_ERROR, "mismatched sampling rate");
             return OPENDCP_FILEOPEN_WAV;
         }
 
-        if (audio_desc_channel[file_index].QuantizationBits != audio_desc.QuantizationBits) {
+        if (audio_desc.QuantizationBits != pcm->audio_desc.QuantizationBits) {
             OPENDCP_LOG(LOG_ERROR, "mismatched bit rate");
             return OPENDCP_FILEOPEN_WAV;
         }
 
-        if (audio_desc_channel[file_index].ContainerDuration != audio_desc.ContainerDuration) {
+        if (audio_desc.ContainerDuration != pcm->audio_desc.ContainerDuration) {
             OPENDCP_LOG(LOG_ERROR, "mismatched duration");
             return OPENDCP_FILEOPEN_WAV;
         }
 
-        frame_buffer_channel[file_index].Capacity(PCM::CalcFrameBufferSize(audio_desc_channel[file_index]));
+        pcm->audio_desc.ChannelCount += audio_desc.ChannelCount;
+        pcm->audio_desc_channel[i] = audio_desc;
     }
 
     if (ASDCP_FAILURE(result)) {
         return OPENDCP_FILEOPEN_WAV;
     }
 
-    /*  set total audio characteristics */
-    for (file_index = 0; file_index < filelist->nfiles; file_index++) {
-        audio_desc.ChannelCount += audio_desc_channel[file_index].ChannelCount;
+    /* DCP should be at least MIN channels, we'll create black wavs later if missing */
+    if (pcm->audio_desc.ChannelCount < MIN_AUDIO_CHANNELS) {
+        OPENDCP_LOG(LOG_INFO, "audio channels (%d) less than minimum (%d), creating black wavs", pcm->audio_desc.ChannelCount, MIN_AUDIO_CHANNELS);
+        pcm->audio_desc.ChannelCount = MIN_AUDIO_CHANNELS;
     }
 
-    audio_desc.BlockAlign = audio_desc.ChannelCount * 24 / 8;
-    audio_desc.EditRate = edit_rate;
-    audio_desc.AvgBps   = audio_desc.AvgBps * filelist->nfiles;
+    /*  set total audio characteristics */
+    pcm->audio_desc.BlockAlign = pcm->audio_desc.ChannelCount * 24 / 8;
+    pcm->audio_desc.EditRate = edit_rate;
+    pcm->audio_desc.AvgBps   = pcm->audio_desc.AvgBps * filelist->nfiles;
 
-    /* set total frame buffer size */
-    frame_buffer.Capacity(PCM::CalcFrameBufferSize(audio_desc));
-    frame_buffer.Size(PCM::CalcFrameBufferSize(audio_desc));
-
-    /* fill write info */
-    fill_writer_info(opendcp, &writer_info);
-    result = mxf_writer.OpenWrite(output_file, writer_info.info, audio_desc);
+    result = pcm->mxf_writer.OpenWrite(output_file, pcm->writer_info.info, pcm->audio_desc);
 
     if (ASDCP_FAILURE(result)) {
         return OPENDCP_FILEWRITE_MXF;
     }
 
-    /* set duration */
-    if (!opendcp->duration) {
-        mxf_duration = 0xffffffff;
-    } else {
-        mxf_duration = opendcp->duration;
-    }
+    opendcp->mxf.asdcp = (char *)pcm;
 
-    /* start parsing */
-    while (ASDCP_SUCCESS(result) && mxf_duration--) {
+    return OPENDCP_NO_ERROR;
+}
+
+/* write out pcm audio mxf file */
+int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist) {
+    Result_t             result = RESULT_OK;
+    PCM::FrameBuffer     frame_buffer;
+    PCM::FrameBuffer     frame_buffer_channel[MAX_AUDIO_CHANNELS];
+    int                  i, j;
+    int                  channels_read;
+
+    pcm_context_t *pcm = (pcm_context_t *)opendcp->mxf.asdcp;
+
+    /* set total output frame buffer size */
+    frame_buffer.Capacity(PCM::CalcFrameBufferSize(pcm->audio_desc));
+    frame_buffer.Size(PCM::CalcFrameBufferSize(pcm->audio_desc));
+
+    for (i = opendcp->mxf.start_frame; i < opendcp->mxf.end_frame && ASDCP_SUCCESS(result); i++) {
         byte_t *data_s = frame_buffer.Data();
         byte_t *data_e = data_s + frame_buffer.Capacity();
-        byte_t sample_size = PCM::CalcSampleSize(audio_desc_channel[0]);
+        byte_t sample_size = PCM::CalcSampleSize(pcm->audio_desc_channel[0]);
         int    offset = 0;
 
         /* read a frame from each file */
-        for (file_index = 0; file_index < filelist->nfiles; file_index++) {
-            memset(frame_buffer_channel[file_index].Data(), 0, frame_buffer_channel[file_index].Capacity());
-            result = pcm_parser_channel[file_index].ReadFrame(frame_buffer_channel[file_index]);
+        channels_read = 0;
+        for (j = 0; j < filelist->nfiles; j++) {
+            channels_read += pcm->audio_desc_channel[j].ChannelCount;
+            frame_buffer_channel[j].Capacity(PCM::CalcFrameBufferSize(pcm->audio_desc_channel[j]));
+            memset(frame_buffer_channel[j].Data(), 0, frame_buffer_channel[j].Capacity());
+            result = pcm->parser_channel[j].ReadFrame(frame_buffer_channel[j]);
 
             if (ASDCP_FAILURE(result)) {
                 continue;
             }
 
-            if (frame_buffer_channel[file_index].Size() != frame_buffer_channel[file_index].Capacity()) {
+            if (frame_buffer_channel[j].Size() != frame_buffer_channel[j].Capacity()) {
                 OPENDCP_LOG(LOG_INFO, "frame size mismatch, expect size: %d did match actual size: %d",
-                            frame_buffer_channel[file_index].Capacity(), frame_buffer_channel[file_index].Size());
+                            frame_buffer_channel[j].Capacity(), frame_buffer_channel[j].Size());
                 result = RESULT_ENDOFFILE;
                 continue;
             }
         }
 
-        /* write sample from each frame to output buffer */
+        for (j = channels_read; j < 6; j++) {
+            channels_read += 1;
+            frame_buffer_channel[j].Capacity(PCM::CalcFrameBufferSize(pcm->audio_desc_channel[0]));
+            memset(frame_buffer_channel[j].Data(), 0, frame_buffer_channel[j].Capacity());
+        }
+
+        /* write samples from each frame to output buffer */
         if (ASDCP_SUCCESS(result)) {
             while (data_s < data_e) {
-                for (file_index = 0; file_index < filelist->nfiles; file_index++) {
-                    byte_t *frame = frame_buffer_channel[file_index].Data() + offset;
+                for (j = 0; j < channels_read; j++) {
+                    byte_t *frame = frame_buffer_channel[j].Data() + offset;
                     memcpy(data_s, frame, sample_size);
                     data_s += sample_size;
                 }
@@ -887,7 +891,7 @@ int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist) {
             }
 
             /* write the frame */
-            result = mxf_writer.WriteFrame(frame_buffer, writer_info.aes_context, writer_info.hmac_context);
+            result = pcm->mxf_writer.WriteFrame(frame_buffer, pcm->writer_info.aes_context, pcm->writer_info.hmac_context);
 
             /* frame done callback (also check for interrupt) */
             opendcp->mxf.frame_done.callback(opendcp->mxf.frame_done.argument);
@@ -903,7 +907,7 @@ int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist) {
     }
 
     /* write footer information */
-    result = mxf_writer.Finalize();
+    result = pcm->mxf_writer.Finalize();
 
     opendcp->mxf.file_done.callback(opendcp->mxf.file_done.argument);
 
