@@ -36,6 +36,10 @@ SET(OPENDCP_CODEC_SRC
      codecs/opendcp_encoder_remote.c
 )
 
+IF (NOT HAVE_MEMSTREAM)
+    SET(OPENDCP_LIB_SRC ${OPENDCP_LIB_SRC} opendcp_memory_stream.c)
+ENDIF()
+
 IF(ENABLE_XMLSEC)
     SET(OPENDCP_XMLSEC_SRC  opendcp_xml_sign.c)
 ENDIF(ENABLE_XMLSEC)

@@ -26,7 +26,9 @@ extern "C" {
 #include <opendcp_image.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
+/* min and max values */
 #define MAX_ASSETS          10   /* Soft limit */
 #define MAX_REELS           30   /* Soft limit */
 #define MAX_PKL             1    /* Soft limit */
@@ -36,10 +38,21 @@ extern "C" {
 #define MIN_AUDIO_CHANNELS  6    /* minimum allowed audio channels */
 #define MAX_AUDIO_CHANNELS  16   /* maximum allowed audio channels */
 
+/* string sizes */
+#define MAX_TITLE_LENGTH    255  /* maximum title length */
+#define TEXT_LENGTH         80   /* length of long text fields */
+#define RATING_SIZE         32   /* length of long text fields */
+#define UUID_SIZE           40   /* uuid size */
+#define DIGEST_SIZE         40   /* digest of size */
+#define KEY_SIZE            16   /* key size */
+#define TIMESTAMP_SIZE      30   /* timestamp size */
+#define RATIO_SIZE          10   /* ratio size */
+
 #define FILE_READ_SIZE      16384
 
-#define MAX_DCP_JPEG_BITRATE 250000000  /* Maximum DCI compliant bit rate for JPEG2000 */
-#define MAX_DCP_MPEG_BITRATE  80000000  /* Maximum DCI compliant bit rate for MPEG */
+#define MAX_HFR_JPEG_BITRATE 500000000  /* maximum DCI HFR bit rate for JPEG2000 */
+#define MAX_DCP_JPEG_BITRATE 250000000  /* maximum DCI STD bit rate for JPEG2000 */
+#define MAX_DCP_MPEG_BITRATE  80000000  /* maximum DCI bit rate for MPEG */
 
 #define MAX_WIDTH_2K        2048
 #define MAX_HEIGHT_2K       1080
@@ -231,7 +244,7 @@ typedef struct {
 } volindex_t;
 
 typedef struct {
-    char           uuid[40];
+    char           uuid[UUID_SIZE];
     int            essence_class;
     int            essence_type;
     int            duration;
@@ -240,21 +253,21 @@ typedef struct {
     int            xml_ns;
     int            stereoscopic;
     char           size[18];
-    char           name[128];
-    char           annotation[128];
-    char           edit_rate[20];
-    char           frame_rate[20];
-    char           sample_rate[20];
-    char           aspect_ratio[20];
-    char           digest[40];
+    char           name[TEXT_LENGTH];
+    char           annotation[TEXT_LENGTH];
+    char           edit_rate[RATIO_SIZE];
+    char           frame_rate[RATIO_SIZE];
+    char           sample_rate[RATIO_SIZE];
+    char           aspect_ratio[RATIO_SIZE];
+    char           digest[DIGEST_SIZE];
     char           filename[MAX_FILENAME_LENGTH];
     int            encrypted;
-    char           key_id[40];
+    char           key_id[DIGEST_SIZE];
 } asset_t;
 
 typedef struct {
-    char           uuid[40];
-    char           annotation[128];
+    char           uuid[UUID_SIZE];
+    char           annotation[TEXT_LENGTH];
     int            asset_count;
     asset_t        main_picture;
     asset_t        main_sound;
@@ -262,30 +275,30 @@ typedef struct {
 } reel_t;
 
 typedef struct {
-    char           uuid[40];
-    char           annotation[128];
+    char           uuid[UUID_SIZE];
+    char           annotation[TEXT_LENGTH];
     char           size[18];
-    char           digest[40];
+    char           digest[DIGEST_SIZE];
     int            duration;
     int            entry_point;
-    char           issuer[80];
-    char           creator[80];
-    char           title[80];
-    char           timestamp[30];
-    char           kind[32];
-    char           rating[32];
+    char           issuer[TEXT_LENGTH];
+    char           creator[TEXT_LENGTH];
+    char           title[MAX_TITLE_LENGTH];
+    char           timestamp[TIMESTAMP_SIZE];
+    char           kind[TEXT_LENGTH];
+    char           rating[RATING_SIZE];
     char           filename[MAX_FILENAME_LENGTH];
     int            reel_count;
     reel_t         reel[MAX_REELS];
 } cpl_t;
 
 typedef struct {
-    char           uuid[40];
-    char           annotation[128];
+    char           uuid[UUID_SIZE];
+    char           annotation[TEXT_LENGTH];
     char           size[18];
-    char           issuer[80];
-    char           creator[80];
-    char           timestamp[30];
+    char           issuer[TEXT_LENGTH];
+    char           creator[TEXT_LENGTH];
+    char           timestamp[TIMESTAMP_SIZE];
     char           filename[MAX_FILENAME_LENGTH];
     int            cpl_count;
     cpl_t          cpl[MAX_CPL];
@@ -323,8 +336,8 @@ typedef struct {
     int            key_flag;
     int            encrypt_header_flag;
     int            delete_intermediate;
-    byte_t         key_id[16];
-    byte_t         key_value[16];
+    byte_t         key_id[KEY_SIZE];
+    byte_t         key_value[KEY_SIZE];
     int            write_hmac;
     char           *asdcp;
     opendcp_cb_t   frame_done;
@@ -332,15 +345,15 @@ typedef struct {
 } mxf_t;
 
 typedef struct {
-    char           basename[40];
-    char           issuer[80];
-    char           creator[80];
-    char           timestamp[30];
-    char           annotation[128];
-    char           title[80];
-    char           kind[15];
-    char           rating[6];
-    char           aspect_ratio[20];
+    char           basename[TEXT_LENGTH];
+    char           issuer[TEXT_LENGTH];
+    char           creator[TEXT_LENGTH];
+    char           timestamp[TIMESTAMP_SIZE];
+    char           annotation[TEXT_LENGTH];
+    char           title[MAX_TITLE_LENGTH];
+    char           kind[TEXT_LENGTH];
+    char           rating[RATING_SIZE];
+    char           aspect_ratio[RATIO_SIZE];
     int            digest_flag;
     int            pkl_count;
     pkl_t          pkl[MAX_PKL];
@@ -408,6 +421,10 @@ int         is_key(const char *s);
 int         is_uuid(const char *s);
 int         is_key_value_set(byte_t *key, int len);
 
+#ifndef HAVE_MEMSTREAM
+FILE       *open_memstream(char **ptr, size_t *sizeloc);
+#endif
+
 /* opendcp context */
 opendcp_t *opendcp_create();
 int        opendcp_delete(opendcp_t *opendcp);
@@ -415,7 +432,7 @@ int        opendcp_delete(opendcp_t *opendcp);
 /* image functions */
 int check_image_compliance(int profile, opendcp_image_t *image, char *file);
 
-/* ASDCPLIB functions */
+/* asdcplib functions */
 int read_asset_info(asset_t *asset);
 void uuid_random(char *uuid);
 int calculate_digest(opendcp_t *opendcp, const char *filename, char *digest);
@@ -423,11 +440,11 @@ int get_wav_duration(const char *filename, int frame_rate);
 int get_wav_info(const char *filename, int frame_rate, wav_info_t *wav);
 int get_file_essence_type(char *in_path);
 
-/* MXF functions */
+/* mxf functions */
 int write_mxf(opendcp_t *opendcp, char *mxf, filelist_t *filelist);
 int mxf_create(opendcp_t *opendcp, filelist_t *filelist, char *output_file);
 
-/* XML functions */
+/* xml functions */
 int write_cpl(opendcp_t *opendcp, cpl_t *cpl);
 int write_pkl(opendcp_t *opendcp, pkl_t *pkl);
 int write_assetmap(opendcp_t *opendcp);
@@ -435,22 +452,24 @@ int write_volumeindex(opendcp_t *opendcp);
 int xml_verify(char *filename);
 int xml_sign(opendcp_t *opendcp, char *filename);
 
-/* J2K functions */
+/* j2k functions */
 int convert_to_j2k(opendcp_t *opendcp, char *in_file, char *out_file);
 
 /* decode video */
 int decode_video(opendcp_t *opendcp, char *in_file);
+int video_decoder_find(char *file);
 
 /* retrieve error string */
 char *error_string(int error_code);
 
-/* checksum */
+/* md5 checksum */
 typedef struct {
     uint32_t buf[4];
     uint32_t bits[2];
     unsigned char in[64];
 } md5_t;
 
+/* sha1 checksum */
 typedef struct {
     uint32_t state[5];
     uint32_t count[2];

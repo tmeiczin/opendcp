@@ -172,7 +172,7 @@ int main (int argc, char **argv) {
     filelist_t *filelist;
     char key_id[40];
     int key_id_flag = 0;
-    int class;
+    int asset_class;
 
     if (argc <= 1) {
         dcp_usage();
@@ -411,7 +411,7 @@ int main (int argc, char **argv) {
     }
 #endif
 
-    class = get_file_essence_class(filelist->files[0], 1);
+    asset_class = get_file_essence_class(filelist->files[0], 1);
     opendcp->mxf.edit_rate = opendcp->frame_rate;
 
     if (opendcp->mxf.end_frame) {
@@ -420,7 +420,7 @@ int main (int argc, char **argv) {
         }
     }
     else {
-        if (class == ACT_SOUND) {
+        if (asset_class == ACT_SOUND) {
             opendcp->mxf.end_frame = get_wav_duration(filelist->files[0], opendcp->frame_rate);
         }
         else {

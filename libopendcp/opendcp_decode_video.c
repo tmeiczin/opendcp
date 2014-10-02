@@ -57,17 +57,18 @@ static int copy_frame_16(const AVFrame *frame, opendcp_image_t *image) {
     return 0;
 }
 
-static int video_decoder_find(char *file) {
-    av_context_t    *av = NULL;
-    int             supported = 0;
+int video_decoder_find(char *file) {
+    av_context_t    *av;
 
-    if (video_decoder_create(av, file)) {
-        supported = 1;
+    av = malloc(sizeof(av_context_t));
+
+    if (video_decoder_create(av, file) != OPENDCP_NO_ERROR) {
+        return 0;
     }
 
     video_decoder_delete(av);
 
-    return supported;
+    return 1;
 }
 
 void video_decoder_delete(av_context_t *av) {
@@ -218,9 +219,8 @@ int decode_video(opendcp_t *opendcp,  char *file) {
     /* Assign appropriate parts of buffer to image planes in p_frame_rgb */
     avpicture_fill((AVPicture *)p_frame_rgb, buffer, PIX_FMT_RGB24, av->p_codec_ctx->width, av->p_codec_ctx->height);
 
-    /* Read frames and save first five frames to disk */
+    /* Read frames and re-encode */
     i = 1;
-
     while(av_read_frame(av->p_format_ctx, &packet) >= 0) {
         /* is this part of the stream */
         if (packet.stream_index != av->v_stream) {

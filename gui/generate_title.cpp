@@ -44,9 +44,17 @@ GenerateTitle::GenerateTitle(QWidget *parent) :
     connect(ui->typeComboBox,             SIGNAL(currentIndexChanged(int)), this, SLOT(updateTitle()));
     connect(ui->stereoscopicComboBox,     SIGNAL(currentIndexChanged(int)), this, SLOT(updateTitle()));
     connect(ui->framerateComboBox,        SIGNAL(currentIndexChanged(int)), this, SLOT(updateTitle()));
+    connect(ui->luminanceComboBox,        SIGNAL(currentIndexChanged(int)), this, SLOT(updateTitle()));
+    connect(ui->versionComboBox,          SIGNAL(currentIndexChanged(int)), this, SLOT(updateTitle()));
+    connect(ui->versiontypeComboBox,      SIGNAL(currentIndexChanged(int)), this, SLOT(updateTitle()));
+    connect(ui->redbandComboBox,          SIGNAL(currentIndexChanged(int)), this, SLOT(updateTitle()));
     connect(ui->standardComboBox,         SIGNAL(currentIndexChanged(int)), this, SLOT(updateTitle()));
     connect(ui->packageComboBox,          SIGNAL(currentIndexChanged(int)), this, SLOT(updateTitle()));
+    connect(ui->captionComboBox,          SIGNAL(currentIndexChanged(int)), this, SLOT(updateTitle()));
     connect(ui->filmEdit,                 SIGNAL(textChanged(QString)),     this, SLOT(updateTitle()));
+    connect(ui->chainEdit,                SIGNAL(textChanged(QString)),     this, SLOT(updateTitle()));
+    connect(ui->aspectratioEdit,          SIGNAL(textChanged(QString)),     this, SLOT(updateTitle()));
+    connect(ui->ptversionEdit,            SIGNAL(textChanged(QString)),     this, SLOT(updateTitle()));
     connect(ui->dateYearSB,               SIGNAL(valueChanged(int)),        this, SLOT(updateTitle()));
     connect(ui->dateMonthSB,              SIGNAL(valueChanged(int)),        this, SLOT(updateTitle()));
     connect(ui->dateDaySB,                SIGNAL(valueChanged(int)),        this, SLOT(updateTitle()));
@@ -74,25 +82,57 @@ QString GenerateTitle::getTitle()
     QString text;
 
     text.append(ui->filmEdit->text().split(" ").first());
+   
     if (ui->typeComboBox->currentIndex()) {
+       
         text.append("_" + ui->typeComboBox->currentText().split(" ").first());
+       
+        if (ui->versionComboBox->currentIndex()) {
+            if (ui->typeComboBox->currentText().split(" ").first()=="RTG-F" || ui->typeComboBox->currentText().split(" ").first()=="RTG-T"){
+            	    text.append(ui->versionComboBox->currentText().split(" ").first());
+            }
+            else{
+                  text.append("-" + ui->versionComboBox->currentText().split(" ").first());
+            }
+        }
+        if (ui->versiontypeComboBox->currentIndex()) {
+            text.append("-" + ui->versiontypeComboBox->currentText().split(" ").first());
+        }
+        if (ui->redbandComboBox->currentIndex()) {
+            text.append("-" + ui->redbandComboBox->currentText().split(" ").first());
+        }
+        if (ui->chainEdit->text()!=""){
+        	  text.append("-" + ui->chainEdit->text().split(" ").first());
+        }
         if (ui->stereoscopicComboBox->currentIndex()) {
             text.append("-" + ui->stereoscopicComboBox->currentText().split(" ").first());
+        }
+        if (ui->luminanceComboBox->currentIndex()) {
+            text.append("-" + ui->luminanceComboBox->currentText().split(" ").first().left(4));
         }
         if (ui->framerateComboBox->currentIndex()) {
             text.append("-" + ui->framerateComboBox->currentText().split(" ").first().left(2));
         }
     }
+    
     if (ui->aspectComboBox->currentIndex()) {
         text.append("_" + ui->aspectComboBox->currentText().split(" ").first());
+        if (ui->aspectratioEdit->text()!=""){
+        	  text.append("-" + ui->aspectratioEdit->text().split(" ").first());
+        }
     }
     if (ui->languageAudioComboBox->currentIndex()) {
         text.append("_" + ui->languageAudioComboBox->currentText().split(" ").first());
         if (ui->languageSubtitleComboBox->currentIndex() == 0) {
             text.append("-XX");
         } else {
+            
             text.append("-" + ui->languageSubtitleComboBox->currentText().split(" ").first());
         }
+        if (ui->captionComboBox->currentIndex()) {
+            text.append("-" + ui->captionComboBox->currentText().split(" ").first().left(4));
+        }
+        
     }
     if (ui->territoryComboBox->currentIndex()) {
         text.append("_" + ui->territoryComboBox->currentText().split(" ").first());
@@ -121,6 +161,9 @@ QString GenerateTitle::getTitle()
     }
     if (ui->packageComboBox->currentIndex()) {
         text.append("_" + ui->packageComboBox->currentText().split(" ").first());
+        if (ui->ptversionEdit->text()!=""){
+        	  text.append("-" + ui->ptversionEdit->text().split(" ").first());
+        }
     }
 
     return text;
@@ -141,7 +184,12 @@ void GenerateTitle::load(const QString& filename)
     int inFacility   = 0;
     int inStandard   = 0;
     int inPackage    = 0;
+    int inLuminance  = 0;
     int inFramerate  = 0;
+    int inVersion    = 0;
+    int inVersiontype = 0;
+    int inRedband    = 0;
+    int inCaption    = 0;
     int in3d    = 0;
 
     if (!file.open(QIODevice::ReadOnly)) {
@@ -156,14 +204,30 @@ void GenerateTitle::load(const QString& filename)
             inContent = 1;
         } else if (line == "</content>") {
             inContent = 0;
+        } else if (line == "<versiontype>") {
+            inVersiontype = 1;
+        } else if (line == "</versiontype>") {
+            inVersiontype = 0;
+        } else if (line == "<redband>") {
+            inRedband = 1;
+        } else if (line == "</redband>") {
+            inRedband = 0;
         } else if (line == "<stereoscopic>") {
             in3d = 1;
         } else if (line == "</stereoscopic>") {
             in3d = 0;
+        } else if (line == "<luminance>") {
+            inLuminance = 1;
+        } else if (line == "</luminance>") {
+            inLuminance = 0;
         } else if (line == "<framerate>") {
             inFramerate = 1;
         } else if (line == "</framerate>") {
             inFramerate = 0;
+        } else if (line == "<version>") {
+            inVersion = 1;
+        } else if (line == "</version>") {
+            inVersion = 0;
         } else if (line == "<aspect>") {
             inAspect = 1;
         } else if (line == "</aspect>") {
@@ -172,6 +236,10 @@ void GenerateTitle::load(const QString& filename)
             inLanguage = 1;
         } else if (line == "</language>") {
             inLanguage = 0;
+        } else if (line == "<caption>") {
+            inCaption = 1;
+        } else if (line == "</caption>") {
+            inCaption = 0;
         } else if (line == "<territory>") {
             inTerritory = 1;
         } else if (line == "</territory>") {
@@ -213,6 +281,8 @@ void GenerateTitle::load(const QString& filename)
                     ui->languageAudioComboBox->addItem(line.trimmed());
                     ui->languageSubtitleComboBox->addItem(line.trimmed());
                     ui->narrativeComboBox->addItem(line.trimmed());
+            } else if (inCaption) {
+                    ui->captionComboBox->addItem(line.trimmed());
             } else if (inTerritory) {
                     ui->territoryComboBox->addItem(line.trimmed());
             } else if (inRating) {
@@ -227,8 +297,16 @@ void GenerateTitle::load(const QString& filename)
                     ui->standardComboBox->addItem(line.trimmed());
             } else if (in3d) {
                     ui->stereoscopicComboBox->addItem(line.trimmed());
+            } else if (inLuminance) {
+                    ui->luminanceComboBox->addItem(line.trimmed());
             } else if (inFramerate) {
                     ui->framerateComboBox->addItem(line.trimmed());
+            } else if (inVersion) {
+                    ui->versionComboBox->addItem(line.trimmed());
+            } else if (inVersiontype) {
+                    ui->versiontypeComboBox->addItem(line.trimmed());
+            } else if (inRedband) {
+                    ui->redbandComboBox->addItem(line.trimmed());                
             } else if (inPackage) {
                     ui->packageComboBox->addItem(line.trimmed());
             } else if (inFacility) {

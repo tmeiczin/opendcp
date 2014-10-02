@@ -81,7 +81,7 @@ SET(PREFIX ${PROJECT_BINARY_DIR}/contrib)
 SET(PREFIX_ARG --prefix=${PREFIX})
 #-------------------------------------------------------------------------------
 
-#--inlcude os specific----------------------------------------------------------
+#--include os specific----------------------------------------------------------
 IF (APPLE)
     INCLUDE("toolchains/osx.cmake")
 ELSEIF(WIN32)
@@ -95,6 +95,11 @@ MESSAGE(STATUS)
 MESSAGE(STATUS "================================================================================")
 MESSAGE(STATUS "OpenDCP Version ${OPENDCP_VERSION} CMake - ${CMAKE_SYSTEM_NAME} (${TARGET_ARCH})")
 MESSAGE(STATUS "================================================================================")
+
+#--look for functions-----------------------------------------------------------
+INCLUDE(CheckFunctionExists)
+CHECK_FUNCTION_EXISTS(open_memstream HAVE_MEMSTREAM)
+#-------------------------------------------------------------------------------
 
 #--add source directories-------------------------------------------------------
 ADD_SUBDIRECTORY(contrib)

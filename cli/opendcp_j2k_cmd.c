@@ -53,6 +53,12 @@ void  dcp_usage();
 int   frame_count;
 int   frame_index;
 
+enum SOURCE_TYPE {
+    IMAGE = 0,
+    VIDEO,
+    UNKNOWN
+};
+
 void version() {
     FILE *fp;
 
@@ -99,6 +105,25 @@ void dcp_usage() {
 
     fclose(fp);
     exit(0);
+}
+
+int get_input_type(const char *file) {
+    char *extension;
+    opendcp_decoder_t *decoder;
+
+    extension = strrchr(file, '.');
+    extension++;
+
+    decoder = opendcp_decoder_find(NULL, extension, 0);
+    if (decoder->id != OPENDCP_DECODER_NONE) {
+        return IMAGE;
+    }
+
+    if (video_decoder_find(file)) {
+        return VIDEO;
+    }
+
+    return UNKNOWN;
 }
 
 char *substring(const char *str, size_t begin, size_t len) {
@@ -200,7 +225,7 @@ void progress_bar(int val, int total) {
 }
 
 int main (int argc, char **argv) {
-    int rc, c, result, count = 0;
+    int rc, c, result, count = 0, input_type;
     int openmp_flag = 0;
     opendcp_t *opendcp;
     char *in_path  = NULL;
@@ -517,7 +542,7 @@ int main (int argc, char **argv) {
 
     /* get file list */
     OPENDCP_LOG(LOG_DEBUG, "searching path %s", in_path);
-    
+
     char *extensions = opendcp_decoder_extensions();
 
     filelist = get_filelist(in_path, extensions);
@@ -562,6 +587,10 @@ int main (int argc, char **argv) {
         progress_bar(0, 0);
     }
 
+    input_type = get_input_type(filelist->files[0]);
+
+    printf("input: %d\n", input_type);
+
 #ifdef OPENMP
     omp_set_num_threads(opendcp->threads);
     OPENDCP_LOG(LOG_DEBUG, "OpenMP Enable");
@@ -570,6 +599,7 @@ int main (int argc, char **argv) {
     frame_index = opendcp->j2k.start_frame;
 
     #pragma omp parallel for private(c)
+
 
     for (c = opendcp->j2k.start_frame - 1; c < opendcp->j2k.end_frame; c++) {
         #pragma omp flush(SIGINT_received)
@@ -591,8 +621,11 @@ int main (int argc, char **argv) {
             OPENDCP_LOG(LOG_INFO, "JPEG2000 conversion %s started OPENMP: %d", filelist->files[c], openmp_flag);
 
             if(access(out, F_OK) != 0 || opendcp->j2k.no_overwrite == 0) {
-                result = decode_video(opendcp, filelist->files[c]);
-                //result = convert_to_j2k(opendcp, filelist->files[c], out);
+                if (input_type == VIDEO) {
+                    result = decode_video(opendcp, filelist->files[c]);
+                } else {
+                    result = convert_to_j2k(opendcp, filelist->files[c], out);
+                }
             }
             else {
                 result = OPENDCP_NO_ERROR;

@@ -29,6 +29,86 @@
 void set_cinema_encoder_parameters(opendcp_t *opendcp, opj_cparameters_t *parameters);
 static int initialize_4K_poc(opj_poc_t *POC, int numres);
 int opendcp_to_opj(opendcp_image_t *opendcp, opj_image_t **opj_ptr);
+opj_stream_t* create_l_stream(const char *fname, char *m_buffer, OPJ_BOOL p_is_read_stream);
+opj_stream_t* opj_create_l_stream(FILE *p_file, OPJ_SIZE_T p_size, OPJ_BOOL p_is_read_stream);
+
+static OPJ_SIZE_T opj_read_from_file (void * p_buffer, OPJ_SIZE_T p_nb_bytes, FILE * p_file) {
+    OPJ_SIZE_T l_nb_read = fread(p_buffer,1,p_nb_bytes,p_file);
+    return l_nb_read ? l_nb_read : (OPJ_SIZE_T)-1;
+}
+
+static OPJ_UINT64 opj_get_data_length_from_file (FILE * p_file) {
+    OPJ_OFF_T file_length = 0;
+    fseek(p_file, 0, SEEK_END);
+    file_length = (OPJ_OFF_T) ftell(p_file);
+    fseek(p_file, 0, SEEK_SET);
+
+    return (OPJ_UINT64)file_length;
+}
+
+static OPJ_SIZE_T opj_write_from_file (void * p_buffer, OPJ_SIZE_T p_nb_bytes, FILE * p_file) {
+    return fwrite(p_buffer, 1, p_nb_bytes, p_file);
+}
+
+static OPJ_OFF_T opj_skip_from_file (OPJ_OFF_T p_nb_bytes, FILE * p_user_data) {
+    if (fseek(p_user_data, p_nb_bytes, SEEK_CUR)) {
+        return -1;
+    }
+
+    return p_nb_bytes;
+}
+
+static OPJ_BOOL opj_seek_from_file (OPJ_OFF_T p_nb_bytes, FILE * p_user_data) {
+    if (fseek(p_user_data,p_nb_bytes,SEEK_SET)) {
+        return OPJ_FALSE;
+    }
+
+    return OPJ_TRUE;
+}
+
+opj_stream_t* create_l_stream(const char *fname, char *m_buffer, OPJ_BOOL p_is_read_stream) {
+    FILE *p_file;
+    const char *mode;
+    size_t size= 0;
+
+    if (fname != NULL) {    
+        if (p_is_read_stream) {
+            mode = "rb";
+        }  else {
+            mode = "wb";
+        }
+
+        p_file = fopen(fname, mode);
+    
+        if (! p_file) {
+            return NULL; 
+        }
+    } else {
+        p_file = open_memstream(&m_buffer, &size);
+    }
+
+    return opj_create_l_stream(p_file, OPJ_J2K_STREAM_CHUNK_SIZE, p_is_read_stream);
+}
+
+opj_stream_t* opj_create_l_stream(FILE *p_file, OPJ_SIZE_T p_size, OPJ_BOOL p_is_read_stream) {
+    opj_stream_t* l_stream = 00;
+
+    l_stream = opj_stream_create(p_size, p_is_read_stream);
+
+    if (!l_stream) {
+        fclose(p_file);
+        return NULL;
+    }
+
+    opj_stream_set_user_data(l_stream, p_file, (opj_stream_free_user_data_fn) fclose);
+    opj_stream_set_user_data_length(l_stream, opj_get_data_length_from_file(p_file));
+    opj_stream_set_read_function(l_stream, (opj_stream_read_fn) opj_read_from_file);
+    opj_stream_set_write_function(l_stream, (opj_stream_write_fn) opj_write_from_file);
+    opj_stream_set_skip_function(l_stream, (opj_stream_skip_fn) opj_skip_from_file);
+    opj_stream_set_seek_function(l_stream, (opj_stream_seek_fn) opj_seek_from_file);
+
+    return l_stream;
+}
 
 static int initialize_4K_poc(opj_poc_t *POC, int numres) {
     POC[0].tile    = 1;
@@ -204,7 +284,8 @@ int opendcp_encode_openjpeg(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
     /* open a byte stream for writing */
     /* allocate memory for all tiles */
     OPENDCP_LOG(LOG_DEBUG, "opening J2k output stream");
-    l_stream = opj_stream_create_default_file_stream(dfile, OPJ_FALSE);
+    l_stream = create_l_stream(dfile, NULL, OPJ_FALSE);
+    //l_stream = opj_stream_create_default_file_stream(dfile, OPJ_FALSE);
 
     if (! l_stream) {
         return OPENDCP_ERROR;

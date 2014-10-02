@@ -77,7 +77,12 @@ void MxfWriter::run()
         sprintf(fileList->files[i++],"%s",mxfFileList.takeFirst().absoluteFilePath().toUtf8().data());
     }
 
-    rc = write_mxf(opendcpMxf, fileList, mxfOutputFile.toUtf8().data());
+    /* create an mxf context */
+    if (mxf_create(opendcpMxf, fileList, mxfOutputFile.toUtf8().data())) {
+        OPENDCP_LOG(LOG_ERROR, "Could not create MXF context");
+    }
+
+    rc = write_mxf(opendcpMxf, opendcpMxf->mxf.asdcp, fileList);
 
     filelist_free(fileList);
 

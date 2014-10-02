@@ -64,7 +64,7 @@
          <set>Qt::ImhNone</set>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>3</number>
         </property>
         <widget class="QWidget" name="j2kTab">
          <attribute name="title">
@@ -2783,7 +2783,7 @@
                <string notr="true"/>
               </property>
               <property name="maxLength">
-               <number>80</number>
+               <number>145</number>
               </property>
              </widget>
             </item>

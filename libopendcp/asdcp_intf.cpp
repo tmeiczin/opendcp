@@ -576,6 +576,31 @@ Result_t fill_writer_info(opendcp_t *opendcp, writer_info_t *writer_info) {
     return result;
 }
 
+int ReadFile(char *name, JP2K::FrameBuffer *buffer) {
+	FILE *file;
+	unsigned long length;
+    int read;
+
+	/* open file */
+	file = fopen(name, "rb");
+	if (!file) {
+		fprintf(stderr, "Unable to open file %s", name);
+		return 0;
+	}
+
+    /* get file length */
+	fseek(file, 0, SEEK_END);
+	length = ftell(file);
+	fseek(file, 0, SEEK_SET);
+
+    printf("reading %d\n", length);
+	read = fread(buffer->Data(), length, 1, file);
+    printf("read: %d\n", read);
+	fclose(file);
+
+    return length;
+}
+
 int j2k_context_create(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
     Result_t                result = RESULT_OK;
     JP2K::FrameBuffer       frame_buffer(FRAME_BUFFER_SIZE);
@@ -644,13 +669,19 @@ int write_mxf_frame(opendcp_t *opendcp, char *frame) {
 int write_j2k_mxf(opendcp_t *opendcp, filelist_t *filelist) {
     Result_t               result = RESULT_OK;
     JP2K::FrameBuffer      frame_buffer(FRAME_BUFFER_SIZE);
-    int                    i, j;
+    int                    i, j, read_count;
 
     j2k_context_t *j2k = (j2k_context_t *)opendcp->mxf.asdcp;
 
     /* read each input frame and write to the output mxf until duration is reached */
     for (i = opendcp->mxf.start_frame; i < opendcp->mxf.end_frame && ASDCP_SUCCESS(result); i++) {
-        result = j2k->parser.OpenReadFrame(filelist->files[i], frame_buffer);
+        //result = j2k->parser.OpenReadFrame(filelist->files[i], frame_buffer);
+        read_count = ReadFile(filelist->files[i], &frame_buffer);
+        frame_buffer.Size(read_count);
+        byte_t start_of_data = 0; // out param
+        ParseMetadataIntoDesc(frame_buffer, j2k->picture_desc, &start_of_data);
+        frame_buffer.PlaintextOffset(start_of_data);
+        printf("file: %s, read_count: %d size: %d offset: %d, duration: %d\n", filelist->files[i], read_count, frame_buffer.Size(), start_of_data, opendcp->mxf.frame_duration);
 
         if (opendcp->mxf.delete_intermediate) {
             unlink(filelist->files[i]);

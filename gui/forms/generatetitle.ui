@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>750</width>
-    <height>681</height>
+    <width>980</width>
+    <height>694</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,10 +16,10 @@
   <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>5</y>
-     <width>710</width>
-     <height>591</height>
+     <x>10</x>
+     <y>0</y>
+     <width>951</width>
+     <height>651</height>
     </rect>
    </property>
    <property name="title">
@@ -41,9 +41,9 @@
    <widget class="QLineEdit" name="contentEdit">
     <property name="geometry">
      <rect>
-      <x>110</x>
+      <x>80</x>
       <y>40</y>
-      <width>581</width>
+      <width>851</width>
       <height>23</height>
      </rect>
     </property>
@@ -56,7 +56,7 @@
      <string notr="true"/>
     </property>
     <property name="maxLength">
-     <number>80</number>
+     <number>145</number>
     </property>
     <property name="readOnly">
      <bool>true</bool>
@@ -79,9 +79,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>100</y>
-      <width>671</width>
-      <height>482</height>
+      <y>90</y>
+      <width>891</width>
+      <height>540</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout">
@@ -101,7 +101,111 @@
        </property>
       </widget>
      </item>
-     <item row="7" column="1" colspan="8">
+     <item row="5" column="0">
+      <widget class="QLabel" name="languageSubtitleLabel">
+       <property name="text">
+        <string>Language Subtitle:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="versionComboBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="2" column="4">
+      <widget class="QLineEdit" name="chainEdit">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>150</width>
+         <height>28</height>
+        </size>
+       </property>
+       <property name="maxLength">
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="5">
+      <widget class="QComboBox" name="stereoscopicComboBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="12" column="0">
+      <widget class="QLabel" name="studioLabel_2">
+       <property name="text">
+        <string>Facility:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="0">
+      <widget class="QLabel" name="studioLabel">
+       <property name="text">
+        <string>Studio:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1" colspan="7">
       <widget class="QComboBox" name="ratingComboBox">
        <property name="font">
         <font>
@@ -134,19 +238,100 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1" colspan="8">
-      <widget class="QLineEdit" name="filmEdit">
+     <item row="2" column="2">
+      <widget class="QComboBox" name="versiontypeComboBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="font">
         <font>
          <family>Courier</family>
         </font>
        </property>
-       <property name="text">
-        <string notr="true"/>
+       <property name="editable">
+        <bool>true</bool>
        </property>
-       <property name="maxLength">
-        <number>14</number>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
        </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="2" column="6">
+      <widget class="QComboBox" name="luminanceComboBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="2" column="3">
+      <widget class="QComboBox" name="redbandComboBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
       </widget>
      </item>
      <item row="1" column="0">
@@ -156,7 +341,14 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1" colspan="8">
+     <item row="3" column="0">
+      <widget class="QLabel" name="aspectLabel">
+       <property name="text">
+        <string>Aspect Ratio:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" colspan="7">
       <widget class="QComboBox" name="typeComboBox">
        <property name="font">
         <font>
@@ -173,72 +365,11 @@
        </item>
       </widget>
      </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="aspectLabel">
-       <property name="text">
-        <string>Aspect Ratio:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1" colspan="8">
-      <widget class="QComboBox" name="aspectComboBox">
-       <property name="font">
-        <font>
-         <family>Courier</family>
-        </font>
-       </property>
-       <item>
-        <property name="text">
-         <string/>
-        </property>
-       </item>
-      </widget>
-     </item>
      <item row="4" column="0">
       <widget class="QLabel" name="languageAudioLabel">
        <property name="text">
         <string>Language Audio:</string>
        </property>
-      </widget>
-     </item>
-     <item row="4" column="1" colspan="8">
-      <widget class="QComboBox" name="languageAudioComboBox">
-       <property name="font">
-        <font>
-         <family>Courier</family>
-        </font>
-       </property>
-       <item>
-        <property name="text">
-         <string/>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="languageSubtitleLabel">
-       <property name="text">
-        <string>Language Subtitle:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1" colspan="8">
-      <widget class="QComboBox" name="languageSubtitleComboBox">
-       <property name="font">
-        <font>
-         <family>Courier</family>
-        </font>
-       </property>
-       <item>
-        <property name="text">
-         <string/>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string notr="true">XX    No Subtitle</string>
-        </property>
-       </item>
       </widget>
      </item>
      <item row="6" column="0">
@@ -248,8 +379,8 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="1" colspan="8">
-      <widget class="QComboBox" name="territoryComboBox">
+     <item row="4" column="1" colspan="7">
+      <widget class="QComboBox" name="languageAudioComboBox">
        <property name="font">
         <font>
          <family>Courier</family>
@@ -269,6 +400,20 @@
        </property>
       </widget>
      </item>
+     <item row="6" column="1" colspan="7">
+      <widget class="QComboBox" name="territoryComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
      <item row="8" column="0">
       <widget class="QLabel" name="audioLabel">
        <property name="text">
@@ -276,7 +421,14 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="1" colspan="8">
+     <item row="9" column="0">
+      <widget class="QLabel" name="narrativeLabel">
+       <property name="text">
+        <string>Narrative:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1" colspan="7">
       <widget class="QComboBox" name="audioComboBox">
        <property name="font">
         <font>
@@ -290,14 +442,14 @@
        </item>
       </widget>
      </item>
-     <item row="9" column="0">
-      <widget class="QLabel" name="narrativeLabel">
+     <item row="10" column="0">
+      <widget class="QLabel" name="resolutionLabel">
        <property name="text">
-        <string>Narrative:</string>
+        <string>Resolution:</string>
        </property>
       </widget>
      </item>
-     <item row="9" column="1" colspan="8">
+     <item row="9" column="1" colspan="7">
       <widget class="QComboBox" name="narrativeComboBox">
        <property name="font">
         <font>
@@ -317,14 +469,7 @@
        </item>
       </widget>
      </item>
-     <item row="10" column="0">
-      <widget class="QLabel" name="resolutionLabel">
-       <property name="text">
-        <string>Resolution:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="10" column="1" colspan="8">
+     <item row="10" column="1" colspan="7">
       <widget class="QComboBox" name="resolutionComboBox">
        <property name="font">
         <font>
@@ -338,14 +483,7 @@
        </item>
       </widget>
      </item>
-     <item row="11" column="0">
-      <widget class="QLabel" name="studioLabel">
-       <property name="text">
-        <string>Studio:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="11" column="1" colspan="8">
+     <item row="11" column="1" colspan="7">
       <widget class="QComboBox" name="studioComboBox">
        <property name="font">
         <font>
@@ -362,14 +500,7 @@
        </item>
       </widget>
      </item>
-     <item row="12" column="0">
-      <widget class="QLabel" name="studioLabel_2">
-       <property name="text">
-        <string>Facility:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="12" column="1" colspan="8">
+     <item row="12" column="1" colspan="7">
       <widget class="QComboBox" name="facilityComboBox">
        <property name="font">
         <font>
@@ -384,13 +515,6 @@
          <string/>
         </property>
        </item>
-      </widget>
-     </item>
-     <item row="13" column="0">
-      <widget class="QLabel" name="dateLabel">
-       <property name="text">
-        <string>Date:</string>
-       </property>
       </widget>
      </item>
      <item row="13" column="1">
@@ -409,40 +533,37 @@
        </property>
       </widget>
      </item>
-     <item row="14" column="0">
-      <widget class="QLabel" name="steroscopicLabel">
+     <item row="2" column="0">
+      <widget class="QLabel" name="label">
        <property name="text">
-        <string>Standard:</string>
+        <string>Type Modifiers:</string>
        </property>
       </widget>
      </item>
-     <item row="14" column="1" colspan="8">
-      <widget class="QComboBox" name="standardComboBox">
+     <item row="2" column="7">
+      <widget class="QComboBox" name="framerateComboBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="font">
         <font>
          <family>Courier</family>
         </font>
        </property>
-       <item>
-        <property name="text">
-         <string/>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="15" column="0">
-      <widget class="QLabel" name="packageLabel">
-       <property name="text">
-        <string>Package Type:</string>
+       <property name="editable">
+        <bool>true</bool>
        </property>
-      </widget>
-     </item>
-     <item row="15" column="1" colspan="8">
-      <widget class="QComboBox" name="packageComboBox">
-       <property name="font">
-        <font>
-         <family>Courier</family>
-        </font>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
        </property>
        <item>
         <property name="text">
@@ -467,15 +588,8 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Type Modifiers:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="stereoscopicComboBox">
+     <item row="14" column="1" colspan="7">
+      <widget class="QComboBox" name="standardComboBox">
        <property name="font">
         <font>
          <family>Courier</family>
@@ -488,8 +602,126 @@
        </item>
       </widget>
      </item>
-     <item row="2" column="2">
-      <widget class="QComboBox" name="framerateComboBox">
+     <item row="15" column="0">
+      <widget class="QLabel" name="packageLabel">
+       <property name="text">
+        <string>Package Type:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="13" column="0">
+      <widget class="QLabel" name="dateLabel">
+       <property name="text">
+        <string>Date:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="14" column="0">
+      <widget class="QLabel" name="steroscopicLabel">
+       <property name="text">
+        <string>Standard:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" colspan="6">
+      <widget class="QComboBox" name="aspectComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="3" column="7">
+      <widget class="QLineEdit" name="aspectratioEdit">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>150</width>
+         <height>28</height>
+        </size>
+       </property>
+       <property name="maxLength">
+        <number>20</number>
+       </property>
+      </widget>
+     </item>
+     <item row="15" column="1" colspan="6">
+      <widget class="QComboBox" name="packageComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="15" column="7">
+      <widget class="QLineEdit" name="ptversionEdit">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>150</width>
+         <height>28</height>
+        </size>
+       </property>
+       <property name="maxLength">
+        <number>20</number>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1" colspan="6">
+      <widget class="QComboBox" name="languageSubtitleComboBox">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <item>
+        <property name="text">
+         <string/>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string notr="true">XX    No Subtitle</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="5" column="7">
+      <widget class="QComboBox" name="captionComboBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>150</width>
+         <height>28</height>
+        </size>
+       </property>
        <property name="font">
         <font>
          <family>Courier</family>
@@ -505,14 +737,29 @@
        </item>
       </widget>
      </item>
+     <item row="0" column="1" colspan="7">
+      <widget class="QLineEdit" name="filmEdit">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <property name="text">
+        <string notr="true"/>
+       </property>
+       <property name="maxLength">
+        <number>14</number>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
   </widget>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>550</x>
-     <y>630</y>
+     <x>800</x>
+     <y>660</y>
      <width>164</width>
      <height>32</height>
     </rect>
@@ -529,9 +776,18 @@
   <tabstop>contentEdit</tabstop>
   <tabstop>filmEdit</tabstop>
   <tabstop>typeComboBox</tabstop>
+  <tabstop>versionComboBox</tabstop>
+  <tabstop>versiontypeComboBox</tabstop>
+  <tabstop>redbandComboBox</tabstop>
+  <tabstop>chainEdit</tabstop>
+  <tabstop>stereoscopicComboBox</tabstop>
+  <tabstop>luminanceComboBox</tabstop>
+  <tabstop>framerateComboBox</tabstop>
   <tabstop>aspectComboBox</tabstop>
+  <tabstop>aspectratioEdit</tabstop>
   <tabstop>languageAudioComboBox</tabstop>
   <tabstop>languageSubtitleComboBox</tabstop>
+  <tabstop>captionComboBox</tabstop>
   <tabstop>territoryComboBox</tabstop>
   <tabstop>ratingComboBox</tabstop>
   <tabstop>audioComboBox</tabstop>
@@ -540,8 +796,11 @@
   <tabstop>studioComboBox</tabstop>
   <tabstop>facilityComboBox</tabstop>
   <tabstop>dateYearSB</tabstop>
+  <tabstop>dateMonthSB</tabstop>
+  <tabstop>dateDaySB</tabstop>
   <tabstop>standardComboBox</tabstop>
   <tabstop>packageComboBox</tabstop>
+  <tabstop>ptversionEdit</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>
@@ -553,8 +812,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>631</x>
-     <y>605</y>
+     <x>711</x>
+     <y>660</y>
     </hint>
     <hint type="destinationlabel">
      <x>374</x>
@@ -569,8 +828,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>631</x>
-     <y>605</y>
+     <x>711</x>
+     <y>660</y>
     </hint>
     <hint type="destinationlabel">
      <x>374</x>
