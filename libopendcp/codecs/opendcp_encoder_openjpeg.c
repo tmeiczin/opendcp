@@ -71,7 +71,7 @@ opj_stream_t* create_l_stream(const char *fname, char *m_buffer, OPJ_BOOL p_is_r
     const char *mode;
     size_t size= 0;
 
-    if (fname != NULL) {    
+    if (fname != NULL) {
         if (p_is_read_stream) {
             mode = "rb";
         }  else {
@@ -79,9 +79,9 @@ opj_stream_t* create_l_stream(const char *fname, char *m_buffer, OPJ_BOOL p_is_r
         }
 
         p_file = fopen(fname, mode);
-    
+
         if (! p_file) {
-            return NULL; 
+            return NULL;
         }
     } else {
         p_file = open_memstream(&m_buffer, &size);
@@ -323,6 +323,7 @@ int opendcp_encode_openjpeg(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
     }
 
     OPENDCP_LOG(LOG_DEBUG, "encoding complete %s", dfile);
+    
     /* free openjpeg structure */
     opj_stream_destroy(l_stream);
     opj_destroy_codec(l_codec);
@@ -330,7 +331,6 @@ int opendcp_encode_openjpeg(opendcp_t *opendcp, opendcp_image_t *opendcp_image, 
 
     /* free user parameters structure */
     if(parameters.cp_comment) { free(parameters.cp_comment); }
-
     if(parameters.cp_matrice) { free(parameters.cp_matrice); }
 
     return OPENDCP_NO_ERROR;

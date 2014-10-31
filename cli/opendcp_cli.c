@@ -35,6 +35,21 @@
 #include "opendcp.h"
 #include "opendcp_cli.h"
 
+
+int is_dir(char *path) {
+    struct stat st_in;
+
+    if (stat(path, &st_in) != 0 ) {
+        return 0;
+    }
+
+    if (S_ISDIR(st_in.st_mode)) {
+        return 1;
+    }
+
+    return 0;
+}
+
 int check_extension(char *filename, char *pattern) {
     char *extension;
 
@@ -62,6 +77,17 @@ char *get_basename(const char *filename) {
     base[(strlen(filename) - strlen(extension))] = '\0';
 
     return(base);
+}
+
+char *basename_noext(const char *str) {
+    if (str == 0 || strlen(str) == 0) {
+        return NULL;
+    }
+
+    char *base = strrchr(str, '/') + 1;
+    char *ext  = strrchr(str, '.');
+
+    return strndup(base, ext - base);
 }
 
 int file_selector(const char *filename, const char *filter) {
@@ -185,4 +211,38 @@ int find_ext_offset(char str[]) {
     }
 
     return 0;
+}
+
+char *append(const char *str1, const char *str2) {
+    const size_t len = strlen(str1) + strlen(str2) + 2;
+    char *out = malloc(len);
+
+    if (strlen(str1) < 1) {
+        snprintf(out, len, "%s", str2);
+    } else if (strlen(str2) < 1) {
+        snprintf(out, len, "%s", str1);
+    } else {
+        snprintf(out, len, "%s %s", str1, str2);
+    }
+
+    return out;
+}
+
+char *substring(const char *str, size_t begin, size_t len) {
+    char   *result;
+
+    if (str == 0 || strlen(str) == 0 || strlen(str) < begin || strlen(str) < (begin + len)) {
+        return NULL;
+    }
+
+    result = (char *)malloc(len);
+
+    if (!result) {
+        return NULL;
+    }
+
+    result[0] = '\0';
+    strncat(result, str + begin, len);
+
+    return result;
 }

@@ -16,6 +16,9 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef _OPENDCP_DECODER_H_
+#define _OPENDCP_DECODER_H_
+
 #define FOREACH_OPENDCP_DECODER(OPENDCP_DECODER) \
             OPENDCP_DECODER(OPENDCP_DECODER_BMP,  bmp, "bmp", 1)  \
             OPENDCP_DECODER(OPENDCP_DECODER_DPX,  dpx, "dpx", 1)  \
@@ -27,7 +30,7 @@
 #define GENERATE_DECODER_STRING(DECODER, NAME, EXT, ENABLED) #NAME,
 #define GENERATE_DECODER_NAME(DECODER, NAME, EXT, ENABLED) #DECODER,
 #define GENERATE_DECODER_STRUCT(DECODER, NAME, EXT, ENABLED) { DECODER, ENABLED, #NAME, EXT, opendcp_decode_ ## NAME },
-#define GENERATE_DECODER_EXTERN(DECODER, NAME, EXT, ENABLED) extern int opendcp_decode_ ## NAME(opendcp_image_t **image_ptr, const char *infile);
+#define GENERATE_DECODER_EXTERN(DECODER, NAME, EXT, ENABLED) extern int opendcp_decode_ ## NAME();
 
 /*!
  @enum OPENDCP_DECODERS
@@ -36,10 +39,6 @@
 enum OPENDCP_DECODERS {
     FOREACH_OPENDCP_DECODER(GENERATE_DECODER_ENUM)
 };
-
-//static const char *OPENDCP_DECODER_NAME[] = {
-//    FOREACH_OPENDCP_DECODER(GENERATE_DECODER_STRING)
-//};
 
 FOREACH_OPENDCP_DECODER(GENERATE_DECODER_EXTERN)
 
@@ -58,8 +57,10 @@ typedef struct {
     int  enabled;
     char *name;
     char *extensions;
-    int  (*decode)(opendcp_image_t **image_ptr, const char *infile);
+    int  (*decode)();
 } opendcp_decoder_t;
 
 opendcp_decoder_t *opendcp_decoder_find(char *name, char *ext, int id);
 char *opendcp_decoder_extensions();
+
+#endif //_OPENDCP_DECODER_H_

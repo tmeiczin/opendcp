@@ -19,9 +19,13 @@
 #ifndef OPENDCP_CLI_H
 #define OPENDCP_CLI_H
 
-int check_extension(char *filename, char *pattern);
+/* prototypes */
+int   check_extension(char *filename, char *pattern);
+int   find_ext_offset(char str[]);
+int   find_seq_offset (char str1[], char str2[]);
+int   is_dir(char *path);
 char *get_basename(const char *filename);
-int find_ext_offset(char str[]);
-int find_seq_offset (char str1[], char str2[]);
+char *basename_noext(const char *str);
 filelist_t *get_filelist(const char *path, const char *filter);
+
 #endif

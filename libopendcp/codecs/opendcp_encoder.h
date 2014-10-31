@@ -16,8 +16,8 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "opendcp.h"
-#include "opendcp_image.h"
+#ifndef _OPENDCP_ENCODER_H_
+#define _OPENDCP_ENCODER_H_
 
 #define FOREACH_OPENDCP_ENCODER(OPENDCP_ENCODER) \
             OPENDCP_ENCODER(OPENDCP_ENCODER_KAKADU,   kakadu,   "j2c;j2k",  0)  \
@@ -31,7 +31,7 @@
 #define GENERATE_ENCODER_STRING(ENCODER, NAME, EXT, ENABLED) #NAME,
 #define GENERATE_ENCODER_NAME(ENCODER, NAME, EXT, ENABLED) #ENCODER,
 #define GENERATE_ENCODER_STRUCT(ENCODER, NAME, EXT, ENABLED) { ENCODER, ENABLED, #NAME, EXT, opendcp_encode_ ## NAME },
-#define GENERATE_ENCODER_EXTERN(ENCODER, NAME, EXT, ENABLED) extern int opendcp_encode_ ## NAME(opendcp_t *opendcp, opendcp_image_t *opendcp_image, char *output_file);
+#define GENERATE_ENCODER_EXTERN(ENCODER, NAME, EXT, ENABLED) extern int opendcp_encode_ ## NAME();
 
 /*!
  *  @enum OPENDCP_ENCODERS
@@ -58,8 +58,10 @@ typedef struct {
     int  enabled;
     char *name;
     char *extensions;
-    int (*encode) (opendcp_t *opendcp, opendcp_image_t *opendcp_image, char *output_file);
+    int  (*encode)();
 } opendcp_encoder_t;
 
 int opendcp_encoder_enable(char *ext, char *name, int id);
 opendcp_encoder_t *opendcp_encoder_find(char *name, char *ext, int id);
+
+#endif //_OPENDCP_ENCODER_H_

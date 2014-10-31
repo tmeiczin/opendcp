@@ -376,6 +376,7 @@ void buildLut() {
 }
 
 void print_dpx_header(dpx_image_t *dpx, int endian) {
+    r_8(dpx->file.magic_num, endian);
     OPENDCP_LOG(LOG_DEBUG, "magic num %d", r_32(dpx->file.magic_num, endian));
     OPENDCP_LOG(LOG_DEBUG, "offset %d", r_32(dpx->file.offset, endian));
     OPENDCP_LOG(LOG_DEBUG, "version %s", dpx->file.version);

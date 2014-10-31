@@ -24,6 +24,7 @@ extern "C" {
 #endif
 
 #include <opendcp_image.h>
+#include <opendcp_encoder.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -334,6 +335,7 @@ typedef struct {
     int            slide;
     int            edit_rate;
     int            key_flag;
+    int            key_id_flag;
     int            encrypt_header_flag;
     int            delete_intermediate;
     byte_t         key_id[KEY_SIZE];
@@ -373,21 +375,21 @@ typedef struct {
 } xml_signature_t;
 
 typedef struct {
-    int             cinema_profile;
-    int             frame_rate;
-    int             duration;
-    int             entry_point;
-    int             stereoscopic;
-    int             log_level;
-    int             ns;
-    int             threads;
-    char            dcp_path[MAX_FILENAME_LENGTH];
-    char            *tmp_path;
-    j2k_t           j2k;
-    remote_t        remote;
-    mxf_t           mxf;
-    dcp_t           dcp;
-    xml_signature_t xml_signature;
+    int                 cinema_profile;
+    int                 frame_rate;
+    int                 duration;
+    int                 entry_point;
+    int                 stereoscopic;
+    int                 log_level;
+    int                 ns;
+    int                 threads;
+    char                dcp_path[MAX_FILENAME_LENGTH];
+    char               *tmp_path;
+    j2k_t               j2k;
+    remote_t            remote;
+    mxf_t               mxf;
+    dcp_t               dcp;
+    xml_signature_t     xml_signature;
 } opendcp_t;
 
 /* common functions */
