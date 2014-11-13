@@ -19,6 +19,8 @@ SET(OPENDCP_LIB_SRC
      opendcp_log.c
      opendcp_decode_video.c
      opendcp_image.c
+     opendcp_reader.c
+     opendcp_writer.c
      asdcp_intf.cpp
 )
 

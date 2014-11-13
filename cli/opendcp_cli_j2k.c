@@ -1,6 +1,6 @@
 /*
     OpenDCP: Builds Digital Cinema Packages
-    Copyright (c) 2010-2013 Terrence Meiczinger, All Rights Reserved
+    Copyright (c) 2010-2014 Terrence Meiczinger, All Rights Reserved
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,6 +28,9 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <opendcp.h>
+#include <opendcp_image.h>
+#include <opendcp_reader.h>
+#include <opendcp_writer.h>
 #include <opendcp_encoder.h>
 #include <opendcp_decoder.h>
 #include "opendcp_cli.h"
@@ -55,6 +58,47 @@ enum SOURCE_TYPE {
     VIDEO,
     UNKNOWN
 };
+
+typedef struct {
+    filelist_t *filelist;
+    int         current;
+    int         count;
+    int         (*read)();
+} frame_reader_t;
+
+int filelist_read(frame_reader_t *reader, opendcp_image_t **dimage) {
+    char *extension;
+    int  result;
+    opendcp_decoder_t *decoder;
+
+    char *file = reader->filelist->files[reader->current++];
+
+    extension = strrchr(file, '.');
+    extension++;
+
+    decoder = opendcp_decoder_find(NULL, extension, 0);
+    result  = decoder->decode(dimage, file);
+
+    return result;
+}
+
+int video_read(frame_reader_t *reader, opendcp_image_t **dimage) {
+    char *extension;
+    int  result;
+    opendcp_decoder_t *decoder;
+
+    char *file = reader->filelist->files[reader->current++];
+
+    extension = strrchr(file, '.');
+    extension++;
+
+    decoder = opendcp_decoder_find(NULL, extension, 0);
+    result  = decoder->decode(dimage, file);
+
+    return result;
+}
+
+frame_reader_t filelist_reader = {NULL, 0, 0, filelist_read};
 
 int get_input_type(const char *file) {
     char *extension;
@@ -288,6 +332,8 @@ int opendcp_command_j2k(opendcp_t *opendcp, opendcp_args_t *args) {
 
     #pragma omp parallel for private(c)
 
+    opendcp_reader_t *reader = reader_new(filelist);
+    opendcp_writer_t *writer = writer_new(filelist);
 
     for (c = opendcp->j2k.start_frame - 1; c < opendcp->j2k.end_frame; c++) {
         #pragma omp flush(SIGINT_received)
@@ -312,7 +358,11 @@ int opendcp_command_j2k(opendcp_t *opendcp, opendcp_args_t *args) {
                 if (input_type == VIDEO) {
                     result = decode_video(opendcp, filelist->files[c]);
                 } else {
-                    result = convert_to_j2k(opendcp, filelist->files[c], out);
+                    opendcp_image_t *image;
+                    result = reader->read_frame(reader, c, &image);
+                    result = writer->write_frame(writer, c, opendcp, image);
+                    //result = convert_to_j2k(opendcp, filelist->files[c], out);
+                    opendcp_image_free(image);
                 }
             }
             else {
@@ -347,6 +397,8 @@ int opendcp_command_j2k(opendcp_t *opendcp, opendcp_args_t *args) {
         printf("\n");
     }
 
+    reader_free(reader);  
+    writer_free(writer);  
     opendcp_delete(opendcp);
 
     exit(0);

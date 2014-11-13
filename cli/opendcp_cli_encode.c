@@ -1,3 +1,21 @@
+/*
+    OpenDCP: Builds Digital Cinema Packages
+    Copyright (c) 2010-2014 Terrence Meiczinger, All Rights Reserved
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -14,10 +32,10 @@ int   arguments_to_args(cli_t *elements, opendcp_args_t *args);
 
 const char usage[] =
 "Usage:\n"
-"  opendcp_cli j2k [options] <input> <output>\n"
-"  opendcp_cli j2k stereoscopic [options] <input> <output>\n"
-"  opendcp_cli mxf [options] <input> <output>\n"
-"  opendcp_cli mxf stereoscopic [options] <input_left> <input_right> <output>\n"
+"  opendcp_encode j2k [options] <input> <output>\n"
+"  opendcp_encode j2k stereoscopic [options] <input> <output>\n"
+"  opendcp_encode mxf [options] <input> <output>\n"
+"  opendcp_encode mxf stereoscopic [options] <input_left> <input_right> <output>\n"
 "\n"
 "Options:\n"
 "     --help                         Show this screen.\n"
@@ -47,10 +65,10 @@ const char usage[] =
 "  Supported formats are tif, dpx, bmp, jpeg2000, and some video formats\n"
 "\n"
 "Examples:\n"
-"  opendcp_cli j2k stereoscopic frame.tif frame_001.j2c\n"
-"  opendcp_cli j2k frame_left.tif frame_right.tif frame_left.j2c frame_right.j2c\n"
-"  opendcp_cli j2k frame.tif frame_001.j2c\n"
-"  opendcp_cli mxf --rate 25 frames my.mxf\n"
+"  opendcp_encode j2k frame.tif frame_001.j2c\n"
+"  opendcp_encode j2k stereoscopic frame_left.tif frame_right.tif frame_left.j2c frame_right.j2c\n"
+"  opendcp_encode j2k tif_frames/ j2c_frames/\n"
+"  opendcp_encode mxf --rate 25 frames/ my.mxf\n"
 "";
 
 argv_t argv_create(int argc, char **argv) {
