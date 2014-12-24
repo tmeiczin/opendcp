@@ -29,6 +29,8 @@ typedef struct {
     AVFormatContext   *p_format_ctx;
     AVCodecContext    *p_codec_ctx ;
     AVCodec           *pCodec;
+    AVDictionary      *options;
+    struct SwsContext *sws_ctx;
     int                v_stream;
 } av_context_t;
 
@@ -111,6 +113,9 @@ int video_decoder_create(av_context_t *av, char *file) {
     av->p_format_ctx = NULL;
     av->p_codec_ctx = NULL;
     av->pCodec = NULL;
+    av->options = NULL;
+    av->sws_ctx = NULL;
+
     av->v_stream = -1;
 
     /* register all formats and codecs */
@@ -185,9 +190,6 @@ int decode_video(opendcp_t *opendcp,  char *file) {
     int               n_bytes;
     uint8_t           *buffer = NULL;
 
-    AVDictionary      *options = NULL;
-    struct SwsContext *sws_ctx = NULL;
-
     OPENDCP_LOG(LOG_INFO, "creating video decoder");
     av = malloc(sizeof(av_context_t));
 
@@ -199,19 +201,9 @@ int decode_video(opendcp_t *opendcp,  char *file) {
     }
 
     /* start codec */
-    if (avcodec_open2(av->p_codec_ctx, av->pCodec, &options) < 0) {
+    if (avcodec_open2(av->p_codec_ctx, av->pCodec, &av->options) < 0) {
         OPENDCP_LOG(LOG_ERROR, "could not open codec");
         video_decoder_delete(av);
-        return OPENDCP_ERROR;
-    }
-
-    /* allocate video frame */
-    p_frame = av_frame_alloc();
-
-    /* allocate an AVFrame structure */
-    p_frame_rgb = av_frame_alloc();
-
-    if (p_frame_rgb == NULL) {
         return OPENDCP_ERROR;
     }
 
@@ -219,7 +211,7 @@ int decode_video(opendcp_t *opendcp,  char *file) {
     n_bytes = avpicture_get_size(PIX_FMT_RGB24, av->p_codec_ctx->width, av->p_codec_ctx->height);
     buffer = (uint8_t *)av_malloc(n_bytes * sizeof(uint8_t));
 
-    sws_ctx =
+    av->sws_ctx =
         sws_getContext
         (
             av->p_codec_ctx->width,
@@ -233,6 +225,16 @@ int decode_video(opendcp_t *opendcp,  char *file) {
             NULL,
             NULL
         );
+
+    /* allocate video frame */
+    p_frame = av_frame_alloc();
+
+    /* allocate an AVFrame structure */
+    p_frame_rgb = av_frame_alloc();
+
+    if (p_frame_rgb == NULL) {
+        return OPENDCP_ERROR;
+    }
 
     /* Assign appropriate parts of buffer to image planes in p_frame_rgb */
     avpicture_fill((AVPicture *)p_frame_rgb, buffer, PIX_FMT_RGB24, av->p_codec_ctx->width, av->p_codec_ctx->height);
@@ -253,7 +255,7 @@ int decode_video(opendcp_t *opendcp,  char *file) {
             /* convert the image from its native format to RGB */
             sws_scale
             (
-                sws_ctx,
+                av->sws_ctx,
                 (uint8_t const * const *)p_frame->data,
                 p_frame->linesize,
                 0,

@@ -402,10 +402,10 @@ void print_dpx_header(dpx_image_t *dpx, int endian) {
  @discussion This function will read and decode a file and place the
      decoded image in an opendcp_image_t struct.
  @param image_ptr Pointer to the destination opendcp_image_t struct.
- @param sfile The name if the source image file.
+ @param filename The name if the source image file.
  @return OPENDCP_ERROR value
 */
-int opendcp_decode_dpx(opendcp_image_t **image_ptr, const char *sfile) {
+int opendcp_decode_dpx(opendcp_image_t **image_ptr, const char *filename) {
     dpx_image_t     dpx;
     FILE            *dpx_fp;
     opendcp_image_t    *image = 00;
@@ -415,10 +415,10 @@ int opendcp_decode_dpx(opendcp_image_t **image_ptr, const char *sfile) {
     /* FIX: add dpx loogarithmic  option */
     int dpx_log = 0;
     /* open dpx using filename or file descriptor */
-    dpx_fp = fopen(sfile, "rb");
+    dpx_fp = fopen(filename, "rb");
 
     if (!dpx_fp) {
-        OPENDCP_LOG(LOG_ERROR, "Failed to open %s for reading", sfile);
+        OPENDCP_LOG(LOG_ERROR, "Failed to open %s for reading", filename);
         return OPENDCP_ERROR;
     }
 
@@ -429,7 +429,7 @@ int opendcp_decode_dpx(opendcp_image_t **image_ptr, const char *sfile) {
     } else if (r_32(dpx.file.magic_num, 1) == MAGIC_NUMBER) {
         endian = 1;
     } else {
-        OPENDCP_LOG(LOG_ERROR, "%s is not a valid DPX file", sfile);
+        OPENDCP_LOG(LOG_ERROR, "%s is not a valid DPX file", filename);
         return OPENDCP_ERROR;
     }
 

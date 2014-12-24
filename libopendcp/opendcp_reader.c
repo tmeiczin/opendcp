@@ -35,6 +35,7 @@ typedef struct {
 
 int filelist_read_frame(opendcp_reader_t *self, int frame, opendcp_image_t **image);
 int filelist_read_next(opendcp_reader_t *self, opendcp_image_t **image);
+int filelist_reader_create_context(opendcp_reader_t *reader, filelist_t *filelist);
 
 opendcp_reader_t *reader_new(filelist_t *filelist) {
     char *extension;
@@ -46,22 +47,23 @@ opendcp_reader_t *reader_new(filelist_t *filelist) {
 
     reader->decoder = opendcp_decoder_find(NULL, extension, 0);
 
-    if (reader->decoder->id == OPENDCP_DECODER_NONE) {
-        OPENDCP_LOG(LOG_ERROR, "no Decoder found for image extension %s", extension);
-        return NULL;
+    /* image */
+    if (reader->decoder->id != OPENDCP_DECODER_NONE) {
+        OPENDCP_LOG(LOG_DEBUG, "decoder %s found for image extension %s", reader->decoder->name, extension);
+        filelist_reader_create_context(reader, filelist);
+
+        return reader;
     }
 
-    OPENDCP_LOG(LOG_DEBUG, "decoder %s found for image extension %s", reader->decoder->name, extension);
-    filelist_reader_t *context = malloc(sizeof(filelist_reader_t));
-    context->filelist = filelist; 
+    /* video */
+    //if (video_decoder_find(file)) {
+    //    OPENDCP_LOG(LOG_DEBUG, "decoder %s found for image extension %s", reader->decoder->name, extension);
+    //}
 
-    reader->context = context;
-    reader->read_frame = filelist_read_frame;
-    reader->read_next = filelist_read_frame;
-    reader->current = 0;
-    reader->total = filelist->nfiles;
+    OPENDCP_LOG(LOG_ERROR, "no Decoder found for image extension %s", extension);
+    free(reader);
 
-    return reader;
+    return NULL;
 }
 
 void reader_free(opendcp_reader_t *self) {
@@ -72,6 +74,19 @@ void reader_free(opendcp_reader_t *self) {
         free(self);
     }
 }
+
+int filelist_reader_create_context(opendcp_reader_t *reader, filelist_t *filelist) {
+    filelist_reader_t *context = malloc(sizeof(filelist_reader_t));
+    context->filelist = filelist;
+
+    reader->context = context;
+    reader->read_frame = filelist_read_frame;
+    reader->read_next = filelist_read_frame;
+    reader->current = 0;
+    reader->total = filelist->nfiles;
+
+    return 0;
+} 
 
 int filelist_read_next(opendcp_reader_t *self, opendcp_image_t **image) {
     return filelist_read_frame(self, self->current++, image);

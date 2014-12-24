@@ -56,8 +56,6 @@ typedef struct {
     char *key_id;
     char *threads;
     char *tmp_dir;
-    /* special */
-    const char *usage;
 } opendcp_args_t;
 
 typedef struct {

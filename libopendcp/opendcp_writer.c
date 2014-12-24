@@ -69,8 +69,11 @@ void build_filename(const char *in, char *path, char *out) {
         snprintf(out, MAX_FILENAME_LENGTH, "%s", path);
     }
     else {
+        printf("path: %s\n", path);
         char *base = basename_no_ext(in);
+        printf("base: %s path: %s\n", base, path);
         snprintf(out, MAX_FILENAME_LENGTH, "%s/%s.j2c", path, base);
+        printf("filename %s\n", out);
 
         if (base) {
             free(base);
@@ -84,7 +87,7 @@ opendcp_writer_t *writer_new(filelist_t *filelist) {
     opendcp_writer_t *writer = (opendcp_writer_t *)malloc(sizeof(opendcp_writer_t));
 
     char out[MAX_FILENAME_LENGTH];
-    build_filename(filelist->files[0], "/tmp/", out);
+    build_filename(filelist->files[0], "/tmp/foo.j2c", out);
 
     extension = strrchr(out, '.');
     extension++; 
@@ -93,6 +96,7 @@ opendcp_writer_t *writer_new(filelist_t *filelist) {
 
     if (writer->encoder->id == OPENDCP_ENCODER_NONE) {
         OPENDCP_LOG(LOG_ERROR, "no encoder found for image extension %s", extension);
+        free(writer);
         return NULL;
     }
 

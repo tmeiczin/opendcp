@@ -71,6 +71,46 @@ const char usage[] =
 "  opendcp_encode mxf --rate 25 frames/ my.mxf\n"
 "";
 
+const char usage_j2k[] =
+"Usage:\n"
+"  opendcp_encode j2k [options] <input> <output>\n"
+"  opendcp_encode j2k stereoscopic [options] <input> <output>\n"
+"\n"
+"Options:\n"
+"     --help                         Show this screen.\n"
+"     --version                      Show version.\n"
+"     --no_overwrite                 Do no overwrite existing files\n"
+"     --no_xyz                       Disable XYZ<->RGB conversion                  \n"
+"     --resize                       Resize image to closest DCI compliant resolution\n"
+"     --bw         <bw>              Maximum JPEG2000 bandwidth [default: 125]\n"
+"     --colorspace <colorspace>      Source colorspace (srgb|rec709|p3|srgb_complex|rec709_complex) [default rec709]\n"
+"     --encoder    <encoder>         JPEG2000 j2kr (openjpeg|kakadu) [default openjpeg]\n"
+"     --profile    <profile>         Cinema profile (2k|4k) [default 2k]\n"
+"     --rate       <frame_rate>      Frame rate of source [default 24]\n"
+"     --log_level  <log_level>       Sets the log level 0-4. Higher means more logging [default 2]\n"
+"     --threads    <threads>         The number of threads to use for encoding\n"
+"     --tmp_dir    <tmp_dir>         Temporary directory for intermediate files\n"
+"\n";
+
+const char usage_mxf[] = 
+"Usage:\n"
+"  opendcp_encode mxf [options] <input> <output>\n"
+"  opendcp_encode mxf stereoscopic [options] <input_left> <input_right> <output>\n"
+"\n"
+"Options:\n"
+"     --help                         Show this screen.\n"
+"     --version                      Show version.\n"
+"     --rate       <frame_rate>      Frame rate of source [default 24]\n"
+"     --type       <type>            Generate SMPTE or MXF Interop labels (smpte|interop)  [default smpte]\n"
+"     --start      <start_frame>     Start frame [default 0]\n"
+"     --end        <end_frame>       End frame\n"
+"     --slideshow  <duration>        Create a slideshow with each image having duration specified in seconds\n"
+"     --log_level  <log_level>       Sets the log level 0-4. Higher means more logging [default 2]\n"
+"     --key        <key>             Set encryption key and enable encryption (not recommended)\n"
+"     --key_id     <key_id>          Set encryption key id (leaving blank generates a random uuid)\n"
+"     --threads    <threads>         The number of threads to use for encoding\n"
+"\n";
+
 argv_t argv_create(int argc, char **argv) {
     argv_t a = {argc, argv, 0, argv[0]};
     return a;
@@ -237,7 +277,13 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
         if (!strcmp(option->name, "--help")) {
             if (value) {
                 fprintf(stdout, "%s version %s %s\n\n", OPENDCP_NAME, OPENDCP_VERSION, OPENDCP_COPYRIGHT);
-                fprintf(stdout, "%s", args->usage);
+                if (args->j2k) {
+                    fprintf(stdout, "%s", usage_j2k);
+                } else if (args->mxf) {
+                    fprintf(stdout, "%s", usage_mxf);
+                } else {
+                    fprintf(stdout, "%s", usage);
+                }
                 exit(0);
             }
         }
@@ -438,8 +484,7 @@ opendcp_args_t opendcp_args(opendcp_t *opendcp, int argc, char *argv[]) {
 
     opendcp_args_t args = {
         0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, NULL,
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-        usage
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
     };
 
     argv_t a;
@@ -510,12 +555,13 @@ opendcp_args_t opendcp_args(opendcp_t *opendcp, int argc, char *argv[]) {
 
     commands_to_args(&elements, &args);
 
+    options_to_args(opendcp, &elements, &args);
     if (parse_positional(&elements, &args)) {
         exit(1);
     }
 
     arguments_to_args(&elements, &args);
-    options_to_args(opendcp, &elements, &args);
+    //options_to_args(opendcp, &elements, &args);
 
     return args;
 }

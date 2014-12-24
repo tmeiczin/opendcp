@@ -29,7 +29,7 @@
 #define GENERATE_DECODER_ENUM(DECODER, NAME, EXT, ENABLED) DECODER,
 #define GENERATE_DECODER_STRING(DECODER, NAME, EXT, ENABLED) #NAME,
 #define GENERATE_DECODER_NAME(DECODER, NAME, EXT, ENABLED) #DECODER,
-#define GENERATE_DECODER_STRUCT(DECODER, NAME, EXT, ENABLED) { DECODER, ENABLED, #NAME, EXT, opendcp_decode_ ## NAME },
+#define GENERATE_DECODER_STRUCT(DECODER, NAME, EXT, ENABLED) { DECODER, ENABLED, #NAME, EXT, NULL, opendcp_decode_ ## NAME },
 #define GENERATE_DECODER_EXTERN(DECODER, NAME, EXT, ENABLED) extern int opendcp_decode_ ## NAME();
 
 /*!
@@ -57,6 +57,7 @@ typedef struct {
     int  enabled;
     char *name;
     char *extensions;
+    void *context;
     int  (*decode)();
 } opendcp_decoder_t;
 

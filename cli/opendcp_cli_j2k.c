@@ -21,6 +21,7 @@
 #ifdef OPENMP
 #include <omp.h>
 #endif
+#include <pthread.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -321,6 +322,8 @@ int opendcp_command_j2k(opendcp_t *opendcp, opendcp_args_t *args) {
     }
 
     input_type = get_input_type(filelist->files[0]);
+
+    printf("Number of cores: %d\n", sysconf(_SC_NPROCESSORS_ONLN));
 
 #ifdef OPENMP
     omp_set_num_threads(opendcp->threads);
