@@ -1,8 +1,7 @@
+#include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <opendcp.h>
 
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #define CAPACITY 4096
