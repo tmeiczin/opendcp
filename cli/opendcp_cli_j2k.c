@@ -244,8 +244,8 @@ int opendcp_command_j2k(opendcp_t *opendcp, opendcp_args_t *args) {
     }
 
     /* bandwidth check */
-    if (opendcp->j2k.bw < 10 || opendcp->j2k.bw > 250) {
-        dcp_fatal(opendcp, "Bandwidth must be between 10 and 250, but %d was specified", opendcp->j2k.bw);
+    if (opendcp->j2k.bw < 10 || opendcp->j2k.bw > 500) {
+        dcp_fatal(opendcp, "Bandwidth must be between 10 and 500, but %d was specified", opendcp->j2k.bw);
     }
     else {
         opendcp->j2k.bw *= 1000000;
