@@ -35,6 +35,9 @@ SET(LIBS ${LIBS} -L${LIB_DIR_SYS} -lexpat)
 SET(COMPILE_OPENJPEG 1)
 SET(LIBS ${LIBS} ${LIB_DIR}/libopenjp2.a)
 
+SET(COMPILE_FFMPEG 0)
+SET(LIBS ${LIBS} -L${LIB_DIR} -lavcodec -lavformat -lswscale -lavutil)
+
 SET(LIBS ${LIBS} ${LIB_DIR_SYS}/libtiff.a ${LIB_DIR_SYS}/libjpeg.a)
 SET(LIBS ${LIBS} -L${LIB_DIR_SYS} -lcrypto -lssl)
 SET(LIBS ${LIBS} -L${LIB_DIR_SYS} -lz -lws2_32)
