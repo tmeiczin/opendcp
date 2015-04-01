@@ -113,6 +113,7 @@ const char usage_mxf[] =
 
 argv_t argv_create(int argc, char **argv) {
     argv_t a = {argc, argv, 0, argv[0]};
+
     return a;
 }
 
@@ -140,8 +141,9 @@ int parse_options(argv_t *a, cli_t *elements) {
 
     for (i=0; i < n_options; i++) {
         option = &options[i];
-        if (!strncmp(a->current, option->name, len_prefix))
+        if (!strncmp(a->current, option->name, len_prefix)) {
             break;
+        }
     }
 
     if (i == n_options) {
@@ -201,11 +203,11 @@ int set_positional(const char *name, positional_t positional, cli_t *elements) {
         argument = &arguments[i];
         if (!strcmp(name, argument->name)) {
             argument->value = positional.name;
-            return true;
+            return 0;
         }
     }
 
-    return false;
+    return 1;
 }
 
 int parse_positional(cli_t *elements, opendcp_args_t *args) {

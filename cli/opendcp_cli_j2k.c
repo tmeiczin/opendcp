@@ -362,7 +362,6 @@ int opendcp_command_j2k(opendcp_t *opendcp, opendcp_args_t *args) {
                     opendcp_image_t *image;
                     result = reader->read_frame(reader, c, &image);
                     result = writer->write_frame(writer, c, opendcp, image);
-                    //result = convert_to_j2k(opendcp, filelist->files[c], out);
                     opendcp_image_free(image);
                 }
             }

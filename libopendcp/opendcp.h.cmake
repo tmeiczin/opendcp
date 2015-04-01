@@ -458,8 +458,8 @@ int xml_sign(opendcp_t *opendcp, char *filename);
 int convert_to_j2k(opendcp_t *opendcp, char *in_file, char *out_file);
 
 /* decode video */
-int decode_video(opendcp_t *opendcp, char *in_file);
-int video_decoder_find(char *file);
+int decode_video(opendcp_t *opendcp, const char *in_file);
+int video_decoder_find(const char *file);
 
 /* retrieve error string */
 char *error_string(int error_code);
