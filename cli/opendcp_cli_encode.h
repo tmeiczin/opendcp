@@ -61,6 +61,7 @@ typedef struct {
 typedef struct {
     const char *name;
     int         value;
+    int         seen;
 } command_t;
 
 typedef struct {

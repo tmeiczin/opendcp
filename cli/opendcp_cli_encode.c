@@ -174,8 +174,9 @@ int parse_commands(argv_t *a, cli_t *elements) {
 
     for (i=0; i < n_commands; i++) {
         command = &commands[i];
-        if (!strcmp(command->name, a->current)){
+        if (!strcmp(command->name, a->current) && !command->seen) {
             command->value = true;
+            command->seen = true;
             return 0;
         }
     }
