@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_util.h
-    \version $Id: KM_util.h,v 1.34.2.1 2013/07/02 16:54:23 mikey Exp $
+    \version $Id: KM_util.h,v 1.34.2.2 2014/04/04 00:02:51 jhurst Exp $
     \brief   Utility functions
   */
 
@@ -510,7 +510,7 @@ namespace Kumu
 
       inline virtual bool HasValue() const { return m_Length > 0; }
 
-      inline virtual ui32_t ArchiveLength() const { return m_Length; }
+      inline virtual ui32_t ArchiveLength() const { return sizeof(ui32_t) + m_Length; }
 
       inline virtual bool Archive(MemIOWriter* Writer) const {
 	assert(Writer);

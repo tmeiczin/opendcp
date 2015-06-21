@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MDD.[h|cpp]
-    \version $Id: MDD.h,v 1.26.2.1 2013/12/17 17:10:28 jhurst Exp $
+    \version $Id: MDD.h,v 1.26.2.2 2014/03/10 00:58:58 jhurst Exp $
     \brief   MXF Metadata Dictionary
 */
 
@@ -360,6 +360,8 @@ namespace ASDCP {
 	MDD_DCAudioSoundfield_SDS, // 322
 	MDD_DCAudioSoundfield_61, // 323
 	MDD_DCAudioSoundfield_M, // 324
+	MDD_DBOXMotionCodePrimaryStream, // 325
+	MDD_DBOXMotionCodeSecondaryStream, // 326
 	MDD_Max
     }; // enum MDD_t
 
