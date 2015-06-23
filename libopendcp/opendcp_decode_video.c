@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 
+
 typedef struct {
     AVFormatContext   *p_format_ctx;
     AVCodecContext    *p_codec_ctx ;
@@ -35,7 +36,7 @@ typedef struct {
 } av_context_t;
 
 void video_decoder_delete(av_context_t *av);
-int  video_decoder_create(av_context_t *av, char *file);
+int  video_decoder_create(av_context_t *av, const char *file);
 
 static int copy_frame(const AVFrame *frame, opendcp_image_t *image) {
     int i, x, y;
@@ -77,7 +78,7 @@ static int copy_frame_16(const AVFrame *frame, opendcp_image_t *image) {
     return 0;
 }
 
-int video_decoder_find(char *file) {
+int video_decoder_find(const char *file) {
     av_context_t    *av;
 
     av = malloc(sizeof(av_context_t));
@@ -107,7 +108,7 @@ void video_decoder_delete(av_context_t *av) {
     }
 }
 
-int video_decoder_create(av_context_t *av, char *file) {
+int video_decoder_create(av_context_t *av, const char *file) {
     unsigned int    i;
 
     av->p_format_ctx = NULL;
@@ -180,7 +181,7 @@ void save_frame(opendcp_t *opendcp, AVCodecContext *av_ctx, const AVFrame *frame
     opendcp_image_free(image);
 }
 
-int decode_video(opendcp_t *opendcp,  char *file) {
+int decode_video(opendcp_t *opendcp,  const char *file) {
     av_context_t      *av;
     AVFrame           *p_frame = NULL;
     AVFrame           *p_frame_rgb = NULL;

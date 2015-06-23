@@ -162,7 +162,8 @@ FILE *open_memstream(char **ptr, size_t *sizeloc) {
     ms->ptr = ptr;
     ms->sizeloc = sizeloc;
 
-    fp = funopen(ms, memory_stream_read, memory_stream_write, memory_stream_seek, memory_stream_close);
+    //fp = funopen(ms, memory_stream_read, memory_stream_write, memory_stream_seek, memory_stream_close);
+    fp = (FILE *)ms;
 
     if (!fp) {
         free(ms->data);

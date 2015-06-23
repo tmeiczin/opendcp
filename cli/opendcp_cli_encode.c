@@ -113,6 +113,7 @@ const char usage_mxf[] =
 
 argv_t argv_create(int argc, char **argv) {
     argv_t a = {argc, argv, 0, argv[0]};
+
     return a;
 }
 
@@ -120,9 +121,11 @@ argv_t *argv_increment(argv_t *a) {
     if (a->i < a->argc) {
         a->current = a->argv[++a->i];
     }
+
     if (a->i == a->argc) {
         a->current = NULL;
     }
+
     return a;
 }
 
@@ -135,16 +138,21 @@ int parse_options(argv_t *a, cli_t *elements) {
     option_t *options = elements->options;
 
     len_prefix = (eq-(a->current)) / sizeof(char);
+
     for (i=0; i < n_options; i++) {
         option = &options[i];
-        if (!strncmp(a->current, option->name, len_prefix))
+        if (!strncmp(a->current, option->name, len_prefix)) {
             break;
+        }
     }
+
     if (i == n_options) {
         fprintf(stderr, "%s is not recognized\n", a->current);
         return 1;
     }
+
     argv_increment(a);
+
     if (option->value_required) {
         if (eq == NULL) {
             if (a->current == NULL) {
@@ -163,6 +171,7 @@ int parse_options(argv_t *a, cli_t *elements) {
         }
         option->value = "1";
     }
+
     return 0;
 }
 
@@ -174,8 +183,10 @@ int parse_commands(argv_t *a, cli_t *elements) {
 
     for (i=0; i < n_commands; i++) {
         command = &commands[i];
-        if (!strcmp(command->name, a->current)){
+
+        if (!strcmp(command->name, a->current) && !command->seen) {
             command->value = true;
+            command->seen = true;
             return 0;
         }
     }
@@ -192,11 +203,11 @@ int set_positional(const char *name, positional_t positional, cli_t *elements) {
         argument = &arguments[i];
         if (!strcmp(name, argument->name)) {
             argument->value = positional.name;
-            return true;
+            return 0;
         }
     }
 
-    return false;
+    return 1;
 }
 
 int parse_positional(cli_t *elements, opendcp_args_t *args) {
@@ -257,6 +268,7 @@ int parse_args(argv_t *a, cli_t *elements) {
             }
             argv_increment(a);
         }
+
         if (ret) {
             return ret;
         }
@@ -287,6 +299,7 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
                 exit(0);
             }
         }
+
         if  (!strcmp(option->name, "--version")) {
             if (value) {
                 fprintf(stdout, "%s\n", OPENDCP_VERSION);
@@ -298,9 +311,11 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
         if (!strcmp(option->name, "--no_overwrite")) {
             opendcp->j2k.no_overwrite = value;
         }
+
         if (!strcmp(option->name, "--no_xyz")) {
             opendcp->j2k.xyz = !value;
         }
+
         if (!strcmp(option->name, "--resize")) {
             opendcp->j2k.resize = value;
         }
@@ -313,6 +328,7 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
         if (!strcmp(option->name, "--bw")) {
             opendcp->j2k.bw = atoi(option->value);
         }
+
         if (!strcmp(option->name, "--colorspace")) {
             if (!strcmp(option->value, "srgb")) {
                 opendcp->j2k.lut = CP_SRGB;
@@ -334,6 +350,7 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
                 exit(1);
             }
         }
+
         if (!strcmp(option->name, "--encoder")) {
             if (!strcmp(option->value, "openjpeg")) {
                 opendcp->j2k.encoder = OPENDCP_ENCODER_OPENJPEG;
@@ -352,6 +369,7 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
                 exit(1);
             }
         }
+
         if (!strcmp(option->name, "--profile")) {
             if (!strcmp(option->value, "2k")) {
                 opendcp->cinema_profile = DCP_CINEMA2K;
@@ -364,9 +382,11 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
                 exit(1);
             }
         }
+
         if (!strcmp(option->name, "--rate")) {
             opendcp->frame_rate = atoi(option->value);
         }
+
         if (!strcmp(option->name, "--type")) {
             if (!strcmp(option->value, "smpte")) {
                 opendcp->ns = XML_NS_SMPTE;
@@ -379,12 +399,15 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
                 exit(1);
             }
         }
+
         if (!strcmp(option->name, "--start")) {
             opendcp->j2k.start_frame = atoi(option->value);
         }
+
         if (!strcmp(option->name, "--end")) {
             opendcp->j2k.end_frame = strtol(option->value, NULL, 10);
         }
+
         if (!strcmp(option->name, "--slideshow")) {
             opendcp->mxf.slide = 1;
             opendcp->mxf.frame_duration = atoi(option->value);
@@ -394,9 +417,11 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
                 exit(1);
             }
         }
+
         if (!strcmp(option->name, "--log_level")) {
             opendcp->log_level = atoi(option->value);
         }
+
         if (!strcmp(option->name, "--key")) {
             if (!is_key(option->value)) {
                fprintf(stderr, "Invalid encryption key format");
@@ -407,6 +432,7 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
             }
             opendcp->mxf.key_flag = 1;
         }
+
         if (!strcmp(option->name, "--key_id")) {
             if (!is_uuid(option->value)) {
                fprintf(stderr, "Invalid encryption key id format");
@@ -419,9 +445,11 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
             }
             opendcp->mxf.key_id_flag = 1;
         }
+
         if (!strcmp(option->name, "--threads")) {
             opendcp->threads = atoi(option->value);
         }
+
         if (!strcmp(option->name, "--tmp_dir")) {
             opendcp->tmp_path = option->value;
         }
@@ -436,12 +464,15 @@ int commands_to_args(cli_t *elements, opendcp_args_t *args) {
 
     for (i=0; i < elements->n_commands; i++) {
         command = &elements->commands[i];
+
         if (!strcmp(command->name, "j2k")) {
             args->j2k = command->value;
         }
+
         if (!strcmp(command->name, "mxf")) {
             args->mxf = command->value;
         }
+
         if (!strcmp(command->name, "stereoscopic")) {
             args->stereoscopic = command->value;
         }
@@ -456,21 +487,27 @@ int arguments_to_args(cli_t *elements, opendcp_args_t *args) {
 
     for (i=0; i < elements->n_arguments; i++) {
         argument = &elements->arguments[i];
+
         if (!strcmp(argument->name, "<input>")) {
             args->input = argument->value;
         }
+
         if (!strcmp(argument->name, "<input_left>")) {
             args->input_left = argument->value;
         }
+
         if (!strcmp(argument->name, "<input_right>")) {
             args->input_right = argument->value;
         }
+
         if (!strcmp(argument->name, "<output>")) {
             args->output = argument->value;
         }
+
         if (!strcmp(argument->name, "<output_left>")) {
             args->output_left = argument->value;
         }
+
         if (!strcmp(argument->name, "<output_right>")) {
             args->output_right = argument->value;
         }
@@ -490,10 +527,10 @@ opendcp_args_t opendcp_args(opendcp_t *opendcp, int argc, char *argv[]) {
     argv_t a;
 
     command_t commands[] = {
-        {"j2k",          0},
-        {"mxf",          0},
-        {"stereoscopic", 0},
-        {NULL,           0}
+        {"j2k",          0, 0},
+        {"mxf",          0, 0},
+        {"stereoscopic", 0, 0},
+        {NULL,           0, 0}
     };
 
     argument_t arguments[] = {

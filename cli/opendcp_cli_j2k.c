@@ -41,6 +41,7 @@
 sig_atomic_t SIGINT_received = 0;
 
 void sig_handler(int signum) {
+    UNUSED(signum);
     SIGINT_received = 1;
     #pragma omp flush(SIGINT_received)
 }
@@ -244,8 +245,8 @@ int opendcp_command_j2k(opendcp_t *opendcp, opendcp_args_t *args) {
     }
 
     /* bandwidth check */
-    if (opendcp->j2k.bw < 10 || opendcp->j2k.bw > 250) {
-        dcp_fatal(opendcp, "Bandwidth must be between 10 and 250, but %d was specified", opendcp->j2k.bw);
+    if (opendcp->j2k.bw < 10 || opendcp->j2k.bw > 500) {
+        dcp_fatal(opendcp, "Bandwidth must be between 10 and 500, but %d was specified", opendcp->j2k.bw);
     }
     else {
         opendcp->j2k.bw *= 1000000;
@@ -323,8 +324,6 @@ int opendcp_command_j2k(opendcp_t *opendcp, opendcp_args_t *args) {
 
     input_type = get_input_type(filelist->files[0]);
 
-    printf("Number of cores: %d\n", sysconf(_SC_NPROCESSORS_ONLN));
-
 #ifdef OPENMP
     omp_set_num_threads(opendcp->threads);
     OPENDCP_LOG(LOG_DEBUG, "OpenMP Enable");
@@ -333,11 +332,10 @@ int opendcp_command_j2k(opendcp_t *opendcp, opendcp_args_t *args) {
     frame_index = opendcp->j2k.start_frame;
     frame_count = opendcp->j2k.end_frame - (opendcp->j2k.start_frame -1);
 
-    #pragma omp parallel for private(c)
-
     opendcp_reader_t *reader = reader_new(filelist);
     opendcp_writer_t *writer = writer_new(filelist);
 
+    #pragma omp parallel for private(c)
     for (c = opendcp->j2k.start_frame - 1; c < opendcp->j2k.end_frame; c++) {
         #pragma omp flush(SIGINT_received)
 
@@ -364,7 +362,6 @@ int opendcp_command_j2k(opendcp_t *opendcp, opendcp_args_t *args) {
                     opendcp_image_t *image;
                     result = reader->read_frame(reader, c, &image);
                     result = writer->write_frame(writer, c, opendcp, image);
-                    //result = convert_to_j2k(opendcp, filelist->files[c], out);
                     opendcp_image_free(image);
                 }
             }
