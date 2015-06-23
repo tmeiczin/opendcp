@@ -74,7 +74,7 @@ const char usage[] =
 const char usage_j2k[] =
 "Usage:\n"
 "  opendcp_encode j2k [options] <input> <output>\n"
-"  opendcp_encode j2k stereoscopic [options] <input> <output>\n"
+"  opendcp_encode j2k stereoscopic [options] <input_left> <input_right> <output>\n"
 "\n"
 "Options:\n"
 "     --help                         Show this screen.\n"
@@ -214,13 +214,24 @@ int parse_positional(cli_t *elements, opendcp_args_t *args) {
 
     /* j2k command */
     if (args->j2k) {
-        if (elements->n_positional != 2) {
-            fprintf(stderr, "j2k requires <input> <output>\n");
-            return 1;
+        if (args->stereoscopic) {
+            if (elements->n_positional != 3) {
+                fprintf(stderr, "j2k requires <input-left> <input-right> <output>\n");
+                return 1;
+            }
+            set_positional("<input_left>", elements->positionals[0], elements);
+            set_positional("<input_right>", elements->positionals[1], elements);
+            set_positional("<output_left>", elements->positionals[2], elements);
         }
+        else {
+            if (elements->n_positional != 2) {
+                fprintf(stderr, "j2k requires <input> <output>\n");
+                return 1;
+            }
 
-        set_positional("<input>", elements->positionals[0], elements);
-        set_positional("<output>", elements->positionals[1], elements);
+            set_positional("<input>", elements->positionals[0], elements);
+            set_positional("<output>", elements->positionals[1], elements);
+        }
 
         return 0;
     }
@@ -236,7 +247,8 @@ int parse_positional(cli_t *elements, opendcp_args_t *args) {
             set_positional("<input_right>", elements->positionals[1], elements);
             set_positional("<output_left>", elements->positionals[2], elements);
             set_positional("<output_right>", elements->positionals[3], elements);
-        } else {
+        }
+        else {
             if (elements->n_positional != 2) {
                 fprintf(stderr, "mxf requires <input> <output>\n");
                 return 1;
@@ -260,7 +272,8 @@ int parse_args(argv_t *a, cli_t *elements) {
     while (a->current != NULL) {
         if (a->current[0] == '-' && a->current[1] == '-') {
             ret = parse_options(a, elements);
-        } else {
+        }
+        else {
             ret = parse_commands(a, elements);
             if (ret) {
                 elements->positionals[elements->n_positional++].name = a->current;
@@ -593,6 +606,7 @@ opendcp_args_t opendcp_args(opendcp_t *opendcp, int argc, char *argv[]) {
     commands_to_args(&elements, &args);
 
     options_to_args(opendcp, &elements, &args);
+
     if (parse_positional(&elements, &args)) {
         exit(1);
     }
@@ -638,9 +652,12 @@ int main(int argc, char *argv[]) {
     if (args.mxf) {
         printf("mxf\n");
     }
-
-    if (args.j2k) {
+    else if (args.j2k) {
         opendcp_command_j2k(opendcp, &args);
+    }
+    else {
+        fprintf(stdout, "%s", usage);
+        exit(1);
     }
 
     return 0;

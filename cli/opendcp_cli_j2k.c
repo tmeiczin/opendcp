@@ -348,7 +348,6 @@ int opendcp_command_j2k(opendcp_t *opendcp, opendcp_args_t *args) {
         }
 
 #endif
-
         char out[MAX_FILENAME_LENGTH];
         build_j2k_filename(filelist->files[c], out_path, out);
 
