@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MXFTypes.cpp
-    \version $Id: MXFTypes.cpp,v 1.27 2012/02/21 02:09:31 jhurst Exp $
+    \version $Id: MXFTypes.cpp,v 1.27.2.2 2014/03/13 19:23:43 jhurst Exp $
     \brief   MXF objects
 */
 
@@ -123,7 +123,7 @@ ASDCP::UL::EncodeString(char* str_buf, ui32_t buf_len) const
   if ( buf_len > 38 ) // room for dotted notation?
     {
       snprintf(str_buf, buf_len,
-	       "%02x%02x%02x%02x.%02x%02x.%02x%02x.%02x%02x%02x%02x.%02x%02x%02x%02x",
+	       "%02x%02x%02x%02x.%02x%02x%02x%02x.%02x%02x%02x%02x.%02x%02x%02x%02x",
 	       m_Value[0],  m_Value[1],  m_Value[2],  m_Value[3],
 	       m_Value[4],  m_Value[5],  m_Value[6],  m_Value[7],
 	       m_Value[8],  m_Value[9],  m_Value[10], m_Value[11],
@@ -381,7 +381,7 @@ ASDCP::MXF::ISO8String::Archive(Kumu::MemIOWriter* Writer) const
       return false;
     }
 
-  return Writer->WriteString(*this);
+  return Writer->WriteRaw((const byte_t*)c_str(), size());
 }
 
 //------------------------------------------------------------------------------------------

@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MXF.h
-    \version $Id: MXF.h,v 1.43.2.2 2013/12/20 19:42:55 jhurst Exp $
+    \version $Id: MXF.h,v 1.43.2.3 2014/03/10 00:58:58 jhurst Exp $
     \brief   MXF objects
 */
 
@@ -435,7 +435,17 @@ namespace ASDCP
       };
 
       //
-      typedef std::map<const std::string, const UL, ci_comp> mca_label_map_t;
+      struct label_traits
+      {
+	const std::string tag_name;
+	const bool requires_prefix;
+	const UL ul;
+
+      label_traits(const std::string& tag_name, const bool requires_prefix, const UL ul) : 
+	tag_name(tag_name), requires_prefix(requires_prefix), ul(ul) { }
+      };
+
+      typedef std::map<const std::string, const label_traits, ci_comp> mca_label_map_t;
 
 
       //
@@ -456,7 +466,7 @@ namespace ASDCP
         
       public:
         ASDCP_MCAConfigParser(const Dictionary*&);
-        bool DecodeString(const std::string& s, const std::string& language = "en");
+        bool DecodeString(const std::string& s, const std::string& language = "en-US");
 	
         // Valid only after a successful call to DecodeString
         ui32_t ChannelCount() const;

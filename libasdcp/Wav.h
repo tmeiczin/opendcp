@@ -82,7 +82,7 @@ namespace ASDCP
 
   namespace Wav
     {
-      const ui32_t MaxWavHeader = 1024*256; // must find "data" within this space or no happy
+      const ui32_t MaxWavHeader = 1024*32; // must find "data" within this space or no happy
 
       const fourcc FCC_RIFF("RIFF");
       const fourcc FCC_WAVE("WAVE");

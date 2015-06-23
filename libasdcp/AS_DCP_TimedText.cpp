@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2008-2012, John Hurst
+Copyright (c) 2008-2015, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_TimedText.cpp
-    \version $Id: AS_DCP_TimedText.cpp,v 1.29 2013/04/12 23:39:30 mikey Exp $       
+    \version $Id: AS_DCP_TimedText.cpp,v 1.29.2.1 2015/02/23 18:55:00 jhurst Exp $       
     \brief   AS-DCP library, PCM essence reader and writer implementation
 */
 
@@ -558,6 +558,9 @@ ASDCP::TimedText::MXFWriter::h__Writer::SetSourceStream(ASDCP::TimedText::TimedT
       resourceSubdescriptor->EssenceStreamID = m_EssenceStreamID++;
       m_EssenceSubDescriptorList.push_back((FileDescriptor*)resourceSubdescriptor);
       m_EssenceDescriptor->SubDescriptors.push_back(resourceSubdescriptor->InstanceUID);
+
+      // 72 == sizeof K, L, instanceuid, uuid + sizeof int32 + tag/len * 4
+      m_HeaderSize += ( resourceSubdescriptor->MIMEMediaType.ArchiveLength() * 2 /*ArchiveLength is broken*/ ) + 72;
     }
 
   m_EssenceStreamID = 10;

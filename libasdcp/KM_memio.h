@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file  KM_memio.h
-    \version $Id: KM_memio.h,v 1.9 2011/03/07 06:46:36 jhurst Exp $
+    \version $Id: KM_memio.h,v 1.9.2.1 2014/04/04 00:02:51 jhurst Exp $
     \brief   abstraction for byte-oriented conversion of integers and objects
   */
 
@@ -219,9 +219,14 @@ namespace Kumu
       {
 	ui32_t str_length;
 	if ( ! ReadUi32BE(&str_length) ) return false;
-	if ( ( m_size + str_length ) > m_capacity ) return false;
-	str.assign((const char*)CurrentData(), str_length);
-	if ( ! SkipOffset(str_length) ) return false;
+
+	if ( str_length > 0 )
+	  {
+	    if ( ( m_size + str_length ) > m_capacity ) return false;
+	    str.assign((const char*)CurrentData(), str_length);
+	    if ( ! SkipOffset(str_length) ) return false;
+	  }
+
 	return true;
       }
     };
