@@ -7,6 +7,8 @@
 #include <stdint.h>
 
 #include "opendcp.h"
+#include "md5.h"
+#include "sha1.h"
 
 /****************************/
 /* MD5                      */

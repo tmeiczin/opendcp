@@ -33,17 +33,17 @@ ADD_EXECUTABLE(opendcp_largefile opendcp_largefile.c)
 TARGET_LINK_LIBRARIES(opendcp_largefile ${LIBS})
 
 ADD_EXECUTABLE(opendcp_xml opendcp_xml_cmd.c)
-TARGET_LINK_LIBRARIES(opendcp_xml ${OPENDCP_LIB} ${ASDCP_LIBRARIES} ${LIBS})
+TARGET_LINK_LIBRARIES(opendcp_xml ${OPENDCP_LIB} ${LIBS})
 
 ADD_EXECUTABLE(opendcp_j2k opendcp_j2k_cmd.c opendcp_cli.c)
-TARGET_LINK_LIBRARIES(opendcp_j2k ${OPENDCP_LIB} ${ASDCP_LIBRARIES} ${LIBS})
+TARGET_LINK_LIBRARIES(opendcp_j2k ${OPENDCP_LIB})
 
 ADD_EXECUTABLE(opendcp_mxf opendcp_mxf_cmd.c opendcp_cli.c)
-TARGET_LINK_LIBRARIES(opendcp_mxf ${OPENDCP_LIB} ${ASDCP_LIBRARIES} ${LIBS})
+TARGET_LINK_LIBRARIES(opendcp_mxf ${OPENDCP_LIB} ${LIBS})
 
 IF(ENABLE_XMLSEC)
     ADD_EXECUTABLE(opendcp_xml_verify opendcp_xml_verify_cmd.c)
-    TARGET_LINK_LIBRARIES(opendcp_xml_verify ${OPENDCP_LIB} ${ASDCP_LIBRARIES} ${LIBS})
+    TARGET_LINK_LIBRARIES(opendcp_xml_verify ${OPENDCP_LIB} ${LIBS})
 ENDIF(ENABLE_XMLSEC)
 #-----------------------------------------------------------------------------
 

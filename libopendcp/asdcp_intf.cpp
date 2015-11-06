@@ -25,6 +25,9 @@
 #include <iostream>
 #include <assert.h>
 
+//#include "md5.h"
+#include "sha1.h"
+
 #include "opendcp.h"
 
 using namespace ASDCP;
@@ -80,7 +83,7 @@ extern "C" int calculate_digest(opendcp_t *opendcp, const char *filename, char *
     }
 
     if (ASDCP_SUCCESS(result)) {
-        sha1_final(byte_buffer, &sha_context);
+        sha1_final(&sha_context, byte_buffer);
         sprintf(digest, "%.36s", base64encode(byte_buffer, sha_length, sha_buffer, 64));
     }
 
