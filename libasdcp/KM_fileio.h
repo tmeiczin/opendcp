@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2004-2009, John Hurst
+Copyright (c) 2004-2014, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_fileio.h
-    \version $Id: KM_fileio.h,v 1.18 2013/02/08 19:11:58 jhurst Exp $
+    \version $Id: KM_fileio.h,v 1.22 2015/10/07 16:41:23 jhurst Exp $
     \brief   portable file i/o
   */
 
@@ -65,10 +65,49 @@ namespace Kumu
       DirScanner(void);
       ~DirScanner() { Close(); }
 
-      Result_t Open(const char*);
+      Result_t Open(const std::string&);
       Result_t Close();
       Result_t GetNext(char*);
     };
+
+
+  // 
+  enum DirectoryEntryType_t {
+    DET_FILE,
+    DET_DIR,
+    DET_DEV,
+    DET_LINK
+  };
+
+  //
+  class DirScannerEx
+  {
+    std::string m_Dirname;
+#ifdef KM_WIN32
+    __int64               m_Handle;
+    struct _finddatai64_t m_FileInfo;
+#else
+    DIR*       m_Handle;
+#endif
+
+    KM_NO_COPY_CONSTRUCT(DirScannerEx);
+
+  public:
+    
+    DirScannerEx();
+    ~DirScannerEx() { Close(); }
+
+    Result_t Open(const std::string& dirname);
+    Result_t Close();
+
+
+    inline Result_t GetNext(std::string& next_item_name) {
+      DirectoryEntryType_t ft;
+      return GetNext(next_item_name, ft);
+    }
+
+    Result_t GetNext(std::string& next_item_name, DirectoryEntryType_t& next_item_type);
+  };
 
 #ifdef KM_WIN32
   typedef __int64  fsize_t;
@@ -181,7 +220,7 @@ namespace Kumu
   {
   public:
     virtual ~PathMatchAny() {}
-    inline bool Match(const std::string& s) const { return true; }
+    inline bool Match(const std::string&) const { return true; }
   };
 
 #ifndef KM_WIN32
@@ -222,6 +261,8 @@ namespace Kumu
   PathList_t& FindInPaths(const IPathMatch& Pattern, const PathList_t& SearchPaths,
 			  PathList_t& FoundPaths, bool one_shot = false, char separator = '/');
 
+  std::string GetExecutablePath(const std::string& default_path);
+
   //------------------------------------------------------------------------------------------
   // Directory Manipulation
   //------------------------------------------------------------------------------------------
@@ -235,6 +276,9 @@ namespace Kumu
   // Recursively remove a file or directory
   Result_t DeletePath(const std::string& pathname);
 
+  // Remove the path only if it is a directory that is empty.
+  Result_t DeleteDirectoryIfEmpty(const std::string& path);
+
   //------------------------------------------------------------------------------------------
   // File I/O Wrappers
   //------------------------------------------------------------------------------------------
@@ -242,10 +286,10 @@ namespace Kumu
   // Instant IO for strings
   //
   // Reads an entire file into a string.
-  Result_t ReadFileIntoString(const char* filename, std::string& outString, ui32_t max_size = 8 * Megabyte);
+  Result_t ReadFileIntoString(const std::string& filename, std::string& outString, ui32_t max_size = 8 * Megabyte);
 
   // Writes a string to a file, overwrites the existing file if present.
-  Result_t WriteStringIntoFile(const char* filename, const std::string& inString);
+  Result_t WriteStringIntoFile(const std::string& filename, const std::string& inString);
 
   // Instant IO for archivable objects
   //
@@ -282,7 +326,7 @@ namespace Kumu
       FileReader() : m_Handle(INVALID_HANDLE_VALUE) {}
       virtual ~FileReader() { Close(); }
 
-      Result_t OpenRead(const char*) const;                          // open the file for reading
+      Result_t OpenRead(const std::string&) const;                          // open the file for reading
       Result_t Close() const;                                        // close the file
       fsize_t  Size() const;                                         // returns the file's current size
       Result_t Seek(Kumu::fpos_t = 0, SeekPos_t = SP_BEGIN) const;   // move the file pointer
@@ -312,8 +356,8 @@ namespace Kumu
       FileWriter();
       virtual ~FileWriter();
 
-      Result_t OpenWrite(const char*);                               // open a new file, overwrites existing
-      Result_t OpenModify(const char*);                              // open a file for read/write
+      Result_t OpenWrite(const std::string&);                               // open a new file, overwrites existing
+      Result_t OpenModify(const std::string&);                              // open a file for read/write
 
       // this part of the interface takes advantage of the iovec structure on
       // platforms that support it. For each call to Writev(const byte_t*, ui32_t, ui32_t*),

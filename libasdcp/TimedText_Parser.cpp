@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2007-2009, John Hurst
+Copyright (c) 2007-2014, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_TimedText.cpp
-    \version $Id: TimedText_Parser.cpp,v 1.15.2.2 2013/10/18 21:15:00 mikey Exp $       
+    \version $Id: TimedText_Parser.cpp,v 1.23 2015/10/16 16:55:33 jhurst Exp $       
     \brief   AS-DCP library, PCM essence reader and writer implementation
 */
 
@@ -44,54 +44,65 @@ const char* c_dcst_namespace_name = "http://www.smpte-ra.org/schemas/428-7/2007/
 //------------------------------------------------------------------------------------------
 
 
+ASDCP::TimedText::LocalFilenameResolver::LocalFilenameResolver() {}
+ASDCP::TimedText::LocalFilenameResolver::~LocalFilenameResolver() {}
 
-class LocalFilenameResolver : public ASDCP::TimedText::IResourceResolver
+//
+Result_t
+ASDCP::TimedText::LocalFilenameResolver::OpenRead(const std::string& dirname)
 {
-  std::string m_Dirname;
+  if ( PathIsDirectory(dirname) )
+    {
+      m_Dirname = dirname;
+      return RESULT_OK;
+    }
 
-  LocalFilenameResolver();
-  bool operator==(const LocalFilenameResolver&);
+  DefaultLogSink().Error("Path '%s' is not a directory, defaulting to '.'\n", dirname.c_str());
+  m_Dirname = ".";
+  return RESULT_FALSE;
+}
 
-public:
-  LocalFilenameResolver(const std::string& dirname)
-  {
-    if ( PathIsDirectory(dirname) )
-      {
-	m_Dirname = dirname;
-	return;
-      }
+//
+Result_t
+ASDCP::TimedText::LocalFilenameResolver::ResolveRID(const byte_t* uuid, TimedText::FrameBuffer& FrameBuf) const
+{
+  Result_t result = RESULT_NOT_FOUND;
+  char buf[64];
+  UUID RID(uuid);
+  PathList_t found_list;
 
-    DefaultLogSink().Error("Path '%s' is not a directory, defaulting to '.'\n", dirname.c_str());
-    m_Dirname = ".";
-  }
+#ifndef KM_WIN32
+  // TODO, fix this for win32 (needs regex)
+  FindInPath(PathMatchRegex(RID.EncodeHex(buf, 64)), m_Dirname, found_list);
+#endif
 
-  //
-  Result_t ResolveRID(const byte_t* uuid, TimedText::FrameBuffer& FrameBuf) const
-  {
-    FileReader Reader;
-    char buf[64];
-    UUID RID(uuid);
-    std::string filename = m_Dirname + "/" + RID.EncodeHex(buf, 64);
-    DefaultLogSink().Debug("retrieving resource %s from file %s\n", buf, filename.c_str());
+  if ( found_list.size() == 1 )
+    {
+      FileReader Reader;
+      DefaultLogSink().Debug("Retrieving resource %s from file %s\n", buf, found_list.front().c_str());
 
-    Result_t result = Reader.OpenRead(filename.c_str());
+      result = Reader.OpenRead(found_list.front().c_str());
 
-    if ( KM_SUCCESS(result) )
-      {
-	ui32_t read_count, read_size = Reader.Size();
+      if ( KM_SUCCESS(result) )
+	{
+	  ui32_t read_count, read_size = Reader.Size();
+	  result = FrameBuf.Capacity(read_size);
+      
+	  if ( KM_SUCCESS(result) )
+	    result = Reader.Read(FrameBuf.Data(), read_size, &read_count);
 
-	result = FrameBuf.Capacity(read_size);
+	  if ( KM_SUCCESS(result) )
+	    FrameBuf.Size(read_count);
+	}
+    }
+  else if ( ! found_list.empty() )
+    {
+      DefaultLogSink().Error("More than one file in %s matches %s.\n", m_Dirname.c_str(), buf);
+      result = RESULT_RAW_FORMAT;
+    }
 
-	if ( KM_SUCCESS(result) )
-	  result = Reader.Read(FrameBuf.Data(), read_size, &read_count);
-
-	if ( KM_SUCCESS(result) )
-	  FrameBuf.Size(read_count);
-      }
-
-    return result;
-  }
-};
+  return result;
+}
 
 //------------------------------------------------------------------------------------------
 
@@ -121,13 +132,16 @@ public:
   TimedText::IResourceResolver* GetDefaultResolver()
   {
     if ( m_DefaultResolver.empty() )
-      m_DefaultResolver = new LocalFilenameResolver(PathDirname(m_Filename));
-    
+      {
+	m_DefaultResolver = new LocalFilenameResolver();
+	m_DefaultResolver->OpenRead(PathDirname(m_Filename));
+      }
+
     return m_DefaultResolver;
   }
 
-  Result_t OpenRead(const char* filename);
-  Result_t OpenRead(const std::string& xml_doc, const char* filename);
+  Result_t OpenRead(const std::string& filename);
+  Result_t OpenRead(const std::string& xml_doc, const std::string& filename);
   Result_t ReadAncillaryResource(const byte_t* uuid, FrameBuffer& FrameBuf, const IResourceResolver& Resolver) const;
 };
 
@@ -152,23 +166,8 @@ get_UUID_from_child_element(const char* name, XMLElement* Parent, UUID& outID)
 }
 
 //
-static ASDCP::Rational
-decode_rational(const char* str_rat)
-{
-  assert(str_rat);
-  ui32_t Num = atoi(str_rat);
-  ui32_t Den = 0;
-
-  const char* den_str = strrchr(str_rat, ' ');
-  if ( den_str != 0 )
-    Den = atoi(den_str+1);
-
-  return ASDCP::Rational(Num, Den);
-}
-
-//
 Result_t
-ASDCP::TimedText::DCSubtitleParser::h__SubtitleParser::OpenRead(const char* filename)
+ASDCP::TimedText::DCSubtitleParser::h__SubtitleParser::OpenRead(const std::string& filename)
 {
   Result_t result = ReadFileIntoString(filename, m_XMLDoc);
 
@@ -181,14 +180,18 @@ ASDCP::TimedText::DCSubtitleParser::h__SubtitleParser::OpenRead(const char* file
 
 //
 Result_t
-ASDCP::TimedText::DCSubtitleParser::h__SubtitleParser::OpenRead(const std::string& xml_doc, const char* filename)
+ASDCP::TimedText::DCSubtitleParser::h__SubtitleParser::OpenRead(const std::string& xml_doc, const std::string& filename)
 {
   m_XMLDoc = xml_doc;
 
-  if ( filename != 0 )
-    m_Filename = filename;
+  if ( filename.empty() )
+    {
+      m_Filename = "<string>";
+    }
   else
-    m_Filename = "<string>";
+    {
+      m_Filename = filename;
+    }
 
   return OpenRead();
 }
@@ -207,7 +210,7 @@ ASDCP::TimedText::DCSubtitleParser::h__SubtitleParser::OpenRead()
 
   if ( ns == 0 )
     {
-      DefaultLogSink(). Warn("Document has no namespace name, assuming %s\n", c_dcst_namespace_name);
+      DefaultLogSink(). Warn("Document has no namespace name, assuming \"%s\".\n", c_dcst_namespace_name);
       m_TDesc.NamespaceName = c_dcst_namespace_name;
     }
   else
@@ -218,7 +221,7 @@ ASDCP::TimedText::DCSubtitleParser::h__SubtitleParser::OpenRead()
   UUID DocID;
   if ( ! get_UUID_from_child_element("Id", &m_Root, DocID) )
     {
-      DefaultLogSink(). Error("Id element missing from input document\n");
+      DefaultLogSink(). Error("Id element missing from input document.\n");
       return RESULT_FORMAT;
     }
 
@@ -227,11 +230,15 @@ ASDCP::TimedText::DCSubtitleParser::h__SubtitleParser::OpenRead()
 
   if ( EditRate == 0 )
     {
-      DefaultLogSink(). Error("EditRate element missing from input document\n");
+      DefaultLogSink().Error("EditRate element missing from input document.\n");
       return RESULT_FORMAT;
     }
 
-  m_TDesc.EditRate = decode_rational(EditRate->GetBody().c_str());
+  if ( ! DecodeRational(EditRate->GetBody().c_str(), m_TDesc.EditRate) )
+    {
+      DefaultLogSink().Error("Error decoding edit rate value: \"%s\"\n", EditRate->GetBody().c_str());
+      return RESULT_FORMAT;
+    }
 
   if ( m_TDesc.EditRate != EditRate_23_98
        && m_TDesc.EditRate != EditRate_24
@@ -384,7 +391,7 @@ ASDCP::TimedText::DCSubtitleParser::~DCSubtitleParser()
 // Opens the stream for reading, parses enough data to provide a complete
 // set of stream metadata for the MXFWriter below.
 ASDCP::Result_t
-ASDCP::TimedText::DCSubtitleParser::OpenRead(const char* filename) const
+ASDCP::TimedText::DCSubtitleParser::OpenRead(const std::string& filename) const
 {
   const_cast<ASDCP::TimedText::DCSubtitleParser*>(this)->m_Parser = new h__SubtitleParser;
 
@@ -398,7 +405,7 @@ ASDCP::TimedText::DCSubtitleParser::OpenRead(const char* filename) const
 
 // Parses an XML document to provide a complete set of stream metadata for the MXFWriter below.
 Result_t
-ASDCP::TimedText::DCSubtitleParser::OpenRead(const std::string& xml_doc, const char* filename) const
+ASDCP::TimedText::DCSubtitleParser::OpenRead(const std::string& xml_doc, const std::string& filename) const
 {
   const_cast<ASDCP::TimedText::DCSubtitleParser*>(this)->m_Parser = new h__SubtitleParser;
 
@@ -448,5 +455,5 @@ ASDCP::TimedText::DCSubtitleParser::ReadAncillaryResource(const byte_t* uuid, Fr
 
 
 //
-// end AS_DCP_timedText.cpp
+// end AS_DCP_TimedTextParser.cpp
 //

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2011, John Hurst
+Copyright (c) 2005-2015, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    KM_xml.h
-    \version $Id: KM_xml.h,v 1.8.2.1 2013/12/05 18:59:46 mikey Exp $
+    \version $Id: KM_xml.h,v 1.11 2015/02/19 19:06:57 jhurst Exp $
     \brief   XML writer
 */
 
@@ -41,9 +41,6 @@ namespace Kumu
 {
   class XMLElement;
 
-  // Return true if the given string contains an XML document (or the start of one).
-  bool StringIsXML(const char* document, ui32_t len = 0);
-
   //
   struct NVPair
   {
@@ -56,6 +53,15 @@ namespace Kumu
   typedef AttributeList::const_iterator Attr_i;
   typedef std::list<XMLElement*> ElementList;
   typedef ElementList::const_iterator Elem_i;
+
+  bool GetXMLDocType(const ByteString& buf, std::string& ns_prefix, std::string& type_name,
+		     std::string& namespace_name, AttributeList& doc_attr_list);
+
+  bool GetXMLDocType(const std::string& buf, std::string& ns_prefix, std::string& type_name,
+		     std::string& namespace_name, AttributeList& doc_attr_list);
+
+  bool GetXMLDocType(const byte_t* buf, ui32_t buf_len, std::string& ns_prefix, std::string& type_name,
+		     std::string& namespace_name, AttributeList& doc_attr_list);
 
   //
   class XMLNamespace
@@ -99,6 +105,10 @@ namespace Kumu
       bool        ParseString(const char* document, ui32_t doc_len);
       bool        ParseString(const ByteString& document);
       bool        ParseString(const std::string& document);
+
+      bool        ParseFirstFromString(const char* document, ui32_t doc_len);
+      bool        ParseFirstFromString(const ByteString& document);
+      bool        ParseFirstFromString(const std::string& document);
 
       // building
       void        SetName(const char* name);

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2009, John Hurst
+Copyright (c) 2005-2015, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    Wav.cpp
-    \version $Id: Wav.cpp,v 1.12.2.1 2013/07/10 15:46:18 mikey Exp $
+    \version $Id: Wav.cpp,v 1.15 2015/04/21 03:55:31 jhurst Exp $
     \brief   Wave file common elements
 */
 
@@ -175,7 +175,7 @@ ASDCP::Wav::SimpleWaveHeader::ReadFromBuffer(const byte_t* buf, ui32_t buf_len, 
 	{
 	  ui16_t format = KM_i16_LE(*(ui16_t*)p); p += 2;
 
-	  if ( format != WAVE_FORMAT_PCM && format != WAVE_FORMAT_EXTENSIBLE )
+	  if ( format != ASDCP_WAVE_FORMAT_PCM && format != ASDCP_WAVE_FORMAT_EXTENSIBLE )
 	    {
 	      DefaultLogSink().Error("Expecting uncompressed PCM data, got format type %hd\n", format);
 	      return RESULT_RAW_FORMAT;
@@ -408,7 +408,7 @@ ASDCP::RF64::SimpleRF64Header::WriteToFile(Kumu::FileWriter& OutFile) const
 
   ui32_t write_count = 0;
   ui64_t RIFF_len = data_len + SimpleWavHeaderLength - 8;
-  DefaultLogSink().Debug("RIFF_len is %llu.\n", RIFF_len);
+  //  DefaultLogSink().Debug("RIFF_len is %llu.\n", RIFF_len);
   byte_t* tmp_header = NULL;
   ui32_t header_len = 0;
 
@@ -564,7 +564,7 @@ ASDCP::RF64::SimpleRF64Header::ReadFromBuffer(const byte_t* buf, ui32_t buf_len,
         {
             ui16_t format = KM_i16_LE(*(ui16_t*)p); p += 2;
 
-            if ( format != Wav::WAVE_FORMAT_PCM && format != Wav::WAVE_FORMAT_EXTENSIBLE )
+            if ( format != Wav::ASDCP_WAVE_FORMAT_PCM && format != Wav::ASDCP_WAVE_FORMAT_EXTENSIBLE )
             {
                 DefaultLogSink().Error("Expecting uncompressed PCM data, got format type %hd\n", format);
                 return RESULT_RAW_FORMAT;

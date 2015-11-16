@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file  KM_memio.h
-    \version $Id: KM_memio.h,v 1.9 2011/03/07 06:46:36 jhurst Exp $
+    \version $Id: KM_memio.h,v 1.10 2014/04/14 18:22:27 jhurst Exp $
     \brief   abstraction for byte-oriented conversion of integers and objects
   */
 
@@ -128,7 +128,7 @@ namespace Kumu
 	if ( ! WriteRaw((const byte_t*)str.c_str(), len) ) return false;
 	return true;
       }
-    };
+   };
 
   //
   class MemIOReader
@@ -217,11 +217,16 @@ namespace Kumu
 
       inline bool ReadString(std::string& str)
       {
-	ui32_t str_length;
+	ui32_t str_length = 0;
 	if ( ! ReadUi32BE(&str_length) ) return false;
-	if ( ( m_size + str_length ) > m_capacity ) return false;
-	str.assign((const char*)CurrentData(), str_length);
-	if ( ! SkipOffset(str_length) ) return false;
+
+	if ( str_length > 0 )
+	  {
+	    if ( ( m_size + str_length ) > m_capacity ) return false;
+	    str.assign((const char*)CurrentData(), str_length);
+	    if ( ! SkipOffset(str_length) ) return false;
+	  }
+
 	return true;
       }
     };

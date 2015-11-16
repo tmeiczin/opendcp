@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AtmosSyncChannel_Mixer.h
-    \version $Id: AtmosSyncChannel_Mixer.h,v 1.1 2013/04/12 23:39:30 mikey Exp $
+    \version $Id: AtmosSyncChannel_Mixer.h,v 1.2 2014/04/14 18:22:27 jhurst Exp $
     \brief   Read WAV files(s), multiplex multiple PCM frame buffers including Atmos Sync into one
 */
 
@@ -76,8 +76,11 @@ namespace ASDCP
       AtmosSyncChannelMixer(const byte_t * trackUUID);
       virtual ~AtmosSyncChannelMixer();
 
+      const ui32_t& ChannelCount() const { return m_ChannelCount; }
+
       Result_t OpenRead(ui32_t argc, const char** argv, const Rational& PictureRate);
       Result_t OpenRead(const Kumu::PathList_t& argv, const Rational& PictureRate);
+      Result_t AppendSilenceChannels(const ui32_t& channel_count);
       Result_t FillAudioDescriptor(PCM::AudioDescriptor& ADesc) const;
       Result_t Reset();
       Result_t ReadFrame(PCM::FrameBuffer& OutFB);

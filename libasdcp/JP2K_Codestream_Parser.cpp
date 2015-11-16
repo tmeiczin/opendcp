@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2004-2009, John Hurst
+Copyright (c) 2004-2013, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    Codestream_Parser.cpp
-    \version $Id: JP2K_Codestream_Parser.cpp,v 1.7 2009/04/09 19:16:49 msheby Exp $
+    \version $Id: JP2K_Codestream_Parser.cpp,v 1.9 2015/10/09 23:41:11 jhurst Exp $
     \brief   AS-DCP library, JPEG 2000 codestream essence reader implementation
 */
 
@@ -55,9 +55,8 @@ public:
 
   ~h__CodestreamParser() {}
 
-  Result_t OpenReadFrame(const char* filename, FrameBuffer& FB)
+  Result_t OpenReadFrame(const std::string& filename, FrameBuffer& FB)
   {
-    ASDCP_TEST_NULL_STR(filename);
     m_File.Close();
     Result_t result = m_File.OpenRead(filename);
 
@@ -164,9 +163,9 @@ ASDCP::JP2K::ParseMetadataIntoDesc(const FrameBuffer& FB, PictureDescriptor& PDe
 	case MRK_QCD:
 	  memset(&PDesc.QuantizationDefault, 0, sizeof(QuantizationDefault_t));
 
-	  if ( NextMarker.m_DataSize < 16 )
+	  if ( NextMarker.m_DataSize < 3 ) // ( Sqcd = 8 bits, SPqcd = 8 bits ) == 2 bytes, error if not greater
 	    {
-	      DefaultLogSink().Error("No quantization signaled\n");
+	      DefaultLogSink().Error("No quantization signaled. QCD size=%s.\n", NextMarker.m_DataSize);
 	      return RESULT_RAW_FORMAT;
 	    }
 	  
@@ -198,7 +197,7 @@ ASDCP::JP2K::CodestreamParser::~CodestreamParser()
 // Opens the stream for reading, parses enough data to provide a complete
 // set of stream metadata for the MXFWriter below.
 ASDCP::Result_t
-ASDCP::JP2K::CodestreamParser::OpenReadFrame(const char* filename, FrameBuffer& FB) const
+ASDCP::JP2K::CodestreamParser::OpenReadFrame(const std::string& filename, FrameBuffer& FB) const
 {
   const_cast<ASDCP::JP2K::CodestreamParser*>(this)->m_Parser = new h__CodestreamParser;
   return m_Parser->OpenReadFrame(filename, FB);

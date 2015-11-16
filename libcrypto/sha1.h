@@ -18,6 +18,8 @@ extern "C" {
 
 /****************************** MACROS ******************************/
 #define SHA1_BLOCK_SIZE 20              // SHA1 outputs a 20 byte digest
+#define SHA_CTX sha1_t
+#define SHA_DIGEST_LENGTH SHA1_BLOCK_SIZE
 
 /**************************** DATA TYPES ****************************/
 typedef unsigned char BYTE;             // 8-bit byte

@@ -25,6 +25,7 @@ ENDIF()
 SET(CRYPTO_SRC_FILES
     md5.c
     sha1.c
+    aes.c
 )
 #-------------------------------------------------------------------------------
 
@@ -35,6 +36,6 @@ ADD_LIBRARY(opendcp-crypto OBJECT ${CRYPTO_SRC_FILES})
 
 #--install header---------------------------------------------------------------
 IF(INSTALL_LIB)
-    INSTALL(FILES md5.h sha1.h  DESTINATION include)
+    INSTALL(FILES md5.h sha1.h aes.h DESTINATION include)
 ENDIF()
 #-------------------------------------------------------------------------------

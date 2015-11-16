@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2004-2011, John Hurst
+Copyright (c) 2004-2015, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_error.h
-    \version $Id: KM_error.h,v 1.12 2011/05/16 04:33:31 jhurst Exp $
+    \version $Id: KM_error.h,v 1.16 2015/10/14 16:48:22 jhurst Exp $
     \brief   error reporting support
   */
 
@@ -33,6 +33,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef _KM_ERROR_H_
 #define _KM_ERROR_H_
+
+#include <string>
 
 #define KM_DECLARE_RESULT(sym, i, l) const Result_t RESULT_##sym = Result_t(i, #sym, l);
 
@@ -46,8 +48,7 @@ namespace Kumu
   class Result_t
     {
       int value;
-      const char* label;
-      const char* symbol;
+      std::string label, symbol, message;
       Result_t();
 
     public:
@@ -65,21 +66,26 @@ namespace Kumu
       static unsigned int End();
       static const Result_t& Get(unsigned int);
 
-      Result_t(int v, const char* s, const char* l);
+      Result_t(int v, const std::string& s, const std::string& l);
+      Result_t(const Result_t& rhs);
+      const Result_t& operator=(const Result_t& rhs);
       ~Result_t();
+
+      const Result_t operator()(const std::string& message) const;
+      const Result_t operator()(const int& line, const char* filename) const;
+      const Result_t operator()(const std::string& message, const int& line, const char* filename) const;
 
       inline bool        operator==(const Result_t& rhs) const { return value == rhs.value; }
       inline bool        operator!=(const Result_t& rhs) const { return value != rhs.value; }
-      inline bool        Success() const { return ( value >= 0 ); }
+      inline bool        Success() const { return ! ( value < 0 ); }
       inline bool        Failure() const { return ( value < 0 ); }
 
       inline int         Value() const { return value; }
       inline operator    int() const { return value; }
-
-      inline const char* Label() const { return label; }
-      inline operator    const char*() const { return label; }
-
-      inline const char* Symbol() const { return symbol; }
+      inline const char* Label() const { return label.c_str(); }
+      inline operator    const char*() const { return label.c_str(); }
+      inline const char* Symbol() const { return symbol.c_str(); }
+      inline const char* Message() const { return message.c_str(); }
     };
 
   KM_DECLARE_RESULT(FALSE,       1,   "Successful but not true.");
@@ -105,7 +111,8 @@ namespace Kumu
   KM_DECLARE_RESULT(NOTAFILE,   -19,  "Filename not found.");
   KM_DECLARE_RESULT(UNKNOWN,    -20,  "Unknown result code.");
   KM_DECLARE_RESULT(DIR_CREATE, -21,  "Unable to create directory.");
-  // -22 is reserved
+  KM_DECLARE_RESULT(NOT_EMPTY,  -22,  "Unable to delete non-empty directory.");
+  // 23-100 are reserved
  
 } // namespace Kumu
 
@@ -121,7 +128,7 @@ namespace Kumu
 // See Result_t above for an explanation of RESULT_* symbols.
 # define KM_TEST_NULL(p) \
   if ( (p) == 0  ) { \
-    return Kumu::RESULT_PTR; \
+    return Kumu::RESULT_PTR(__LINE__, __FILE__); \
   }
 
 // Returns RESULT_PTR if the given argument is NULL. See Result_t
@@ -132,8 +139,24 @@ namespace Kumu
 # define KM_TEST_NULL_STR(p) \
   KM_TEST_NULL(p); \
   if ( (p)[0] == '\0' ) { \
-    return Kumu::RESULT_NULL_STR; \
+    return Kumu::RESULT_NULL_STR(__LINE__, __FILE__); \
   }
+
+// RESULT_STATE is ambiguous.  Use these everywhere it is assigned to provide some context
+#define KM_RESULT_STATE_TEST_IMPLICIT()					\
+  if ( result == Kumu::RESULT_STATE ) {					\
+    Kumu::DefaultLogSink().Error("RESULT_STATE RETURNED at %s (%d)\n", __FILE__, __LINE__); \
+  }
+
+#define KM_RESULT_STATE_TEST_THIS(_this__r_)				\
+  if ( _this__r_ == Kumu::RESULT_STATE ) {				\
+    Kumu::DefaultLogSink().Error("RESULT_STATE RETURNED at %s (%d)\n", __FILE__, __LINE__); \
+  }
+
+#define KM_RESULT_STATE_HERE()						\
+  Kumu::DefaultLogSink().Error("RESULT_STATE RETURNED at %s (%d)\n", __FILE__, __LINE__);
+
+
 
 namespace Kumu
 {
