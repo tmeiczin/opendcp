@@ -40,9 +40,8 @@ using namespace ASDCP;
 const int KEY_SIZE_BITS = 128;
 
 #include <openssl/aes.h>
-#include <openssl/sha.h>
-#include <openssl/bn.h>
 #include <openssl/err.h>
+#include <sha1.h>
 
 
 void
