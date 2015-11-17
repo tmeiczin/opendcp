@@ -32,9 +32,9 @@
                             a = b + ROTLEFT(a,s); }
 
 /*********************** FUNCTION DEFINITIONS ***********************/
-void md5_transform(md5_t *ctx, const BYTE data[])
+void md5_transform(md5_t *ctx, const byte_t data[])
 {
-    WORD a, b, c, d, m[16], i, j;
+    word_t a, b, c, d, m[16], i, j;
 
     // MD5 specifies big endian byte order, but this implementation assumes a little
     // endian byte order CPU. Reverse all the bytes upon input, and re-reverse them
@@ -131,7 +131,7 @@ void md5_init(md5_t *ctx)
     ctx->state[3] = 0x10325476;
 }
 
-void md5_update(md5_t *ctx, const BYTE data[], size_t len)
+void md5_update(md5_t *ctx, const byte_t data[], size_t len)
 {
     size_t i;
 
@@ -146,7 +146,7 @@ void md5_update(md5_t *ctx, const BYTE data[], size_t len)
     }
 }
 
-void md5_final(md5_t *ctx, BYTE hash[])
+void md5_final(md5_t *ctx, byte_t hash[])
 {
     size_t i;
 

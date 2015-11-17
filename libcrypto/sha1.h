@@ -22,26 +22,26 @@ extern "C" {
 #define SHA_DIGEST_LENGTH SHA1_BLOCK_SIZE
 
 /**************************** DATA TYPES ****************************/
-typedef unsigned char BYTE;             // 8-bit byte
-typedef unsigned int  WORD;             // 32-bit word, change to "long" for 16-bit machines
+typedef unsigned char byte_t;             // 8-bit byte
+typedef unsigned int  word_t;             // 32-bit word, change to "long" for 16-bit machines
 
 typedef struct {
-    BYTE data[64];
-    WORD datalen;
+    byte_t data[64];
+    word_t datalen;
     unsigned long long bitlen;
-    WORD state[5];
-    WORD k[4];
+    word_t state[5];
+    word_t k[4];
 } sha1_t;
 
 /*********************** FUNCTION DECLARATIONS **********************/
 void sha1_init(sha1_t *ctx);
-void sha1_update(sha1_t *ctx, const BYTE data[], size_t len);
-void sha1_final(sha1_t *ctx, BYTE hash[]);
+void sha1_update(sha1_t *ctx, const byte_t data[], size_t len);
+void sha1_final(sha1_t *ctx, byte_t hash[]);
 
 /*********************** OPENSSL COMPATIBLE DECLARATIONS **********************/
 void SHA1_Init(sha1_t *ctx);
-void SHA1_Update(sha1_t *ctx, const BYTE data[], size_t len);
-void SHA1_Final(BYTE hash[], sha1_t *ctx);
+void SHA1_Update(sha1_t *ctx, const byte_t data[], size_t len);
+void SHA1_Final(byte_t hash[], sha1_t *ctx);
 
 #ifdef __cplusplus
 }

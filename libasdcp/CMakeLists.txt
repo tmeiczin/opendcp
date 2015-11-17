@@ -21,6 +21,7 @@ ELSE()
 ENDIF()
 ADD_DEFINITIONS(-DASDCP_PLATFORM="${PLATFORM}")
 ADD_DEFINITIONS(-DHAVE_EXPAT=1)
+ADD_DEFINITIONS(-DTTMATH_NOASM=1)
 #-------------------------------------------------------------------------------
 
 #--OS specific flags------------------------------------------------------------

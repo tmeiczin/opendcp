@@ -16,19 +16,19 @@
 #define MD5_BLOCK_SIZE 16               // MD5 outputs a 16 byte digest
 
 /**************************** DATA TYPES ****************************/
-typedef unsigned char BYTE;             // 8-bit byte
-typedef unsigned int  WORD;             // 32-bit word, change to "long" for 16-bit machines
+typedef unsigned char byte_t;             // 8-bit byte
+typedef unsigned int  word_t;             // 32-bit word, change to "long" for 16-bit machines
 
 typedef struct {
-   BYTE data[64];
-   WORD datalen;
+   byte_t data[64];
+   word_t datalen;
    unsigned long long bitlen;
-   WORD state[4];
+   word_t state[4];
 } md5_t;
 
 /*********************** FUNCTION DECLARATIONS **********************/
 void md5_init(md5_t *ctx);
-void md5_update(md5_t *ctx, const BYTE data[], size_t len);
-void md5_final(md5_t *ctx, BYTE hash[]);
+void md5_update(md5_t *ctx, const byte_t data[], size_t len);
+void md5_final(md5_t *ctx, byte_t hash[]);
 
 #endif   // MD5_H
