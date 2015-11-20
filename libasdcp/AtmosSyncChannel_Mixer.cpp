@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2013, John Hurst
+Copyright (c) 2013-2014, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AtmosSyncChannel_Mixer.cpp
-    \version $Id: AtmosSyncChannel_Mixer.cpp,v 1.1 2013/04/12 23:39:30 mikey Exp $
+    \version $Id: AtmosSyncChannel_Mixer.cpp,v 1.3 2014/09/22 16:17:05 jhurst Exp $
     \brief   Read WAV files(s), multiplex multiple PCM frame buffers including Atmos Sync into one
 */
 
@@ -64,11 +64,14 @@ ASDCP::AtmosSyncChannelMixer::clear()
 Result_t
 ASDCP::AtmosSyncChannelMixer::OpenRead(ui32_t argc, const char** argv, const Rational& PictureRate)
 {
-  ASDCP_TEST_NULL_STR(argv);
+  ASDCP_TEST_NULL(argv);
   PathList_t TmpFileList;
 
   for ( ui32_t i = 0; i < argc; ++i )
-    TmpFileList.push_back(argv[i]);
+    {
+      ASDCP_TEST_NULL_STR(argv[i]);
+      TmpFileList.push_back(argv[i]);
+    }
 
   return OpenRead(TmpFileList, PictureRate);
 }
@@ -249,6 +252,45 @@ ASDCP::AtmosSyncChannelMixer::MixInAtmosSyncChannel()
     I.release();
     assert(m_ChannelCount == ATMOS::SYNC_CHANNEL);
   }
+  return result;
+}
+
+//
+Result_t
+ASDCP::AtmosSyncChannelMixer::AppendSilenceChannels(const ui32_t& channel_count)
+{
+  if ( m_ADesc.QuantizationBits == 0 )
+    {
+      DefaultLogSink().Error("Mixer object contains no channels, call OpenRead() first.\n");
+      return RESULT_PARAM;
+    }
+
+  Result_t result = RESULT_OK;
+  PCM::AudioDescriptor tmpDesc;
+
+  if ( channel_count > 0 )
+    {
+      Kumu::mem_ptr<SilenceDataProvider> I =
+	new SilenceDataProvider(channel_count,
+				m_ADesc.QuantizationBits,
+				m_ADesc.AudioSamplingRate.Numerator,
+				m_ADesc.EditRate);
+
+      result = I->FillAudioDescriptor(tmpDesc);
+
+      if ( ASDCP_SUCCESS(result) )
+	{
+	  m_ADesc.BlockAlign += tmpDesc.BlockAlign;
+	  m_ChannelCount += tmpDesc.ChannelCount;
+	  m_ADesc.ChannelCount = m_ChannelCount;
+	  m_ADesc.AvgBps = (ui32_t)(ceil(m_ADesc.AudioSamplingRate.Quotient()) * m_ADesc.BlockAlign);
+
+	  m_outputs.push_back(std::make_pair(channel_count, I.get()));
+	  m_inputs.push_back(I);
+	  I.release();
+	}
+    }
+
   return result;
 }
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2012, John Hurst
+Copyright (c) 2005-2015, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_util.cpp
-    \version $Id: KM_util.cpp,v 1.43 2013/02/08 19:11:58 jhurst Exp $
+    \version $Id: KM_util.cpp,v 1.47 2015/10/12 15:30:46 jhurst Exp $
     \brief   Utility functions
   */
 
@@ -129,10 +129,10 @@ Kumu::Result_t::Get(unsigned int i)
 }
 
 //
-Kumu::Result_t::Result_t(int v, const char* s, const char* l) : value(v), symbol(s), label(l)
+Kumu::Result_t::Result_t(int v, const std::string& s, const std::string& l) : value(v), symbol(s), label(l)
 {
-  assert(l);
-  assert(s);
+  assert(!l.empty());
+  assert(!s.empty());
 
   if ( v == 0 )
     return;
@@ -162,7 +162,64 @@ Kumu::Result_t::Result_t(int v, const char* s, const char* l) : value(v), symbol
   return;
 }
 
+
+Kumu::Result_t::Result_t(const Result_t& rhs)
+{
+  value = rhs.value;
+  symbol = rhs.symbol;
+  label = rhs.label;
+  message = rhs.message;
+}
+
 Kumu::Result_t::~Result_t() {}
+
+//
+const Kumu::Result_t&
+Kumu::Result_t::operator=(const Result_t& rhs)
+{
+  value = rhs.value;
+  symbol = rhs.symbol;
+  label = rhs.label;
+  message = rhs.message;
+  return *this;
+}
+
+//
+const Kumu::Result_t
+Kumu::Result_t::operator()(const std::string& message) const
+{
+  Result_t result = *this;
+  result.message = message;
+  return result;
+}
+
+static int const MESSAGE_BUF_MAX = 2048;
+
+//
+const Kumu::Result_t
+Kumu::Result_t::operator()(const int& line, const char* filename) const
+{
+  assert(filename);
+  char buf[MESSAGE_BUF_MAX];
+  snprintf(buf, MESSAGE_BUF_MAX-1, "%s, line %d", filename, line);
+
+  Result_t result = *this;
+  result.message = buf;
+  return result;
+}
+
+//
+const Kumu::Result_t
+Kumu::Result_t::operator()(const std::string& message, const int& line, const char* filename) const
+{
+  assert(filename);
+  char buf[MESSAGE_BUF_MAX];
+  snprintf(buf, MESSAGE_BUF_MAX-1, "%s, line %d", filename, line);
+
+  Result_t result = *this;
+  result.message = message + buf;
+  return result;
+}
 
 
 //------------------------------------------------------------------------------------------
@@ -796,8 +853,8 @@ Kumu::Timestamp::EncodeString(char* str_buf, ui32_t buf_len) const
       tmp_t.AddMinutes(m_TZOffsetMinutes);
       tmp_t.GetComponents(year, month, day, hour, minute, second);
 
-      ofst_hours = abs(m_TZOffsetMinutes) / 60;
-      ofst_minutes = abs(m_TZOffsetMinutes) % 60;
+      ofst_hours = Kumu::xabs(m_TZOffsetMinutes) / 60;
+      ofst_minutes = Kumu::xabs(m_TZOffsetMinutes) % 60;
 
       if ( m_TZOffsetMinutes < 0 )
 	direction = '-';
@@ -805,7 +862,7 @@ Kumu::Timestamp::EncodeString(char* str_buf, ui32_t buf_len) const
   
   // 2004-05-01T13:20:00+00:00
   snprintf(str_buf, buf_len,
-	   "%04hu-%02hu-%02huT%02hu:%02hu:%02hu%c%02hu:%02hu",
+	   "%04hu-%02hhu-%02hhuT%02hhu:%02hhu:%02hhu%c%02u:%02u",
 	   year, month, day, hour, minute, second,
 	   direction, ofst_hours, ofst_minutes);
 
@@ -829,9 +886,9 @@ Kumu::Timestamp::DecodeString(const char* datestr)
   YMDhms.minute = 0;
   YMDhms.second = 0;
   YMDhms.offset = 0;
-  YMDhms.date.year = atoi(datestr);
-  YMDhms.date.month = atoi(datestr + 5);
-  YMDhms.date.day = atoi(datestr + 8);
+  YMDhms.date.year = strtol(datestr, 0, 10);
+  YMDhms.date.month = strtol(datestr + 5, 0, 10);
+  YMDhms.date.day = strtol(datestr + 8, 0, 10);
  
   if ( datestr[10] == 'T' )
     {
@@ -841,8 +898,8 @@ Kumu::Timestamp::DecodeString(const char* datestr)
 	return false;
 
       char_count += 6;
-      YMDhms.hour = atoi(datestr + 11);
-      YMDhms.minute = atoi(datestr + 14);
+      YMDhms.hour = strtol(datestr + 11, 0, 10);
+      YMDhms.minute = strtol(datestr + 14, 0, 10);
 
       if ( datestr[16] == ':' )
 	{
@@ -850,16 +907,23 @@ Kumu::Timestamp::DecodeString(const char* datestr)
 	    return false;
 
 	  char_count += 3;
-	  YMDhms.second = atoi(datestr + 17);
+	  YMDhms.second = strtol(datestr + 17, 0, 10);
 	}
 
       if ( datestr[19] == '.' )
 	{
-	  if ( ! ( isdigit(datestr[20]) && isdigit(datestr[21]) && isdigit(datestr[22]) ) )
-	    return false;
-	  
+	  if ( ! isdigit(datestr[20]) )
+	    {
+	      return false;
+	    }
+
 	  // we don't carry the ms value
-	  datestr += 4;
+	  while ( isdigit(datestr[20]) )
+	    {
+	      ++datestr;
+	    }
+
+	  ++datestr;
 	}
 
       if ( datestr[19] == '-' || datestr[19] == '+' )
@@ -871,8 +935,8 @@ Kumu::Timestamp::DecodeString(const char* datestr)
 
 	  char_count += 6;
 
-	  ui32_t TZ_hh = atoi(datestr + 20);
-	  ui32_t TZ_mm = atoi(datestr + 23);
+	  ui32_t TZ_hh = strtol(datestr + 20, 0, 10);
+	  ui32_t TZ_mm = strtol(datestr + 23, 0, 10);
 	  if ((TZ_hh > 14) || (TZ_mm > 59) || ((TZ_hh == 14) && (TZ_mm > 0)))
 	    return false;
 
@@ -1171,20 +1235,14 @@ Kumu::km_token_split(const std::string& str, const std::string& separator)
   while ( r != 0 )
     {
       assert(r >= pstr);
-      if ( r > pstr )
-	{
-	  std::string tmp_str;
-	  tmp_str.assign(pstr, r - pstr);
-	  components.push_back(tmp_str);
-	}
-
+      std::string tmp_str;
+      tmp_str.assign(pstr, r - pstr);
+      components.push_back(tmp_str);
       pstr = r + separator.size();
       r = strstr(pstr, separator.c_str());
     }
       
-  if( strlen(pstr) > 0 )
-    components.push_back(std::string(pstr));
-
+  components.push_back(std::string(pstr));
   return components;
 }
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2003-2013, John Hurst
+Copyright (c) 2003-2014, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,13 +25,13 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP.h
-    \version $Id: AS_DCP.h,v 1.45.2.1 2013/12/21 00:13:17 jhurst Exp $
+    \version $Id: AS_DCP.h,v 1.52 2015/04/21 03:55:31 jhurst Exp $
     \brief   AS-DCP library, public interface
 
 The asdcplib library is a set of file access objects that offer simplified
 access to files conforming to the standards published by the SMPTE
 D-Cinema Technology Committee 21DC. The file format, labeled AS-DCP,
-is described in series of separate documents which include but may not
+is described in a series of documents which includes but may not
 be be limited to:
 
  o SMPTE ST 429-2:2011 DCP Operational Constraints
@@ -40,8 +40,10 @@ be be limited to:
  o SMPTE ST 429-5:2009 Timed Text Track File
  o SMPTE ST 429-6:2006 MXF Track File Essence Encryption
  o SMPTE ST 429-10:2008 Stereoscopic Picture Track File
+ o SMPTE ST 429-14:2008 Aux Data Track File
  o SMPTE ST 330:2004 - UMID
  o SMPTE ST 336:2001 - KLV
+ o SMPTE ST 377:2004 - MXF (old version, required)
  o SMPTE ST 377-1:2011 - MXF
  o SMPTE ST 377-4:2012 - MXF Multichannel Audio Labeling Framework
  o SMPTE ST 390:2011 - MXF OP-Atom
@@ -61,18 +63,14 @@ be be limited to:
 The following use cases are supported by the library:
 
  o Write essence to a plaintext or ciphertext AS-DCP file:
-     MPEG2 Video Elementary Stream
-     JPEG 2000 codestreams
-     JPEG 2000 stereoscopic codestream pairs
-     PCM audio streams
-     SMPTE 429-7 Timed Text XML with font and image resources
-
  o Read essence from a plaintext or ciphertext AS-DCP file:
      MPEG2 Video Elementary Stream
      JPEG 2000 codestreams
      JPEG 2000 stereoscopic codestream pairs
      PCM audio streams
      SMPTE 429-7 Timed Text XML with font and image resources
+     Aux Data (frame-wrapped synchronous blob)
+     Proposed Dolby (TM) Atmos track file
 
  o Read header metadata from an AS-DCP file
 
@@ -204,8 +202,12 @@ namespace ASDCP {
   // The file accessors in this library implement a bounded set of essence types.
   // This list will be expanded when support for new types is added to the library.
   enum EssenceType_t {
-    ESS_UNKNOWN,              // the file is not a supported AS-DCP essence container
-    ESS_MPEG2_VES,            // the file contains an MPEG video elementary stream
+    ESS_UNKNOWN,              // the file is not a supported AS-DCP of AS-02 essence container
+
+    // 
+    ESS_MPEG2_VES,            // the file contains an MPEG-2 video elementary stream
+
+    // d-cinema essence types
     ESS_JPEG_2000,            // the file contains one or more JPEG 2000 codestreams
     ESS_PCM_24b_48k,          // the file contains one or more PCM audio pairs
     ESS_PCM_24b_96k,          // the file contains one or more PCM audio pairs
@@ -213,17 +215,25 @@ namespace ASDCP {
     ESS_JPEG_2000_S,          // the file contains one or more JPEG 2000 codestream pairs (stereoscopic)
     ESS_DCDATA_UNKNOWN,       // the file contains one or more D-Cinema Data bytestreams
     ESS_DCDATA_DOLBY_ATMOS,   // the file contains one or more DolbyATMOS bytestreams
+
+    // IMF essence types
+    ESS_AS02_JPEG_2000,       // the file contains one or more JPEG 2000 codestreams
+    ESS_AS02_PCM_24b_48k,     // the file contains one or more PCM audio pairs, clip wrapped
+    ESS_AS02_PCM_24b_96k,     // the file contains one or more PCM audio pairs, clip wrapped
+    ESS_AS02_TIMED_TEXT,      // the file contains a TTML document and zero or more resources
+
+    ESS_MAX
   };
 
   // Determine the type of essence contained in the given MXF file. RESULT_OK
   // is returned if the file is successfully opened and contains a valid MXF
   // stream. If there is an error, the result code will indicate the reason.
-  Result_t EssenceType(const char* filename, EssenceType_t& type);
+  Result_t EssenceType(const std::string& filename, EssenceType_t& type);
 
   // Determine the type of essence contained in the given raw file. RESULT_OK
   // is returned if the file is successfully opened and contains a known
   // stream type. If there is an error, the result code will indicate the reason.
-  Result_t RawEssenceType(const char* filename, EssenceType_t& type);
+  Result_t RawEssenceType(const std::string& filename, EssenceType_t& type);
 
 
   //---------------------------------------------------------------------------------
@@ -263,6 +273,16 @@ namespace ASDCP {
       return false;
     }
   };
+
+  // Encodes a rational number as a string having a single delimiter character between
+  // numerator and denominator.  Retuns the buffer pointer to allow convenient in-line use.
+  const char* EncodeRational(const Rational&, char* str_buf, ui32_t buf_len, char delimiter = ' ');
+
+  // Decodes a rational number havng a single non-digit delimiter character between
+  // the numerator and denominator.  Returns false if the string does not contain
+  // the expected syntax.
+  bool DecodeRational(const char* str_rat, Rational&);
+
 
   // common edit rates, use these instead of hard coded constants
   const Rational EditRate_24 = Rational(24,1);
@@ -346,7 +366,8 @@ namespace ASDCP {
   {
     LS_MXF_UNKNOWN,
     LS_MXF_INTEROP,
-    LS_MXF_SMPTE
+    LS_MXF_SMPTE,
+    LS_MAX
   };
 
   //
@@ -570,8 +591,9 @@ namespace ASDCP {
 
   namespace MXF {
     // #include<Metadata.h> to use these
-    class OPAtomHeader;
+    class OP1aHeader;
     class OPAtomIndexFooter;
+    class RIP;
   };
 
   //---------------------------------------------------------------------------------
@@ -700,7 +722,7 @@ namespace ASDCP {
 
 	  // Opens the stream for reading, parses enough data to provide a complete
 	  // set of stream metadata for the MXFWriter below.
-	  Result_t OpenRead(const char* filename) const;
+	  Result_t OpenRead(const std::string& filename) const;
 
 	  // Fill a VideoDescriptor struct with the values from the file's header.
 	  // Returns RESULT_INIT if the file is not open.
@@ -731,13 +753,14 @@ namespace ASDCP {
 
 	  // Warning: direct manipulation of MXF structures can interfere
 	  // with the normal operation of the wrapper.  Caveat emptor!
-	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OP1aHeader& OP1aHeader();
 	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+	  virtual MXF::RIP& RIP();
 
 	  // Open the file for writing. The file must not exist. Returns error if
 	  // the operation cannot be completed or if nonsensical data is discovered
 	  // in the essence descriptor.
-	  Result_t OpenWrite(const char* filename, const WriterInfo&,
+	  Result_t OpenWrite(const std::string& filename, const WriterInfo&,
 			     const VideoDescriptor&, ui32_t HeaderSize = 16384);
 
 	  // Writes a frame of essence to the MXF file. If the optional AESEncContext
@@ -763,12 +786,13 @@ namespace ASDCP {
 
 	  // Warning: direct manipulation of MXF structures can interfere
 	  // with the normal operation of the wrapper.  Caveat emptor!
-	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OP1aHeader& OP1aHeader();
 	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+	  virtual MXF::RIP& RIP();
 
 	  // Open the file for reading. The file must exist. Returns error if the
 	  // operation cannot be completed.
-	  Result_t OpenRead(const char* filename) const;
+	  Result_t OpenRead(const std::string& filename) const;
 
 	  // Returns RESULT_INIT if the file is not open.
 	  Result_t Close() const;
@@ -830,8 +854,7 @@ namespace ASDCP {
       //
       // The channel format should be one of (CF_CFG_1, CF_CFG_2, or CF_CFG_3) for
       // SMPTE 429-2 files. It should normally be CF_NONE for JPEG Interop files, but
-      // the 429-2 labels may also be used.  CF_CFG_6 will be set automatically
-      // when MCA labels are defined.
+      // the 429-2 may also be used.
       //
       enum ChannelFormat_t {
 	CF_NONE,
@@ -911,7 +934,7 @@ namespace ASDCP {
 	  // Opens the stream for reading, parses enough data to provide a complete
 	  // set of stream metadata for the MXFWriter below. PictureRate controls
 	  // ther frame rate for the MXF frame wrapping option.
-	  Result_t OpenRead(const char* filename, const Rational& PictureRate) const;
+	  Result_t OpenRead(const std::string& filename, const Rational& PictureRate) const;
 
 	  // Fill an AudioDescriptor struct with the values from the file's header.
 	  // Returns RESULT_INIT if the file is not open.
@@ -939,13 +962,14 @@ namespace ASDCP {
 
 	  // Warning: direct manipulation of MXF structures can interfere
 	  // with the normal operation of the wrapper.  Caveat emptor!
-	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OP1aHeader& OP1aHeader();
 	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+	  virtual MXF::RIP& RIP();
 
 	  // Open the file for writing. The file must not exist. Returns error if
 	  // the operation cannot be completed or if nonsensical data is discovered
 	  // in the essence descriptor.
-	  Result_t OpenWrite(const char* filename, const WriterInfo&,
+	  Result_t OpenWrite(const std::string& filename, const WriterInfo&,
 			     const AudioDescriptor&, ui32_t HeaderSize = 16384);
 
 	  // Writes a frame of essence to the MXF file. If the optional AESEncContext
@@ -971,12 +995,13 @@ namespace ASDCP {
 
 	  // Warning: direct manipulation of MXF structures can interfere
 	  // with the normal operation of the wrapper.  Caveat emptor!
-	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OP1aHeader& OP1aHeader();
 	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+	  virtual MXF::RIP& RIP();
 
 	  // Open the file for reading. The file must exist. Returns error if the
 	  // operation cannot be completed.
-	  Result_t OpenRead(const char* filename) const;
+	  Result_t OpenRead(const std::string& filename) const;
 
 	  // Returns RESULT_INIT if the file is not open.
 	  Result_t Close() const;
@@ -1115,7 +1140,7 @@ namespace ASDCP {
 	  // The frame buffer's PlaintextOffset parameter will be set to the first
 	  // byte of the data segment. Set this value to zero if you want
 	  // encrypted headers.
-	  Result_t OpenReadFrame(const char* filename, FrameBuffer&) const;
+	  Result_t OpenReadFrame(const std::string& filename, FrameBuffer&) const;
 
 	  // Fill a PictureDescriptor struct with the values from the file's codestream.
 	  // Returns RESULT_INIT if the file is not open.
@@ -1145,7 +1170,7 @@ namespace ASDCP {
 	  // MXFWriter below.  If the "pedantic" parameter is given and is true, the
 	  // parser will check the metadata for each codestream and fail if a
 	  // mismatch is detected.
-	  Result_t OpenRead(const char* filename, bool pedantic = false) const;
+	  Result_t OpenRead(const std::string& filename, bool pedantic = false) const;
 
 	  // Opens a file sequence for reading.  The sequence is expected to contain one or
 	  // more filenames, each naming a file containing the codestream for exactly one
@@ -1186,13 +1211,14 @@ namespace ASDCP {
 
 	  // Warning: direct manipulation of MXF structures can interfere
 	  // with the normal operation of the wrapper.  Caveat emptor!
-	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OP1aHeader& OP1aHeader();
 	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+	  virtual MXF::RIP& RIP();
 
 	  // Open the file for writing. The file must not exist. Returns error if
 	  // the operation cannot be completed or if nonsensical data is discovered
 	  // in the essence descriptor.
-	  Result_t OpenWrite(const char* filename, const WriterInfo&,
+	  Result_t OpenWrite(const std::string& filename, const WriterInfo&,
 			     const PictureDescriptor&, ui32_t HeaderSize = 16384);
 
 	  // Writes a frame of essence to the MXF file. If the optional AESEncContext
@@ -1218,12 +1244,13 @@ namespace ASDCP {
 
 	  // Warning: direct manipulation of MXF structures can interfere
 	  // with the normal operation of the wrapper.  Caveat emptor!
-	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OP1aHeader& OP1aHeader();
 	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+	  virtual MXF::RIP& RIP();
 
 	  // Open the file for reading. The file must exist. Returns error if the
 	  // operation cannot be completed.
-	  Result_t OpenRead(const char* filename) const;
+	  Result_t OpenRead(const std::string& filename) const;
 
 	  // Returns RESULT_INIT if the file is not open.
 	  Result_t Close() const;
@@ -1289,13 +1316,14 @@ namespace ASDCP {
 
 	  // Warning: direct manipulation of MXF structures can interfere
 	  // with the normal operation of the wrapper.  Caveat emptor!
-	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OP1aHeader& OP1aHeader();
 	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+	  virtual MXF::RIP& RIP();
 
 	  // Open the file for writing. The file must not exist. Returns error if
 	  // the operation cannot be completed or if nonsensical data is discovered
 	  // in the essence descriptor.
-	  Result_t OpenWrite(const char* filename, const WriterInfo&,
+	  Result_t OpenWrite(const std::string& filename, const WriterInfo&,
 			     const PictureDescriptor&, ui32_t HeaderSize = 16384);
 
 	  // Writes a pair of frames of essence to the MXF file. If the optional AESEncContext
@@ -1331,12 +1359,13 @@ namespace ASDCP {
 
 	  // Warning: direct manipulation of MXF structures can interfere
 	  // with the normal operation of the wrapper.  Caveat emptor!
-	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OP1aHeader& OP1aHeader();
 	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+	  virtual MXF::RIP& RIP();
 
 	  // Open the file for reading. The file must exist. Returns error if the
 	  // operation cannot be completed.
-	  Result_t OpenRead(const char* filename) const;
+	  Result_t OpenRead(const std::string& filename) const;
 
 	  // Returns RESULT_INIT if the file is not open.
 	  Result_t Close() const;
@@ -1436,6 +1465,8 @@ namespace ASDCP {
 	void Dump(FILE* = 0, ui32_t dump_bytes = 0) const;
       };
 
+      // An abstract base for a lookup service that returns the resource data
+      // identified by the given ancillary resource id.
       //
       class IResourceResolver
       {
@@ -1443,6 +1474,21 @@ namespace ASDCP {
 	virtual ~IResourceResolver() {}
 	virtual Result_t ResolveRID(const byte_t* uuid, FrameBuffer&) const = 0; // return data for RID
       };
+
+      // Resolves resource references by testing the named directory for file names containing
+      // the respective UUID.
+      //
+      class LocalFilenameResolver : public ASDCP::TimedText::IResourceResolver
+	{
+	  std::string m_Dirname;
+	  ASDCP_NO_COPY_CONSTRUCT(LocalFilenameResolver);
+
+	public:
+	  LocalFilenameResolver();
+	  virtual ~LocalFilenameResolver();
+	  Result_t OpenRead(const std::string& dirname);
+	  Result_t ResolveRID(const byte_t* uuid, FrameBuffer& FrameBuf) const;
+	};
 
       //
       class DCSubtitleParser
@@ -1457,12 +1503,12 @@ namespace ASDCP {
 
 	  // Opens an XML file for reading, parses data to provide a complete
 	  // set of stream metadata for the MXFWriter below.
-	  Result_t OpenRead(const char* filename) const;
+	  Result_t OpenRead(const std::string& filename) const;
 
 	  // Parses an XML document to provide a complete set of stream metadata
 	  // for the MXFWriter below. The optional filename argument is used to
 	  // initialize the default resource resolver (see ReadAncillaryResource).
-	  Result_t OpenRead(const std::string& xml_doc, const char* filename = 0) const;
+	  Result_t OpenRead(const std::string& xml_doc, const std::string& filename) const;
 
 	  // Fill a TimedTextDescriptor struct with the values from the file's contents.
 	  // Returns RESULT_INIT if the file is not open.
@@ -1495,13 +1541,14 @@ namespace ASDCP {
 
 	  // Warning: direct manipulation of MXF structures can interfere
 	  // with the normal operation of the wrapper.  Caveat emptor!
-	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OP1aHeader& OP1aHeader();
 	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+	  virtual MXF::RIP& RIP();
 
 	  // Open the file for writing. The file must not exist. Returns error if
 	  // the operation cannot be completed or if nonsensical data is discovered
 	  // in the essence descriptor.
-	  Result_t OpenWrite(const char* filename, const WriterInfo&,
+	  Result_t OpenWrite(const std::string& filename, const WriterInfo&,
 			     const TimedTextDescriptor&, ui32_t HeaderSize = 16384);
 
 	  // Writes the Timed-Text Resource to the MXF file. The file must be UTF-8
@@ -1537,12 +1584,13 @@ namespace ASDCP {
 
 	  // Warning: direct manipulation of MXF structures can interfere
 	  // with the normal operation of the wrapper.  Caveat emptor!
-	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OP1aHeader& OP1aHeader();
 	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+	  virtual MXF::RIP& RIP();
 
 	  // Open the file for reading. The file must exist. Returns error if the
 	  // operation cannot be completed.
-	  Result_t OpenRead(const char* filename) const;
+	  Result_t OpenRead(const std::string& filename) const;
 
 	  // Returns RESULT_INIT if the file is not open.
 	  Result_t Close() const;
@@ -1631,7 +1679,7 @@ namespace ASDCP {
 	  // The frame buffer's PlaintextOffset parameter will be set to the first
 	  // byte of the data segment. Set this value to zero if you want
 	  // encrypted headers.
-	  Result_t OpenReadFrame(const char* filename, FrameBuffer&) const;
+	  Result_t OpenReadFrame(const std::string& filename, FrameBuffer&) const;
 
 	  // Fill a DCDataDescriptor struct with the values from the file's bytestream.
 	  // Returns RESULT_INIT if the file is not open.
@@ -1653,7 +1701,7 @@ namespace ASDCP {
 	  // more files, each containing the bytestream for exactly one frame. The files
       // must be named such that the frames are in temporal order when sorted
 	  // alphabetically by filename.
-	  Result_t OpenRead(const char* filename) const;
+	  Result_t OpenRead(const std::string& filename) const;
 
 	  // Opens a file sequence for reading.  The sequence is expected to contain one or
 	  // more filenames, each naming a file containing the bytestream for exactly one
@@ -1689,13 +1737,14 @@ namespace ASDCP {
 
 	  // Warning: direct manipulation of MXF structures can interfere
 	  // with the normal operation of the wrapper.  Caveat emptor!
-	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OP1aHeader& OP1aHeader();
 	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+	  virtual MXF::RIP& RIP();
 
 	  // Open the file for writing. The file must not exist. Returns error if
 	  // the operation cannot be completed or if nonsensical data is discovered
 	  // in the essence descriptor.
-	  Result_t OpenWrite(const char* filename, const WriterInfo&,
+	  Result_t OpenWrite(const std::string& filename, const WriterInfo&,
 			     const DCDataDescriptor&, ui32_t HeaderSize = 16384);
 
 	  // Writes a frame of essence to the MXF file. If the optional AESEncContext
@@ -1721,12 +1770,13 @@ namespace ASDCP {
 
 	  // Warning: direct manipulation of MXF structures can interfere
 	  // with the normal operation of the wrapper.  Caveat emptor!
-	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OP1aHeader& OP1aHeader();
 	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+	  virtual MXF::RIP& RIP();
 
 	  // Open the file for reading. The file must exist. Returns error if the
 	  // operation cannot be completed.
-	  Result_t OpenRead(const char* filename) const;
+	  Result_t OpenRead(const std::string& filename) const;
 
 	  // Returns RESULT_INIT if the file is not open.
 	  Result_t Close() const;
@@ -1779,7 +1829,7 @@ namespace ASDCP {
     // Print debugging information to stream (stderr default)
     void AtmosDescriptorDump(const AtmosDescriptor&, FILE* = 0);
     // Determine if a file is a raw atmos file
-    bool IsDolbyAtmos(const char* filename);
+    bool IsDolbyAtmos(const std::string& filename);
 
     //
     class MXFWriter
@@ -1795,13 +1845,14 @@ namespace ASDCP {
 
 	  // Warning: direct manipulation of MXF structures can interfere
 	  // with the normal operation of the wrapper.  Caveat emptor!
-	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OP1aHeader& OP1aHeader();
 	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+	  virtual MXF::RIP& RIP();
 
 	  // Open the file for writing. The file must not exist. Returns error if
 	  // the operation cannot be completed or if nonsensical data is discovered
 	  // in the essence descriptor.
-	  Result_t OpenWrite(const char* filename, const WriterInfo&,
+	  Result_t OpenWrite(const std::string& filename, const WriterInfo&,
 			     const AtmosDescriptor&, ui32_t HeaderSize = 16384);
 
 	  // Writes a frame of essence to the MXF file. If the optional AESEncContext
@@ -1827,12 +1878,13 @@ namespace ASDCP {
 
 	  // Warning: direct manipulation of MXF structures can interfere
 	  // with the normal operation of the wrapper.  Caveat emptor!
-	  virtual MXF::OPAtomHeader& OPAtomHeader();
+	  virtual MXF::OP1aHeader& OP1aHeader();
 	  virtual MXF::OPAtomIndexFooter& OPAtomIndexFooter();
+	  virtual MXF::RIP& RIP();
 
 	  // Open the file for reading. The file must exist. Returns error if the
 	  // operation cannot be completed.
-	  Result_t OpenRead(const char* filename) const;
+	  Result_t OpenRead(const std::string& filename) const;
 
 	  // Returns RESULT_INIT if the file is not open.
 	  Result_t Close() const;

@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_log.h
-    \version $Id: KM_log.h,v 1.14 2012/06/14 00:52:58 jhurst Exp $
+    \version $Id: KM_log.h,v 1.15 2013/06/17 17:55:54 jhurst Exp $
     \brief   message logging API
   */
 
@@ -88,6 +88,7 @@ namespace Kumu
     LOG_NOTICE,   // application user info
     LOG_ALERT,    // application non-fatal or near-miss error
     LOG_CRIT,     // application fatal error
+    LOG_MAX
   };
 
 

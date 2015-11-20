@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2004-2012, John Hurst
+Copyright (c) 2004-2014, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_fileio.cpp
-    \version $Id: KM_fileio.cpp,v 1.32 2013/02/08 19:11:58 jhurst Exp $
+    \version $Id: KM_fileio.cpp,v 1.40 2015/10/07 16:58:03 jhurst Exp $
     \brief   portable file i/o
   */
 
@@ -41,6 +41,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _getcwd getcwd
 #define _unlink unlink
 #define _rmdir rmdir
+#endif
+
+// only needed by GetExecutablePath()
+#if defined(KM_MACOSX)
+#include <mach-o/dyld.h>
 #endif
 
 using namespace Kumu;
@@ -235,12 +240,22 @@ Kumu::PathsAreEquivalent(const std::string& lhs, const std::string& rhs)
 
 //
 Kumu::PathCompList_t&
-Kumu::PathToComponents(const std::string& Path, PathCompList_t& CList, char separator)
+Kumu::PathToComponents(const std::string& path, PathCompList_t& component_list, char separator)
 {
   std::string s;
   s = separator;
-  CList = km_token_split(Path, s);
-  return CList;
+  PathCompList_t tmp_list = km_token_split(path, std::string(s));
+  PathCompList_t::const_iterator i;
+
+  for ( i = tmp_list.begin(); i != tmp_list.end(); ++i )
+    {
+      if ( ! i->empty() )
+	{
+	  component_list.push_back(*i);
+	}
+    }
+
+  return component_list;
 }
 
 //
@@ -616,6 +631,55 @@ Kumu::PathMatchGlob::Match(const std::string& s) const {
 
 #endif
 
+
+//------------------------------------------------------------------------------------------
+
+#define X_BUFSIZE 1024
+
+//
+std::string
+Kumu::GetExecutablePath(const std::string& default_path)
+{
+  char path[X_BUFSIZE] = {0};
+  bool success = false;
+
+#if defined(KM_WIN32)
+  DWORD size = X_BUFSIZE;
+  DWORD rc = GetModuleFileName(0, path, size);
+  success = ( rc != 0 );
+#elif defined(KM_MACOSX)
+  uint32_t size = X_BUFSIZE;
+  int rc = _NSGetExecutablePath(path, &size);
+  success = ( rc != -1 );
+#elif defined(__linux__)
+  size_t size = X_BUFSIZE;
+  ssize_t rc = readlink("/proc/self/exe", path, size);
+  success = ( rc != -1 );
+#elif defined(__OpenBSD__) || defined(__FreeBSD__)
+  size_t size = X_BUFSIZE;
+  ssize_t rc = readlink("/proc/curproc/file", path, size);
+  success = ( rc != -1 );
+#elif defined(__FreeBSD__)
+  size_t size = X_BUFSIZE;
+  ssize_t rc = readlink("/proc/curproc/file", path, size);
+  success = ( rc != -1 );
+#elif defined(__NetBSD__)
+  size_t size = X_BUFSIZE;
+  ssize_t rc = readlink("/proc/curproc/file", path, size);
+  success = ( rc != -1 );
+#else
+#error GetExecutablePath --> Create a method for obtaining the executable name
+#endif
+
+  if ( success )
+    {
+      return Kumu::PathMakeCanonical(path);
+    }
+
+  return default_path;
+}
+
+
 //------------------------------------------------------------------------------------------
 // portable aspects of the file classes
 
@@ -684,15 +748,14 @@ Kumu::FileWriter::Writev(const byte_t* buf, ui32_t buf_len)
 //
 
 Kumu::Result_t
-Kumu::FileReader::OpenRead(const char* filename) const
+Kumu::FileReader::OpenRead(const std::string& filename) const
 {
-  KM_TEST_NULL_STR_L(filename);
   const_cast<FileReader*>(this)->m_Filename = filename;
   
   // suppress popup window on error
   UINT prev = ::SetErrorMode(SEM_FAILCRITICALERRORS|SEM_NOOPENFILEERRORBOX);
 
-  const_cast<FileReader*>(this)->m_Handle = ::CreateFileA(filename,
+  const_cast<FileReader*>(this)->m_Handle = ::CreateFileA(filename.c_str(),
 			  (GENERIC_READ),                // open for reading
 			  FILE_SHARE_READ,               // share for reading
 			  NULL,                          // no security
@@ -809,15 +872,14 @@ Kumu::FileReader::Read(byte_t* buf, ui32_t buf_len, ui32_t* read_count) const
 
 //
 Kumu::Result_t
-Kumu::FileWriter::OpenWrite(const char* filename)
+Kumu::FileWriter::OpenWrite(const std::string& filename)
 {
-  KM_TEST_NULL_STR_L(filename);
   m_Filename = filename;
   
   // suppress popup window on error
   UINT prev = ::SetErrorMode(SEM_FAILCRITICALERRORS|SEM_NOOPENFILEERRORBOX);
 
-  m_Handle = ::CreateFileA(filename,
+  m_Handle = ::CreateFileA(filename.c_str(),
 			  (GENERIC_WRITE|GENERIC_READ),  // open for reading
 			  FILE_SHARE_READ,               // share for reading
 			  NULL,                          // no security
@@ -908,11 +970,10 @@ Kumu::FileWriter::Write(const byte_t* buf, ui32_t buf_len, ui32_t* bytes_written
 
 //
 Kumu::Result_t
-Kumu::FileReader::OpenRead(const char* filename) const
+Kumu::FileReader::OpenRead(const std::string& filename) const
 {
-  KM_TEST_NULL_STR_L(filename);
   const_cast<FileReader*>(this)->m_Filename = filename;
-  const_cast<FileReader*>(this)->m_Handle = open(filename, O_RDONLY, 0);
+  const_cast<FileReader*>(this)->m_Handle = open(filename.c_str(), O_RDONLY, 0);
   return ( m_Handle == -1L ) ? RESULT_FILEOPEN : RESULT_OK;
 }
 
@@ -988,15 +1049,14 @@ Kumu::FileReader::Read(byte_t* buf, ui32_t buf_len, ui32_t* read_count) const
 
 //
 Kumu::Result_t
-Kumu::FileWriter::OpenWrite(const char* filename)
+Kumu::FileWriter::OpenWrite(const std::string& filename)
 {
-  KM_TEST_NULL_STR_L(filename);
   m_Filename = filename;
-  m_Handle = open(filename, O_RDWR|O_CREAT|O_TRUNC, 0664);
+  m_Handle = open(filename.c_str(), O_RDWR|O_CREAT|O_TRUNC, 0664);
 
   if ( m_Handle == -1L )
     {
-      DefaultLogSink().Error("Error opening file %s: %s\n", filename, strerror(errno));
+      DefaultLogSink().Error("Error opening file %s: %s\n", filename.c_str(), strerror(errno));
       return RESULT_FILEOPEN;
     }
 
@@ -1006,15 +1066,14 @@ Kumu::FileWriter::OpenWrite(const char* filename)
 
 //
 Kumu::Result_t
-Kumu::FileWriter::OpenModify(const char* filename)
+Kumu::FileWriter::OpenModify(const std::string& filename)
 {
-  KM_TEST_NULL_STR_L(filename);
   m_Filename = filename;
-  m_Handle = open(filename, O_RDWR|O_CREAT, 0664);
+  m_Handle = open(filename.c_str(), O_RDWR|O_CREAT, 0664);
 
   if ( m_Handle == -1L )
     {
-      DefaultLogSink().Error("Error opening file %s: %s\n", filename, strerror(errno));
+      DefaultLogSink().Error("Error opening file %s: %s\n", filename.c_str(), strerror(errno));
       return RESULT_FILEOPEN;
     }
 
@@ -1080,14 +1139,12 @@ Kumu::FileWriter::Write(const byte_t* buf, ui32_t buf_len, ui32_t* bytes_written
 
 //
 Kumu::Result_t
-Kumu::ReadFileIntoString(const char* filename, std::string& outString, ui32_t max_size)
+Kumu::ReadFileIntoString(const std::string& filename, std::string& outString, ui32_t max_size)
 {
   fsize_t    fsize = 0;
   ui32_t     read_size = 0;
   FileReader File;
   ByteString ReadBuf;
-
-  KM_TEST_NULL_STR_L(filename);
 
   Result_t result = File.OpenRead(filename);
 
@@ -1097,13 +1154,13 @@ Kumu::ReadFileIntoString(const char* filename, std::string& outString, ui32_t ma
 
       if ( fsize > (Kumu::fpos_t)max_size )
 	{
-	  DefaultLogSink().Error("%s: exceeds available buffer size (%u)\n", filename, max_size);
+	  DefaultLogSink().Error("%s: exceeds available buffer size (%u)\n", filename.c_str(), max_size);
 	  return RESULT_ALLOC;
 	}
 
       if ( fsize == 0 )
 	{
-	  DefaultLogSink().Error("%s: zero file size\n", filename);
+	  DefaultLogSink().Error("%s: zero file size\n", filename.c_str());
 	  return RESULT_READFAIL;
 	}
 
@@ -1122,11 +1179,10 @@ Kumu::ReadFileIntoString(const char* filename, std::string& outString, ui32_t ma
 
 //
 Kumu::Result_t
-Kumu::WriteStringIntoFile(const char* filename, const std::string& inString)
+Kumu::WriteStringIntoFile(const std::string& filename, const std::string& inString)
 {
   FileWriter File;
   ui32_t write_count = 0;
-  KM_TEST_NULL_STR_L(filename);
 
   Result_t result = File.OpenWrite(filename);
 
@@ -1152,7 +1208,7 @@ Kumu::ReadFileIntoObject(const std::string& Filename, Kumu::IArchive& Object, ui
       ui32_t read_count = 0;
       FileWriter Reader;
 
-      result = Reader.OpenRead(Filename.c_str());
+      result = Reader.OpenRead(Filename);
 
       if ( KM_SUCCESS(result) )
 	result = Reader.Read(Buffer.Data(), file_size, &read_count);
@@ -1187,7 +1243,7 @@ Kumu::WriteObjectIntoFile(const Kumu::IArchive& Object, const std::string& Filen
       if ( KM_SUCCESS(result) )
 	{
 	  Buffer.Length(MemWriter.Length());
-	  result = Writer.OpenWrite(Filename.c_str());
+	  result = Writer.OpenWrite(Filename);
 	}
 
       if ( KM_SUCCESS(result) )
@@ -1212,7 +1268,7 @@ Kumu::ReadFileIntoBuffer(const std::string& Filename, Kumu::ByteString& Buffer, 
       ui32_t read_count = 0;
       FileWriter Reader;
 
-      result = Reader.OpenRead(Filename.c_str());
+      result = Reader.OpenRead(Filename);
 
       if ( KM_SUCCESS(result) )
 	result = Reader.Read(Buffer.Data(), file_size, &read_count);
@@ -1236,7 +1292,7 @@ Kumu::WriteBufferIntoFile(const Kumu::ByteString& Buffer, const std::string& Fil
   ui32_t write_count = 0;
   FileWriter Writer;
 
-  Result_t result = Writer.OpenWrite(Filename.c_str());
+  Result_t result = Writer.OpenWrite(Filename);
 
   if ( KM_SUCCESS(result) )
     result = Writer.Write(Buffer.RoData(), Buffer.Length(), &write_count);
@@ -1261,18 +1317,16 @@ Kumu::DirScanner::DirScanner(void) : m_Handle(-1) {}
 //
 //
 Result_t
-Kumu::DirScanner::Open(const char* filename)
+Kumu::DirScanner::Open(const std::string& filename)
 {
-  KM_TEST_NULL_STR_L(filename);
-
   // we need to append a '*' to read the entire directory
-  ui32_t fn_len = strlen(filename); 
+  ui32_t fn_len = filename.size(); 
   char* tmp_file = (char*)malloc(fn_len + 8);
 
   if ( tmp_file == 0 )
     return RESULT_ALLOC;
 
-  strcpy(tmp_file, filename);
+  strcpy(tmp_file, filename.c_str());
   char* p = &tmp_file[fn_len] - 1;
 
   if ( *p != '/' && *p != '\\' )
@@ -1348,13 +1402,11 @@ Kumu::DirScanner::DirScanner(void) : m_Handle(NULL) {}
 
 //
 Result_t
-Kumu::DirScanner::Open(const char* filename)
+Kumu::DirScanner::Open(const std::string& dirname)
 {
-  KM_TEST_NULL_STR_L(filename);
-
   Result_t result = RESULT_OK;
 
-  if ( ( m_Handle = opendir(filename) ) == NULL )
+  if ( ( m_Handle = opendir(dirname.c_str()) ) == NULL )
     {
       switch ( errno )
 	{
@@ -1370,7 +1422,7 @@ Kumu::DirScanner::Open(const char* filename)
 	case ENFILE:
 	  result = RESULT_STATE;
 	default:
-	  DefaultLogSink().Error("DirScanner::Open(%s): %s\n", filename, strerror(errno));
+	  DefaultLogSink().Error("DirScanner::Open(%s): %s\n", dirname.c_str(), strerror(errno));
 	  result = RESULT_FAIL;
 	}
     }
@@ -1423,6 +1475,110 @@ Kumu::DirScanner::GetNext(char* filename)
     }
 
   strncpy(filename, entry->d_name, MaxFilePath);
+  return RESULT_OK;
+}
+
+
+//
+Kumu::DirScannerEx::DirScannerEx() : m_Handle(0) {}
+
+//
+Result_t
+Kumu::DirScannerEx::Open(const std::string& dirname)
+{
+  Result_t result = RESULT_OK;
+
+  if ( ( m_Handle = opendir(dirname.c_str()) ) == 0 )
+    {
+      switch ( errno )
+	{
+	case ENOENT:
+	case ENOTDIR:
+	  result = RESULT_NOTAFILE;
+	case EACCES:
+	  result = RESULT_NO_PERM;
+	case ELOOP:
+	case ENAMETOOLONG:
+	  result = RESULT_PARAM;
+	case EMFILE:
+	case ENFILE:
+	  result = RESULT_STATE;
+	default:
+	  DefaultLogSink().Error("DirScanner::Open(%s): %s\n", dirname.c_str(), strerror(errno));
+	  result = RESULT_FAIL;
+	}
+    }
+
+  if ( KM_SUCCESS(result) )
+    m_Dirname = dirname;
+
+  KM_RESULT_STATE_TEST_IMPLICIT();
+  return result;
+}
+
+//
+Result_t
+Kumu::DirScannerEx::Close()
+{
+  if ( m_Handle == NULL )
+    return RESULT_FILEOPEN;
+
+  if ( closedir(m_Handle) == -1 )
+    {
+      switch ( errno )
+	{
+	case EBADF:
+	case EINTR:
+	  KM_RESULT_STATE_HERE();
+	  return RESULT_STATE;
+
+	default:
+	  DefaultLogSink().Error("DirScanner::Close(): %s\n", strerror(errno));
+	  return RESULT_FAIL;
+	}
+    }
+
+  m_Handle = 0;
+  return RESULT_OK;
+}
+
+//
+Result_t
+Kumu::DirScannerEx::GetNext(std::string& next_item_name, DirectoryEntryType_t& next_item_type)
+{
+  if ( m_Handle == 0 )
+    return RESULT_FILEOPEN;
+
+  struct dirent* entry;
+
+  for (;;)
+    {
+      if ( ( entry = readdir(m_Handle) ) == 0 )
+	return RESULT_ENDOFFILE;
+
+      break;
+    }
+
+  next_item_name.assign(entry->d_name, strlen(entry->d_name));
+
+  switch ( entry->d_type )
+    {
+    case DT_DIR:
+      next_item_type = DET_DIR;
+      break;
+
+    case DT_REG:
+      next_item_type = DET_FILE;
+      break;
+
+    case DT_LNK:
+      next_item_type = DET_LINK;
+      break;
+
+    default:
+      next_item_type = DET_DEV;
+    }
+
   return RESULT_OK;
 }
 
@@ -1565,6 +1721,31 @@ Kumu::DeletePath(const std::string& pathname)
 }
 
 
+//
+Result_t
+Kumu::DeleteDirectoryIfEmpty(const std::string& path)
+{
+  DirScanner source_dir;
+  char next_file[Kumu::MaxFilePath];
+
+  Result_t result = source_dir.Open(path);
+
+  if ( KM_FAILURE(result) )
+    return result;
+
+  while ( KM_SUCCESS(source_dir.GetNext(next_file)) )
+    {
+      if ( ( next_file[0] == '.' && next_file[1] == 0 )
+	   || ( next_file[0] == '.' && next_file[1] == '.' && next_file[2] == 0 ) )
+	continue;
+
+      return RESULT_NOT_EMPTY; // anything other than "." and ".." indicates a non-empty directory
+    }
+
+  return DeletePath(path);
+}
+
+
 //------------------------------------------------------------------------------------------
 //
 
@@ -1573,19 +1754,21 @@ Result_t
 Kumu::FreeSpaceForPath(const std::string& path, Kumu::fsize_t& free_space, Kumu::fsize_t& total_space)
 {
 #ifdef KM_WIN32
-	ULARGE_INTEGER lTotalNumberOfBytes;
-	ULARGE_INTEGER lTotalNumberOfFreeBytes;
+  ULARGE_INTEGER lTotalNumberOfBytes;
+  ULARGE_INTEGER lTotalNumberOfFreeBytes;
 
-	BOOL fResult = ::GetDiskFreeSpaceExA(path.c_str(), NULL, &lTotalNumberOfBytes, &lTotalNumberOfFreeBytes);
-	if (fResult) {
+  BOOL fResult = ::GetDiskFreeSpaceExA(path.c_str(), NULL, &lTotalNumberOfBytes, &lTotalNumberOfFreeBytes);
+  if ( fResult )
+    {
       free_space = static_cast<Kumu::fsize_t>(lTotalNumberOfFreeBytes.QuadPart);
       total_space = static_cast<Kumu::fsize_t>(lTotalNumberOfBytes.QuadPart);
       return RESULT_OK;
-	}
-	HRESULT LastError = ::GetLastError();
+    }
 
-	DefaultLogSink().Error("FreeSpaceForPath GetDiskFreeSpaceEx %s: %lu\n", path.c_str(), ::GetLastError());
-	return RESULT_FAIL;
+  HRESULT last_error = ::GetLastError();
+
+  DefaultLogSink().Error("FreeSpaceForPath GetDiskFreeSpaceEx %s: %lu\n", path.c_str(), last_error);
+  return RESULT_FAIL;
 #else // KM_WIN32
   struct statfs s;
 

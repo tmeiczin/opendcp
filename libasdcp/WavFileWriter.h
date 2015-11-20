@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    WavFileWriter.h
-    \version $Id: WavFileWriter.h,v 1.7 2013/04/12 23:39:31 mikey Exp $
+    \version $Id: WavFileWriter.h,v 1.8 2013/06/17 17:55:54 jhurst Exp $
     \brief   demux and write PCM data to WAV file(s)
 */
 
@@ -98,7 +98,8 @@ class WavFileWriter
   enum SplitType_t {
     ST_NONE,   // write all channels to a single WAV file
     ST_MONO,   // write each channel a separate WAV file
-    ST_STEREO  // write channel pairs to separate WAV files
+    ST_STEREO, // write channel pairs to separate WAV files
+    ST_MAX
   };
 
   ASDCP::Result_t

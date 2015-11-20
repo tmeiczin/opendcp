@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2008-2012, John Hurst
+Copyright (c) 2008-2015, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_TimedText.cpp
-    \version $Id: AS_DCP_TimedText.cpp,v 1.29 2013/04/12 23:39:30 mikey Exp $       
+    \version $Id: AS_DCP_TimedText.cpp,v 1.38 2015/10/09 23:41:11 jhurst Exp $       
     \brief   AS-DCP library, PCM essence reader and writer implementation
 */
 
@@ -137,7 +137,9 @@ public:
     memset(&m_TDesc.AssetID, 0, UUIDlen);
   }
 
-  Result_t    OpenRead(const char*);
+  virtual ~h__Reader() {}
+
+  Result_t    OpenRead(const std::string&);
   Result_t    MD_to_TimedText_TDesc(TimedText::TimedTextDescriptor& TDesc);
   Result_t    ReadTimedTextResource(FrameBuffer& FrameBuf, AESDecContext* Ctx, HMACContext* HMAC);
   Result_t    ReadAncillaryResource(const byte_t*, FrameBuffer& FrameBuf, AESDecContext* Ctx, HMACContext* HMAC);
@@ -158,7 +160,7 @@ ASDCP::TimedText::MXFReader::h__Reader::MD_to_TimedText_TDesc(TimedText::TimedTe
   TDesc.NamespaceName = TDescObj->NamespaceURI;
   TDesc.EncodingName = TDescObj->UCSEncoding;
 
-  Batch<UUID>::const_iterator sdi = TDescObj->SubDescriptors.begin();
+  Array<UUID>::const_iterator sdi = TDescObj->SubDescriptors.begin();
   TimedTextResourceSubDescriptor* DescObject = 0;
   Result_t result = RESULT_OK;
 
@@ -199,7 +201,7 @@ ASDCP::TimedText::MXFReader::h__Reader::MD_to_TimedText_TDesc(TimedText::TimedTe
 
 //
 ASDCP::Result_t
-ASDCP::TimedText::MXFReader::h__Reader::OpenRead(char const* filename)
+ASDCP::TimedText::MXFReader::h__Reader::OpenRead(const std::string& filename)
 {
   Result_t result = OpenMXFRead(filename);
   
@@ -215,12 +217,6 @@ ASDCP::TimedText::MXFReader::h__Reader::OpenRead(char const* filename)
       if( ASDCP_SUCCESS(result) )
 	result = MD_to_TimedText_TDesc(m_TDesc);
     }
-
-  if( ASDCP_SUCCESS(result) )
-    result = InitMXFIndex();
-
-  if( ASDCP_SUCCESS(result) )
-    result = InitInfo();
 
   return result;
 }
@@ -269,14 +265,14 @@ ASDCP::TimedText::MXFReader::h__Reader::ReadAncillaryResource(const byte_t* uuid
 
   if ( KM_SUCCESS(result) )
     {
-      Array<RIP::Pair>::const_iterator pi;
-      RIP::Pair TmpPair;
+      RIP::const_pair_iterator pi;
+      RIP::PartitionPair TmpPair;
       ui32_t sequence = 0;
 
       // Look up the partition start in the RIP using the SID.
       // Count the sequence length in because this is the sequence
       // value needed to  complete the HMAC.
-      for ( pi = m_HeaderPart.m_RIP.PairArray.begin(); pi != m_HeaderPart.m_RIP.PairArray.end(); ++pi, ++sequence )
+      for ( pi = m_RIP.PairArray.begin(); pi != m_RIP.PairArray.end(); ++pi, ++sequence )
 	{
 	  if ( (*pi).BodySID == DescObject->EssenceStreamID )
 	    {
@@ -344,13 +340,13 @@ ASDCP::TimedText::MXFReader::~MXFReader()
 // Warning: direct manipulation of MXF structures can interfere
 // with the normal operation of the wrapper.  Caveat emptor!
 //
-ASDCP::MXF::OPAtomHeader&
-ASDCP::TimedText::MXFReader::OPAtomHeader()
+ASDCP::MXF::OP1aHeader&
+ASDCP::TimedText::MXFReader::OP1aHeader()
 {
   if ( m_Reader.empty() )
     {
-      assert(g_OPAtomHeader);
-      return *g_OPAtomHeader;
+      assert(g_OP1aHeader);
+      return *g_OP1aHeader;
     }
 
   return m_Reader->m_HeaderPart;
@@ -368,13 +364,28 @@ ASDCP::TimedText::MXFReader::OPAtomIndexFooter()
       return *g_OPAtomIndexFooter;
     }
 
-  return m_Reader->m_FooterPart;
+  return m_Reader->m_IndexAccess;
+}
+
+// Warning: direct manipulation of MXF structures can interfere
+// with the normal operation of the wrapper.  Caveat emptor!
+//
+ASDCP::MXF::RIP&
+ASDCP::TimedText::MXFReader::RIP()
+{
+  if ( m_Reader.empty() )
+    {
+      assert(g_RIP);
+      return *g_RIP;
+    }
+
+  return m_Reader->m_RIP;
 }
 
 // Open the file for reading. The file must exist. Returns error if the
 // operation cannot be completed.
 ASDCP::Result_t
-ASDCP::TimedText::MXFReader::OpenRead(const char* filename) const
+ASDCP::TimedText::MXFReader::OpenRead(const std::string& filename) const
 {
   return m_Reader->OpenRead(filename);
 }
@@ -458,7 +469,7 @@ void
 ASDCP::TimedText::MXFReader::DumpIndex(FILE* stream) const
 {
   if ( m_Reader->m_File.IsOpen() )
-    m_Reader->m_FooterPart.Dump(stream);
+    m_Reader->m_IndexAccess.Dump(stream);
 }
 
 //
@@ -479,7 +490,7 @@ ASDCP::TimedText::MXFReader::Close() const
 
 
 //
-class ASDCP::TimedText::MXFWriter::h__Writer : public ASDCP::h__Writer
+class ASDCP::TimedText::MXFWriter::h__Writer : public ASDCP::h__ASDCPWriter
 {
   ASDCP_NO_COPY_CONSTRUCT(h__Writer);
   h__Writer();
@@ -489,13 +500,13 @@ public:
   byte_t              m_EssenceUL[SMPTE_UL_LENGTH];
   ui32_t              m_EssenceStreamID;
 
-  h__Writer(const Dictionary& d) : ASDCP::h__Writer(d), m_EssenceStreamID(10) {
+  h__Writer(const Dictionary& d) : ASDCP::h__ASDCPWriter(d), m_EssenceStreamID(10) {
     memset(m_EssenceUL, 0, SMPTE_UL_LENGTH);
   }
 
-  ~h__Writer(){}
+  virtual ~h__Writer() {}
 
-  Result_t OpenWrite(const char*, ui32_t HeaderSize);
+  Result_t OpenWrite(const std::string&, ui32_t HeaderSize);
   Result_t SetSourceStream(const TimedTextDescriptor&);
   Result_t WriteTimedTextResource(const std::string& XMLDoc, AESEncContext* = 0, HMACContext* = 0);
   Result_t WriteAncillaryResource(const FrameBuffer&, AESEncContext* = 0, HMACContext* = 0);
@@ -521,7 +532,7 @@ ASDCP::TimedText::MXFWriter::h__Writer::TimedText_TDesc_to_MD(TimedText::TimedTe
 
 //
 ASDCP::Result_t
-ASDCP::TimedText::MXFWriter::h__Writer::OpenWrite(char const* filename, ui32_t HeaderSize)
+ASDCP::TimedText::MXFWriter::h__Writer::OpenWrite(const std::string& filename, ui32_t HeaderSize)
 {
   if ( ! m_State.Test_BEGIN() )
     return RESULT_STATE;
@@ -558,6 +569,9 @@ ASDCP::TimedText::MXFWriter::h__Writer::SetSourceStream(ASDCP::TimedText::TimedT
       resourceSubdescriptor->EssenceStreamID = m_EssenceStreamID++;
       m_EssenceSubDescriptorList.push_back((FileDescriptor*)resourceSubdescriptor);
       m_EssenceDescriptor->SubDescriptors.push_back(resourceSubdescriptor->InstanceUID);
+
+      // 72 == sizeof K, L, instanceuid, uuid + sizeof int32 + tag/len * 4
+      m_HeaderSize += ( resourceSubdescriptor->MIMEMediaType.ArchiveLength() * 2 /*ArchiveLength is broken*/ ) + 72;
     }
 
   m_EssenceStreamID = 10;
@@ -566,10 +580,23 @@ ASDCP::TimedText::MXFWriter::h__Writer::SetSourceStream(ASDCP::TimedText::TimedT
   if ( ASDCP_SUCCESS(result) )
     {
       InitHeader();
-      AddDMSegment(m_TDesc.EditRate, 24, TIMED_TEXT_DEF_LABEL,
+
+      // First RIP Entry
+      if ( m_Info.LabelSetType == LS_MXF_SMPTE )  // ERK
+	{
+	  m_RIP.PairArray.push_back(RIP::PartitionPair(0, 0)); // 3-part, no essence in header
+	}
+      else
+	{
+	  DefaultLogSink().Error("Unable to write Interop timed-text MXF file.  Use SMPTE DCP options instead.\n");
+	  return RESULT_FORMAT;
+	}
+
+      // timecode rate and essence rate are the same
+      AddDMSegment(m_TDesc.EditRate, m_TDesc.EditRate, derive_timecode_rate_from_edit_rate(m_TDesc.EditRate), TIMED_TEXT_DEF_LABEL,
 		   UL(m_Dict->ul(MDD_DataDataDef)), TIMED_TEXT_PACKAGE_LABEL);
 
-      AddEssenceDescriptor(UL(m_Dict->ul(MDD_TimedTextWrapping)));
+      AddEssenceDescriptor(UL(m_Dict->ul(MDD_TimedTextWrappingClip)));
 
       result = m_HeaderPart.WriteToFile(m_File, m_HeaderSize);
       
@@ -637,11 +664,11 @@ ASDCP::TimedText::MXFWriter::h__Writer::WriteAncillaryResource(const ASDCP::Time
   MXF::Partition GSPart(m_Dict);
 
   GSPart.ThisPartition = here;
-  GSPart.PreviousPartition = m_HeaderPart.m_RIP.PairArray.back().ByteOffset;
+  GSPart.PreviousPartition = m_RIP.PairArray.back().ByteOffset;
   GSPart.BodySID = m_EssenceStreamID;
   GSPart.OperationalPattern = m_HeaderPart.OperationalPattern;
 
-  m_HeaderPart.m_RIP.PairArray.push_back(RIP::Pair(m_EssenceStreamID++, here));
+  m_RIP.PairArray.push_back(RIP::PartitionPair(m_EssenceStreamID++, here));
   GSPart.EssenceContainers.push_back(UL(m_Dict->ul(MDD_TimedTextEssence)));
   UL TmpUL(m_Dict->ul(MDD_GenericStreamPartition));
   Result_t result = GSPart.WriteToFile(m_File, TmpUL);
@@ -663,7 +690,7 @@ ASDCP::TimedText::MXFWriter::h__Writer::Finalize()
   m_FramesWritten = m_TDesc.ContainerDuration;
   m_State.Goto_FINAL();
 
-  return WriteMXFFooter();
+  return WriteASDCPFooter();
 }
 
 
@@ -680,13 +707,13 @@ ASDCP::TimedText::MXFWriter::~MXFWriter()
 // Warning: direct manipulation of MXF structures can interfere
 // with the normal operation of the wrapper.  Caveat emptor!
 //
-ASDCP::MXF::OPAtomHeader&
-ASDCP::TimedText::MXFWriter::OPAtomHeader()
+ASDCP::MXF::OP1aHeader&
+ASDCP::TimedText::MXFWriter::OP1aHeader()
 {
   if ( m_Writer.empty() )
     {
-      assert(g_OPAtomHeader);
-      return *g_OPAtomHeader;
+      assert(g_OP1aHeader);
+      return *g_OP1aHeader;
     }
 
   return m_Writer->m_HeaderPart;
@@ -707,10 +734,25 @@ ASDCP::TimedText::MXFWriter::OPAtomIndexFooter()
   return m_Writer->m_FooterPart;
 }
 
+// Warning: direct manipulation of MXF structures can interfere
+// with the normal operation of the wrapper.  Caveat emptor!
+//
+ASDCP::MXF::RIP&
+ASDCP::TimedText::MXFWriter::RIP()
+{
+  if ( m_Writer.empty() )
+    {
+      assert(g_RIP);
+      return *g_RIP;
+    }
+
+  return m_Writer->m_RIP;
+}
+
 // Open the file for writing. The file must not exist. Returns error if
 // the operation cannot be completed.
 ASDCP::Result_t
-ASDCP::TimedText::MXFWriter::OpenWrite(const char* filename, const WriterInfo& Info,
+ASDCP::TimedText::MXFWriter::OpenWrite(const std::string& filename, const WriterInfo& Info,
 				       const TimedTextDescriptor& TDesc, ui32_t HeaderSize)
 {
   if ( Info.LabelSetType != LS_MXF_SMPTE )

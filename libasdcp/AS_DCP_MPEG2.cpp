@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2004-2012, John Hurst
+Copyright (c) 2004-2013, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_MPEG2.cpp
-    \version $Id: AS_DCP_MPEG2.cpp,v 1.36 2013/04/12 23:39:30 mikey Exp $       
+    \version $Id: AS_DCP_MPEG2.cpp,v 1.44 2015/10/07 16:41:23 jhurst Exp $       
     \brief   AS-DCP library, MPEG2 essence reader and writer implementation
 */
 
@@ -62,7 +62,7 @@ MD_to_MPEG2_VDesc(MXF::MPEG2VideoDescriptor* VDescObj, MPEG2::VideoDescriptor& V
   VDesc.ColorSiting            = VDescObj->ColorSiting;
   VDesc.CodedContentType       = VDescObj->CodedContentType;
 
-  VDesc.LowDelay               = VDescObj->LowDelay == 0 ? false : true;
+  VDesc.LowDelay               = VDescObj->LowDelay.get() == 0 ? false : true;
   VDesc.BitRate                = VDescObj->BitRate;
   VDesc.ProfileAndLevel        = VDescObj->ProfileAndLevel;
   return RESULT_OK;
@@ -169,8 +169,8 @@ public:
   VideoDescriptor m_VDesc;        // video parameter list
 
   h__Reader(const Dictionary& d) : ASDCP::h__ASDCPReader(d) {}
-  ~h__Reader() {}
-  Result_t    OpenRead(const char*);
+  virtual ~h__Reader() {}
+  Result_t    OpenRead(const std::string&);
   Result_t    ReadFrame(ui32_t, FrameBuffer&, AESDecContext*, HMACContext*);
   Result_t    ReadFrameGOPStart(ui32_t, FrameBuffer&, AESDecContext*, HMACContext*);
   Result_t    FindFrameGOPStart(ui32_t, ui32_t&);
@@ -181,25 +181,25 @@ public:
 //
 //
 ASDCP::Result_t
-ASDCP::MPEG2::MXFReader::h__Reader::OpenRead(const char* filename)
+ASDCP::MPEG2::MXFReader::h__Reader::OpenRead(const std::string& filename)
 {
   Result_t result = OpenMXFRead(filename);
 
   if( ASDCP_SUCCESS(result) )
     {
-      InterchangeObject* Object;
+      InterchangeObject* Object = 0;
+
       if ( ASDCP_SUCCESS(m_HeaderPart.GetMDObjectByType(OBJ_TYPE_ARGS(MPEG2VideoDescriptor), &Object)) )
 	{
-	  assert(Object);
+	  if ( Object == 0 )
+	    {
+	      DefaultLogSink().Error("MPEG2VideoDescriptor object not found.\n");
+	      return RESULT_FORMAT;
+	    }
+
 	  result = MD_to_MPEG2_VDesc((MXF::MPEG2VideoDescriptor*)Object, m_VDesc);
 	}
     }
-
-  if( ASDCP_SUCCESS(result) )
-    result = InitMXFIndex();
-
-  if( ASDCP_SUCCESS(result) )
-    result = InitInfo();
 
   return result;
 }
@@ -235,9 +235,8 @@ ASDCP::MPEG2::MXFReader::h__Reader::FindFrameGOPStart(ui32_t FrameNum, ui32_t& K
   // look up frame index node
   IndexTableSegment::IndexEntry TmpEntry;
 
-  if ( ASDCP_FAILURE(m_FooterPart.Lookup(FrameNum, TmpEntry)) )
+  if ( ASDCP_FAILURE(m_IndexAccess.Lookup(FrameNum, TmpEntry)) )
     {
-      DefaultLogSink().Error("Frame value out of range: %u\n", FrameNum);
       return RESULT_RANGE;
     }
 
@@ -256,9 +255,8 @@ ASDCP::MPEG2::MXFReader::h__Reader::FrameType(ui32_t FrameNum, FrameType_t& type
   // look up frame index node
   IndexTableSegment::IndexEntry TmpEntry;
 
-  if ( ASDCP_FAILURE(m_FooterPart.Lookup(FrameNum, TmpEntry)) )
+  if ( ASDCP_FAILURE(m_IndexAccess.Lookup(FrameNum, TmpEntry)) )
     {
-      DefaultLogSink().Error("Frame value out of range: %u\n", FrameNum);
       return RESULT_RANGE;
     }
 
@@ -283,7 +281,7 @@ ASDCP::MPEG2::MXFReader::h__Reader::ReadFrame(ui32_t FrameNum, FrameBuffer& Fram
     return result;
 
   IndexTableSegment::IndexEntry TmpEntry;
-  m_FooterPart.Lookup(FrameNum, TmpEntry);
+  m_IndexAccess.Lookup(FrameNum, TmpEntry);
 
   switch ( ( TmpEntry.Flags >> 4 ) & 0x03 )
     {
@@ -310,7 +308,7 @@ ASDCP::MPEG2::FrameBuffer::Dump(FILE* stream, ui32_t dump_len) const
   if ( stream == 0 )
     stream = stderr;
 
-  fprintf(stream, "Frame: %06u, %c%-2hu, %7u bytes",
+  fprintf(stream, "Frame: %06u, %c%-2hhu, %7u bytes",
 	  m_FrameNumber, FrameTypeChar(m_FrameType), m_TemporalOffset, m_Size);
 
   if ( m_GOPStart )
@@ -340,13 +338,13 @@ ASDCP::MPEG2::MXFReader::~MXFReader()
 // Warning: direct manipulation of MXF structures can interfere
 // with the normal operation of the wrapper.  Caveat emptor!
 //
-ASDCP::MXF::OPAtomHeader&
-ASDCP::MPEG2::MXFReader::OPAtomHeader()
+ASDCP::MXF::OP1aHeader&
+ASDCP::MPEG2::MXFReader::OP1aHeader()
 {
   if ( m_Reader.empty() )
     {
-      assert(g_OPAtomHeader);
-      return *g_OPAtomHeader;
+      assert(g_OP1aHeader);
+      return *g_OP1aHeader;
     }
 
   return m_Reader->m_HeaderPart;
@@ -364,13 +362,28 @@ ASDCP::MPEG2::MXFReader::OPAtomIndexFooter()
       return *g_OPAtomIndexFooter;
     }
 
-  return m_Reader->m_FooterPart;
+  return m_Reader->m_IndexAccess;
+}
+
+// Warning: direct manipulation of MXF structures can interfere
+// with the normal operation of the wrapper.  Caveat emptor!
+//
+ASDCP::MXF::RIP&
+ASDCP::MPEG2::MXFReader::RIP()
+{
+  if ( m_Reader.empty() )
+    {
+      assert(g_RIP);
+      return *g_RIP;
+    }
+
+  return m_Reader->m_RIP;
 }
 
 // Open the file for reading. The file must exist. Returns error if the
 // operation cannot be completed.
 ASDCP::Result_t
-ASDCP::MPEG2::MXFReader::OpenRead(const char* filename) const
+ASDCP::MPEG2::MXFReader::OpenRead(const std::string& filename) const
 {
   return m_Reader->OpenRead(filename);
 }
@@ -460,7 +473,7 @@ void
 ASDCP::MPEG2::MXFReader::DumpIndex(FILE* stream) const
 {
   if ( m_Reader->m_File.IsOpen() )
-    m_Reader->m_FooterPart.Dump(stream);
+    m_Reader->m_IndexAccess.Dump(stream);
 }
 
 //
@@ -490,7 +503,7 @@ ASDCP::MPEG2::MXFReader::FrameType(ui32_t FrameNum, FrameType_t& type) const
 //------------------------------------------------------------------------------------------
 
 //
-class ASDCP::MPEG2::MXFWriter::h__Writer : public ASDCP::h__Writer
+class ASDCP::MPEG2::MXFWriter::h__Writer : public ASDCP::h__ASDCPWriter
 {
   ASDCP_NO_COPY_CONSTRUCT(h__Writer);
   h__Writer();
@@ -500,13 +513,13 @@ public:
   ui32_t          m_GOPOffset;
   byte_t          m_EssenceUL[SMPTE_UL_LENGTH];
 
-  h__Writer(const Dictionary& d) : ASDCP::h__Writer(d), m_GOPOffset(0) {
+  h__Writer(const Dictionary& d) : ASDCP::h__ASDCPWriter(d), m_GOPOffset(0) {
     memset(m_EssenceUL, 0, SMPTE_UL_LENGTH);
   }
 
-  ~h__Writer(){}
+  virtual ~h__Writer(){}
 
-  Result_t OpenWrite(const char*, ui32_t HeaderSize);
+  Result_t OpenWrite(const std::string&, ui32_t HeaderSize);
   Result_t SetSourceStream(const VideoDescriptor&);
   Result_t WriteFrame(const FrameBuffer&, AESEncContext* = 0, HMACContext* = 0);
   Result_t Finalize();
@@ -516,7 +529,7 @@ public:
 // Open the file for writing. The file must not exist. Returns error if
 // the operation cannot be completed.
 ASDCP::Result_t
-ASDCP::MPEG2::MXFWriter::h__Writer::OpenWrite(const char* filename, ui32_t HeaderSize)
+ASDCP::MPEG2::MXFWriter::h__Writer::OpenWrite(const std::string& filename, ui32_t HeaderSize)
 {
   if ( ! m_State.Test_BEGIN() )
     return RESULT_STATE;
@@ -553,11 +566,11 @@ ASDCP::MPEG2::MXFWriter::h__Writer::SetSourceStream(const VideoDescriptor& VDesc
 
   if ( ASDCP_SUCCESS(result) )
     {
-      ui32_t TCFrameRate = ( m_VDesc.EditRate == EditRate_23_98  ) ? 24 : m_VDesc.EditRate.Numerator;
+      m_FooterPart.SetDeltaParams(IndexTableSegment::DeltaEntry(-1, 0, 0));
 
-      result = WriteMXFHeader(MPEG_PACKAGE_LABEL, UL(m_Dict->ul(MDD_MPEG2_VESWrapping)), 
-			      PICT_DEF_LABEL, UL(m_EssenceUL), UL(m_Dict->ul(MDD_PictureDataDef)),
-			      m_VDesc.EditRate, TCFrameRate);
+      result = WriteASDCPHeader(MPEG_PACKAGE_LABEL, UL(m_Dict->ul(MDD_MPEG2_VESWrappingFrame)), 
+				PICT_DEF_LABEL, UL(m_EssenceUL), UL(m_Dict->ul(MDD_PictureDataDef)),
+				m_VDesc.EditRate, derive_timecode_rate_from_edit_rate(m_VDesc.EditRate));
     }
 
   return result;
@@ -634,7 +647,7 @@ ASDCP::MPEG2::MXFWriter::h__Writer::Finalize()
 
   m_State.Goto_FINAL();
 
-  return WriteMXFFooter();
+  return WriteASDCPFooter();
 }
 
 
@@ -653,13 +666,13 @@ ASDCP::MPEG2::MXFWriter::~MXFWriter()
 // Warning: direct manipulation of MXF structures can interfere
 // with the normal operation of the wrapper.  Caveat emptor!
 //
-ASDCP::MXF::OPAtomHeader&
-ASDCP::MPEG2::MXFWriter::OPAtomHeader()
+ASDCP::MXF::OP1aHeader&
+ASDCP::MPEG2::MXFWriter::OP1aHeader()
 {
   if ( m_Writer.empty() )
     {
-      assert(g_OPAtomHeader);
-      return *g_OPAtomHeader;
+      assert(g_OP1aHeader);
+      return *g_OP1aHeader;
     }
 
   return m_Writer->m_HeaderPart;
@@ -680,10 +693,25 @@ ASDCP::MPEG2::MXFWriter::OPAtomIndexFooter()
   return m_Writer->m_FooterPart;
 }
 
+// Warning: direct manipulation of MXF structures can interfere
+// with the normal operation of the wrapper.  Caveat emptor!
+//
+ASDCP::MXF::RIP&
+ASDCP::MPEG2::MXFWriter::RIP()
+{
+  if ( m_Writer.empty() )
+    {
+      assert(g_RIP);
+      return *g_RIP;
+    }
+
+  return m_Writer->m_RIP;
+}
+
 // Open the file for writing. The file must not exist. Returns error if
 // the operation cannot be completed.
 ASDCP::Result_t
-ASDCP::MPEG2::MXFWriter::OpenWrite(const char* filename, const WriterInfo& Info,
+ASDCP::MPEG2::MXFWriter::OpenWrite(const std::string& filename, const WriterInfo& Info,
 				   const VideoDescriptor& VDesc, ui32_t HeaderSize)
 {
   if ( Info.LabelSetType == LS_MXF_SMPTE )

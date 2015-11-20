@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AtmosSyncChannel_Mixer.h
-    \version $Id: DCData_Sequence_Parser.cpp,v 1.1 2013/04/12 23:39:30 mikey Exp $
+    \version $Id: DCData_Sequence_Parser.cpp,v 1.2 2014/01/02 23:29:22 jhurst Exp $
     \brief   AS-DCP library, DCinema data seqence reader implementation
 */
 
@@ -66,7 +66,7 @@ class ASDCP::DCData::FileList : public std::list<std::string>
     }
 
     //
-    Result_t InitFromDirectory(const char* path)
+    Result_t InitFromDirectory(const std::string& path)
     {
         char next_file[Kumu::MaxFilePath];
         Kumu::DirScanner Scanner;
@@ -125,7 +125,7 @@ class ASDCP::DCData::SequenceParser::h__SequenceParser
     Close();
   }
 
-  Result_t OpenRead(const char* filename);
+  Result_t OpenRead(const std::string& filename);
   Result_t OpenRead(const std::list<std::string>& file_list);
   void     Close() {}
 
@@ -174,10 +174,8 @@ ASDCP::DCData::SequenceParser::h__SequenceParser::OpenRead()
 
 //
 ASDCP::Result_t
-ASDCP::DCData::SequenceParser::h__SequenceParser::OpenRead(const char* filename)
+ASDCP::DCData::SequenceParser::h__SequenceParser::OpenRead(const std::string& filename)
 {
-  ASDCP_TEST_NULL_STR(filename);
-
   Result_t result = m_FileList.InitFromDirectory(filename);
 
   if ( ASDCP_SUCCESS(result) )
@@ -228,7 +226,7 @@ ASDCP::DCData::SequenceParser::~SequenceParser()
 // Opens the stream for reading, parses enough data to provide a complete
 // set of stream metadata for the MXFWriter below.
 ASDCP::Result_t
-ASDCP::DCData::SequenceParser::OpenRead(const char* filename) const
+ASDCP::DCData::SequenceParser::OpenRead(const std::string& filename) const
 {
   const_cast<ASDCP::DCData::SequenceParser*>(this)->m_Parser = new h__SequenceParser;
 

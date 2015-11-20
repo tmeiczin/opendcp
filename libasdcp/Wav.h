@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    Wav.h
-    \version $Id: Wav.h,v 1.6.2.1 2013/07/10 15:46:18 mikey Exp $
+    \version $Id: Wav.h,v 1.8 2015/04/21 03:55:31 jhurst Exp $
     \brief   Wave file common elements
 */
 
@@ -82,15 +82,15 @@ namespace ASDCP
 
   namespace Wav
     {
-      const ui32_t MaxWavHeader = 1024*256; // must find "data" within this space or no happy
+      const ui32_t MaxWavHeader = 1024*32; // must find "data" within this space or no happy
 
       const fourcc FCC_RIFF("RIFF");
       const fourcc FCC_WAVE("WAVE");
       const fourcc FCC_fmt_("fmt ");
       const fourcc FCC_data("data");
 
-      const ui16_t WAVE_FORMAT_PCM = 1;
-      const ui16_t WAVE_FORMAT_EXTENSIBLE = 65534;
+      const ui16_t ASDCP_WAVE_FORMAT_PCM = 1;
+      const ui16_t ASDCP_WAVE_FORMAT_EXTENSIBLE = 65534;
 
       //
       class SimpleWaveHeader

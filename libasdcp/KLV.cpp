@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    KLV.cpp
-  \version $Id: KLV.cpp,v 1.13 2012/02/03 19:49:56 jhurst Exp $
+  \version $Id: KLV.cpp,v 1.16 2015/10/12 15:30:46 jhurst Exp $
   \brief   KLV objects
 */
 
@@ -94,22 +94,24 @@ ASDCP::KLVPacket::InitFromBuffer(const byte_t* buf, ui32_t buf_len)
 
   if ( ber_len > ( buf_len - SMPTE_UL_LENGTH ) )
     {
-      DefaultLogSink().Error("BER encoding length exceeds buffer size\n");
+      DefaultLogSink().Error("BER encoding length exceeds buffer size.\n");
       return RESULT_FAIL;
     }
 
   if ( ber_len == 0 )
     {
-      DefaultLogSink().Error("KLV format error, zero BER length not allowed\n");
+      DefaultLogSink().Error("KLV format error, zero BER length not allowed.\n");
       return RESULT_FAIL;
     }
 
   ui64_t tmp_size;
   if ( ! Kumu::read_BER(buf + SMPTE_UL_LENGTH, &tmp_size) )
-       return RESULT_FAIL;
+    {
+      DefaultLogSink().Error("KLV format error, BER decode failure.\n");
+      return RESULT_FAIL;
+    }
 
-  assert (tmp_size <= 0xFFFFFFFFL);
-  m_ValueLength = (ui32_t) tmp_size;
+  m_ValueLength = tmp_size;
   m_KLLength = SMPTE_UL_LENGTH + Kumu::BER_length(buf + SMPTE_UL_LENGTH);
   m_KeyStart = buf;
   m_ValueStart = buf + m_KLLength;
@@ -122,7 +124,7 @@ ASDCP::KLVPacket::HasUL(const byte_t* ul)
 {
   if ( m_KeyStart != 0 )
     {
-      return ( memcmp(ul, m_KeyStart, SMPTE_UL_LENGTH) == 0 ) ? true : false;
+      return UL(ul) == UL(m_KeyStart);
     }
 
   if ( m_UL.HasValue() )
@@ -170,10 +172,10 @@ ASDCP::KLVPacket::Dump(FILE* stream, const Dictionary& Dict, bool show_value)
       fprintf(stream, "%s", TmpUL.EncodeString(buf, 64));
 
       const MDDEntry* Entry = Dict.FindUL(m_KeyStart);
-      fprintf(stream, "  len: %7u (%s)\n", m_ValueLength, (Entry ? Entry->name : "Unknown"));
+      fprintf(stream, "  len: %7qu (%s)\n", m_ValueLength, (Entry ? Entry->name : "Unknown"));
 
       if ( show_value && m_ValueLength < 1000 )
-	Kumu::hexdump(m_ValueStart, Kumu::xmin(m_ValueLength, (ui32_t)128), stream);
+	Kumu::hexdump(m_ValueStart, Kumu::xmin(m_ValueLength, (ui64_t)128), stream);
     }
   else if ( m_UL.HasValue() )
     {

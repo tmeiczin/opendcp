@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2012, John Hurst
+Copyright (c) 2005-2015, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_util.h
-    \version $Id: KM_util.h,v 1.34.2.1 2013/07/02 16:54:23 mikey Exp $
+    \version $Id: KM_util.h,v 1.39 2015/10/12 15:30:46 jhurst Exp $
     \brief   Utility functions
   */
 
@@ -36,7 +36,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <KM_error.h>
 #include <KM_tai.h>
 #include <string.h>
-#include <string>
 #include <list>
 
 namespace Kumu
@@ -510,7 +509,7 @@ namespace Kumu
 
       inline virtual bool HasValue() const { return m_Length > 0; }
 
-      inline virtual ui32_t ArchiveLength() const { return m_Length; }
+      inline virtual ui32_t ArchiveLength() const { return sizeof(ui32_t) + m_Length; }
 
       inline virtual bool Archive(MemIOWriter* Writer) const {
 	assert(Writer);
@@ -531,7 +530,7 @@ namespace Kumu
     };
 
   inline void hexdump(const ByteString& buf, FILE* stream = 0) {
-    hexdump(buf.RoData(), buf.Length());
+    hexdump(buf.RoData(), buf.Length(), stream);
   }
 
   // Locates the first occurrence of the null-terminated string s2 in the string s1, where not more
@@ -540,7 +539,8 @@ namespace Kumu
   const char *km_strnstr(const char *s1, const char *s2, size_t n);
 
   // Split the input string into tokens using the given separator. If the separator is not found the
-  // entire string will be returned as a single-item list.
+  // entire string will be returned as a single-item list.  Empty items will be recorded for
+  // adjacent instances of the separator. E.g., "/foo//bar/" will return ["", "foo", "", "bar", ""].
   std::list<std::string> km_token_split(const std::string& str, const std::string& separator);
 
 } // namespace Kumu
