@@ -488,6 +488,15 @@ Result_t fill_writer_info(opendcp_t *opendcp, writer_info_t *writer_info) {
 
         writer_info->aes_context = new AESEncContext;
         result = writer_info->aes_context->InitKey(opendcp->mxf.key_value);
+        //byte_t ivec[255];
+        //byte_t *ivec_ptr = ivec;
+        //writer_info->aes_context->GetIVec(ivec_ptr);
+
+        //printf("\nkey: ");
+        //for (int z=0; z < 16; z++) {
+        //    printf("%02X", ivec[z]);
+        //}
+        //printf("\n");
 
         if (ASDCP_FAILURE(result)) {
             return result;

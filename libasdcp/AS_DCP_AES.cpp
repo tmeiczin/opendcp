@@ -39,8 +39,8 @@ using Kumu::DefaultLogSink;
 using namespace ASDCP;
 const int KEY_SIZE_BITS = 128;
 
-#include <openssl/aes.h>
-#include <openssl/err.h>
+#include <libcrypto/aes.h>
+#include <libcrypto/err.h>
 #include <libcrypto/sha1.h>
 
 

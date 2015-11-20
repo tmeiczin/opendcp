@@ -47,6 +47,4 @@ void SHA1_Final(byte_t hash[], sha1_t *ctx);
 }
 #endif
 
-
-
 #endif   // SHA1_H
