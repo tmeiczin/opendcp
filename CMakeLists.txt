@@ -74,6 +74,7 @@ INCLUDE_DIRECTORIES(${OPENDCP_INCLUDE_DIR}/libopendcp
                     ${PROJECT_SOURCE_DIR}/libopendcp/codecs
                     ${PROJECT_SOURCE_DIR}/libasdcp
                     ${PROJECT_SOURCE_DIR}/libcrypto
+                    ${PROJECT_SOURCE_DIR}
 )
 #-------------------------------------------------------------------------------
 

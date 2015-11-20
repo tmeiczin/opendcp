@@ -41,7 +41,7 @@ const int KEY_SIZE_BITS = 128;
 
 #include <openssl/aes.h>
 #include <openssl/err.h>
-#include <sha1.h>
+#include <libcrypto/sha1.h>
 
 
 void
