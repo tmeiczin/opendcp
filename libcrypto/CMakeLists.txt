@@ -29,6 +29,14 @@ SET(CRYPTO_SRC_FILES
 )
 #-------------------------------------------------------------------------------
 
+#--set header files-------------------------------------------------------------
+SET(CRYPTO_HDR_FILES
+    md5.h
+    sha1.h
+    aes.h
+)
+
+
 #--compile libraries------------------------------------------------------------
 SET(LIB_CRYPTO opendcp-crypto PARENT_SCOPE)
 ADD_LIBRARY(opendcp-crypto OBJECT ${CRYPTO_SRC_FILES})
@@ -36,6 +44,6 @@ ADD_LIBRARY(opendcp-crypto OBJECT ${CRYPTO_SRC_FILES})
 
 #--install header---------------------------------------------------------------
 IF(INSTALL_LIB)
-    INSTALL(FILES md5.h sha1.h aes.h DESTINATION include)
+    INSTALL(FILES ${CRYPTO_HDR_FILES} DESTINATION include)
 ENDIF()
 #-------------------------------------------------------------------------------

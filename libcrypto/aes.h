@@ -118,16 +118,17 @@ int aes_decrypt_ccm(const byte_t ciphertext[],             // IN  - Ciphertext, 
 /*********************** OPENSSL COMPATIBLE DECLARATIONS **********************/
 #define AES_MAXNR 14
 
-struct aes_key_st {
-    unsigned int rd_key[4 * (AES_MAXNR + 1)];
-    int rounds;
-};
-typedef struct aes_key_st AES_KEY;
+typedef struct aes_key_st {
+    word_t schedule[4 * (AES_MAXNR + 1)];
+    int size;
+} aes_key_t;
+typedef aes_key_t AES_KEY;
 
-int AES_set_encrypt_key (const unsigned char *userKey, const int bits, AES_KEY *key);
-int AES_set_decrypt_key (const unsigned char *userKey, const int bits, AES_KEY *key);
-void AES_encrypt(const unsigned char *in, unsigned char *out, const AES_KEY *key);
-void AES_decrypt(const unsigned char *in, unsigned char *out, const AES_KEY *key);
+int AES_set_encrypt_key (const unsigned char *user_key, const int bits, aes_key_t *key);
+int AES_set_decrypt_key (const unsigned char *user_key, const int bits, aes_key_t *key);
+void AES_encrypt(const unsigned char *in, unsigned char *out, const aes_key_t *key);
+void AES_decrypt(const unsigned char *in, unsigned char *out, const aes_key_t *key);
+void AES_decrypt_cbc(const unsigned char *in, int in_len, unsigned char *out, const aes_key_t *key, byte_t *iv);
 
 ///////////////////
 // Test functions

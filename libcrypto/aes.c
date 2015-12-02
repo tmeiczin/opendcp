@@ -1068,28 +1068,35 @@ void aes_decrypt(const byte_t in[], byte_t out[], const word_t key[], int keysiz
 	out[15] = state[3][3];
 }
 
-int AES_set_encrypt_key (const unsigned char *user_key, const int bits, AES_KEY *key) {
-     aes_key_setup(user_key, key->rd_key, bits);
+int AES_set_encrypt_key (const unsigned char *user_key, const int bits, aes_key_t *key) {
+     key->size = bits;
+     aes_key_setup(user_key, key->schedule, key->size);
+
      return 0;
 }
 
-int AES_set_decrypt_key (const unsigned char *user_key, const int bits, AES_KEY *key) {
-     aes_key_setup(user_key, key->rd_key, bits);
+int AES_set_decrypt_key (const unsigned char *user_key, const int bits, aes_key_t *key) {
+     key->size = bits;
+     aes_key_setup(user_key, key->schedule, key->size);
+
      return 0;
 }
 
-void AES_encrypt(const unsigned char *in, unsigned char *out, const AES_KEY *key) {
-    aes_encrypt(in, out, key->rd_key, key->rounds); 
+void AES_encrypt(const unsigned char *in, unsigned char *out, const aes_key_t *key) {
+    aes_encrypt(in, out, key->schedule, key->size);
 }
 
-void AES_decrypt(const unsigned char *in, unsigned char *out, const AES_KEY *key) {
-    aes_encrypt(in, out, key->rd_key, key->rounds); 
+void AES_decrypt(const unsigned char *in, unsigned char *out, const aes_key_t *key) {
+    aes_decrypt(in, out, key->schedule, key->size);
+}
+
+void AES_decrypt_cbc(const unsigned char *in, int in_len, unsigned char *out, const aes_key_t *key, byte_t *iv) {
+    aes_encrypt_cbc(in, in_len, out, key->schedule, key->size, iv);
 }
 
 /*******************
 ** AES DEBUGGING FUNCTIONS
 *******************/
-/*
 // This prints the "state" grid as a linear hex string.
 void print_state(byte_t state[][4])
 {
@@ -1110,4 +1117,3 @@ void print_rnd_key(word_t key[])
 		printf("%08x",key[idx]);
 	printf("\n");
 }
-*/

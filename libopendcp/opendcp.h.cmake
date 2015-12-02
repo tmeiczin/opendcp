@@ -85,6 +85,7 @@ extern "C" {
         OPENDCP_ERROR_MSG(OPENDCP_FILEOPEN_WAV,            "Could not open wav file") \
         OPENDCP_ERROR_MSG(OPENDCP_FILEOPEN_TT,             "Could not open subtitle file") \
         OPENDCP_ERROR_MSG(OPENDCP_FILEWRITE_MXF,           "Could not write MXF file") \
+        OPENDCP_ERROR_MSG(OPENDCP_FILEREAD_MXF,            "Could not read MXF file") \
         OPENDCP_ERROR_MSG(OPENDCP_FINALIZE_MXF,            "Could not finalize MXF file") \
         OPENDCP_ERROR_MSG(OPENDCP_PARSER_RESET,            "Could not reset MXF parser") \
         OPENDCP_ERROR_MSG(OPENDCP_STRING_LENGTH,           "Input files have differing file lengths") \
