@@ -308,7 +308,9 @@ int ensure_sequential(char *files[], int nfiles) {
 
     for (i = 0; i < nfiles - 1; i++) {
         if (get_index(files[i], prefix_len) + 1 != get_index(files[i + 1], prefix_len)) {
-            if (!i) { i++; }
+            if (!i) {
+                i++;
+            }
             return i;
         }
     }

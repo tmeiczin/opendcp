@@ -195,12 +195,12 @@ int check_image_compliance(int profile, opendcp_image_t *image, char *file) {
     if ((w > dci_w) || (h > dci_h)) {
         OPENDCP_LOG(LOG_WARN, "image dimension exceeds DCI container");
         return OPENDCP_ERROR;
-    } 
+    }
 
-    if ((w % 2) || (h % 2)) { 
+    if ((w % 2) || (h % 2)) {
         OPENDCP_LOG(LOG_WARN, "image dimensions are not an even value");
         return OPENDCP_ERROR;
-    } 
+    }
 
     return OPENDCP_NO_ERROR;
 }
@@ -441,11 +441,11 @@ int resize(opendcp_image_t **image, int profile, int method) {
     }
 
     /* the image dimensions must be even values */
-    if (w % 2) { 
+    if (w % 2) {
         w = w - 1;
     }
 
-    if (h % 2) { 
+    if (h % 2) {
         h = h - 1;
     }
 
