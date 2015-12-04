@@ -25,6 +25,9 @@
 #include <iostream>
 #include <assert.h>
 
+//#include "md5.h"
+#include "sha1.h"
+
 #include "opendcp.h"
 
 using namespace ASDCP;
@@ -43,6 +46,15 @@ extern "C" void uuid_random(char *uuid) {
     Kumu::UUID TmpID;
     Kumu::GenRandomValue(TmpID);
     sprintf(uuid, "%.36s", TmpID.EncodeHex(buffer, 64));
+}
+
+extern "C" void asdcp_hex2bin(const char *str, byte_t *buf, unsigned int buf_len) {
+    ui32_t length;
+    Kumu::hex2bin(str, buf, buf_len, &length);
+}
+
+extern "C" void asdcp_bin2hex(const byte_t *bin_buf, int bin_len, char *str_buf, unsigned int str_len) {
+    Kumu::bin2hex(bin_buf, bin_len, str_buf, str_len);
 }
 
 /* calcuate the SHA1 digest of a file */
@@ -80,7 +92,7 @@ extern "C" int calculate_digest(opendcp_t *opendcp, const char *filename, char *
     }
 
     if (ASDCP_SUCCESS(result)) {
-        sha1_final(byte_buffer, &sha_context);
+        sha1_final(&sha_context, byte_buffer);
         sprintf(digest, "%.36s", base64encode(byte_buffer, sha_length, sha_buffer, 64));
     }
 
@@ -1044,6 +1056,83 @@ int write_mpeg2_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file)
 
     if (ASDCP_FAILURE(result)) {
         return OPENDCP_FINALIZE_MXF;
+    }
+
+    return OPENDCP_NO_ERROR;
+}
+
+extern "C" int read_j2k_mxf(opendcp_t *opendcp, const char *mxf_file) {
+    AESDecContext     *context = 0;
+    HMACContext       *hmac = 0;
+    JP2K::MXFReader    reader;
+    JP2K::FrameBuffer  frame_buffer(FRAME_BUFFER_SIZE);
+    ui32_t             frame_count = 0;
+
+    Result_t result = reader.OpenRead(mxf_file);
+
+    if (!ASDCP_SUCCESS(result)) {
+        OPENDCP_LOG(LOG_ERROR, "Could not read file");
+        return OPENDCP_FILEREAD_MXF;
+    }
+
+    JP2K::PictureDescriptor picture_desc;
+    reader.FillPictureDescriptor(picture_desc);
+
+    frame_count = picture_desc.ContainerDuration;
+    OPENDCP_LOG(LOG_INFO, "Detected %d frames", frame_count);
+
+    if (opendcp->mxf.key_flag) {
+        OPENDCP_LOG(LOG_INFO, "Initialize decryption key");
+        context = new AESDecContext;
+        result = context->InitKey(opendcp->mxf.key_value);
+
+        if (ASDCP_SUCCESS(result)) {
+            WriterInfo info;
+            reader.FillWriterInfo(info);
+
+            if (info.UsesHMAC) {
+                hmac = new HMACContext;
+                result = hmac->InitKey(opendcp->mxf.key_value, info.LabelSetType);
+            }
+            else {
+              OPENDCP_LOG(LOG_ERROR, "File does not contain HMAC values");
+            }
+        }
+        else {
+            OPENDCP_LOG(LOG_ERROR, "Failed to load decryption key");
+        }
+    }
+
+    ui32_t last_frame = opendcp->mxf.start_frame + (opendcp->mxf.duration ? opendcp->mxf.duration : frame_count);
+
+    if ( last_frame > frame_count ) {
+        last_frame = frame_count;
+    }
+
+    char name_format[64];
+    snprintf(name_format,  64, "%%s%%0%du.j2c", 6);
+
+    for ( ui32_t i = opendcp->mxf.start_frame; ASDCP_SUCCESS(result) && i < last_frame; i++ ) {
+        result = reader.ReadFrame(i, frame_buffer, context, hmac);
+
+        if (!ASDCP_SUCCESS(result)) {
+            OPENDCP_LOG(LOG_ERROR, "Failed to extract frame %d (%s)", i, result.Label());
+            continue;
+        }
+
+        Kumu::FileWriter output;
+        char filename[256];
+        ui32_t write_count;
+        snprintf(filename, 256, name_format, "opendcp_extract_", i);
+        result = output.OpenWrite(filename);
+
+        if (ASDCP_SUCCESS(result)) {
+            result = output.Write(frame_buffer.Data(), frame_buffer.Size(), &write_count);
+        }
+
+        if (!ASDCP_SUCCESS(result)) {
+            OPENDCP_LOG(LOG_ERROR, "Failed to write file %s", filename);
+        }
     }
 
     return OPENDCP_NO_ERROR;
