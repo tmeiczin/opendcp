@@ -261,8 +261,7 @@ int main (int argc, char **argv) {
                          long_options, &option_index);
 
         /* Detect the end of the options. */
-        if (c == -1)
-        {
+        if (c == -1) {
             break;
         }
 

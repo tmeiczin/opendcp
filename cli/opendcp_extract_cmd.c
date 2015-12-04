@@ -134,8 +134,7 @@ int main (int argc, char **argv) {
                          long_options, &option_index);
 
         /* Detect the end of the options. */
-        if (c == -1)
-        {
+        if (c == -1) {
             break;
         }
 
@@ -144,15 +143,13 @@ int main (int argc, char **argv) {
             case 0:
 
                 /* If this option set a flag, do nothing else now. */
-                if (long_options[option_index].flag != 0)
-                {
+                if (long_options[option_index].flag != 0) {
                     break;
                 }
 
                 printf ("option %s", long_options[option_index].name);
 
-                if (optarg)
-                {
+                if (optarg) {
                     printf (" with arg %s", optarg);
                 }
 
