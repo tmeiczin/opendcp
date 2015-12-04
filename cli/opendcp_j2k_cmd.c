@@ -503,7 +503,7 @@ int main (int argc, char **argv) {
 
     /* get file list */
     OPENDCP_LOG(LOG_DEBUG, "searching path %s", in_path);
-    
+
     char *extensions = opendcp_decoder_extensions();
 
     filelist = get_filelist(in_path, extensions);

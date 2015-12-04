@@ -183,7 +183,9 @@ int main (int argc, char **argv) {
 
         /* Detect the end of the options. */
         if (c == -1)
-        { break; }
+        {
+            break;
+        }
 
         switch (c)
         {
@@ -191,7 +193,9 @@ int main (int argc, char **argv) {
 
                 /* If this option set a flag, do nothing else now. */
                 if (long_options[option_index].flag != 0)
-                { break; }
+                {
+                    break;
+                }
 
                 break;
 
@@ -453,7 +457,9 @@ int main (int argc, char **argv) {
     }
 
     if (write_cpl(opendcp, &opendcp->dcp.pkl[0].cpl[0]) != OPENDCP_NO_ERROR)
-    { dcp_fatal(opendcp, "Writing composition playlist failed"); }
+    {
+        dcp_fatal(opendcp, "Writing composition playlist failed");
+    }
 
     /* Write PKL File */
     if (opendcp->log_level > 0 && opendcp->log_level < 3) {
@@ -463,7 +469,9 @@ int main (int argc, char **argv) {
     }
 
     if (write_pkl(opendcp, &opendcp->dcp.pkl[0]) != OPENDCP_NO_ERROR)
-    { dcp_fatal(opendcp, "Writing packing list failed"); }
+    {
+        dcp_fatal(opendcp, "Writing packing list failed");
+    }
 
     if (opendcp->log_level > 0 && opendcp->log_level < 3) {
         printf("\n");
@@ -472,7 +480,9 @@ int main (int argc, char **argv) {
     }
 
     if (write_volumeindex(opendcp) != OPENDCP_NO_ERROR)
-    { dcp_fatal(opendcp, "Writing volume index failed"); }
+    {
+        dcp_fatal(opendcp, "Writing volume index failed");
+    }
 
     if (opendcp->log_level > 0 && opendcp->log_level < 3) {
         printf("\n");
@@ -481,7 +491,9 @@ int main (int argc, char **argv) {
     }
 
     if (write_assetmap(opendcp) != OPENDCP_NO_ERROR)
-    { dcp_fatal(opendcp, "Writing asset map failed"); }
+    {
+        dcp_fatal(opendcp, "Writing asset map failed");
+    }
 
     OPENDCP_LOG(LOG_INFO, "DCP Complete");
 
