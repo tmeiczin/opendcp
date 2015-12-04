@@ -38,11 +38,10 @@ SET(COMPILE_LIBXML2 1)
 SET(LIBS ${LIBS} -L${LIB_DIR} -lxml2)
 
 IF(ENABLE_XMLSEC)
-    INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/contrib/include/libxslt)
     INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/contrib/include/xmlsec1)
-    SET(COMPILE_LIBXSLT 1)
+    SET(COMPILE_LIBXSLT 0)
     SET(COMPILE_XMLSEC 1)
-    SET(LIBS ${LIBS} -L${LIB_DIR} -lxmlsec1-openssl -lxmlsec1 -lxslt)
+    SET(LIBS ${LIBS} -L${LIB_DIR} -lxmlsec1-openssl -lxmlsec1)
 ENDIF(ENABLE_XMLSEC)
 
 SET(COMPILE_EXPAT 1)

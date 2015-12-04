@@ -73,6 +73,8 @@ INCLUDE_DIRECTORIES(${OPENDCP_INCLUDE_DIR}/libopendcp
                     ${PROJECT_SOURCE_DIR}/libopendcp
                     ${PROJECT_SOURCE_DIR}/libopendcp/codecs
                     ${PROJECT_SOURCE_DIR}/libasdcp
+                    ${PROJECT_SOURCE_DIR}/libcrypto
+                    ${PROJECT_SOURCE_DIR}
 )
 #-------------------------------------------------------------------------------
 
@@ -98,6 +100,7 @@ MESSAGE(STATUS "================================================================
 
 #--add source directories-------------------------------------------------------
 ADD_SUBDIRECTORY(contrib)
+ADD_SUBDIRECTORY(libcrypto)
 ADD_SUBDIRECTORY(libasdcp)
 ADD_SUBDIRECTORY(libopendcp)
 ADD_SUBDIRECTORY(cli)

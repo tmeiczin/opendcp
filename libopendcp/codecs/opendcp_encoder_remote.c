@@ -14,6 +14,7 @@
 #include <netdb.h>
 #endif
 
+#include <md5.h>
 #include "opendcp.h"
 #include "opendcp_image.h"
 

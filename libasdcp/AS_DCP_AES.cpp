@@ -39,10 +39,9 @@ using Kumu::DefaultLogSink;
 using namespace ASDCP;
 const int KEY_SIZE_BITS = 128;
 
-#include <openssl/aes.h>
-#include <openssl/sha.h>
-#include <openssl/bn.h>
-#include <openssl/err.h>
+#include <libcrypto/aes.h>
+#include <libcrypto/err.h>
+#include <libcrypto/sha1.h>
 
 
 void
@@ -177,7 +176,7 @@ ASDCP::AESDecContext::InitKey(const byte_t* key)
   KM_TEST_NULL_L(key);
 
   if ( m_Context )
-    return  RESULT_INIT;
+    return RESULT_INIT;
 
   m_Context = new h__AESContext;
   m_Context->m_KeyBuf.Set(key);

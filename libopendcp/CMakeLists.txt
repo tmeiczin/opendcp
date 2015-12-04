@@ -13,7 +13,6 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/opendcp.h.cmake ${CMAKE_CURRENT_BINAR
 SET(OPENDCP_LIB_SRC
      opendcp_j2k.c
      opendcp_xml.c
-     opendcp_checksum.c
      opendcp_common.c
      opendcp_error.c
      opendcp_log.c
@@ -40,6 +39,7 @@ IF(ENABLE_XMLSEC)
 ENDIF(ENABLE_XMLSEC)
 
 SET(OPENDCP_SRC_FILES ${OPENDCP_LIB_SRC} ${OPENDCP_CODEC_SRC} ${OPENDCP_XMLSEC_SRC})
+MESSAGE(STATUS, "--- ${OPENDCP_SRC_FILES} ---")
 #-------------------------------------------------------------------------------
 
 #--set output targets and paths-------------------------------------------------
@@ -59,10 +59,10 @@ IF(BUILD_SHARED)
     ENDIF()
 ENDIF()
 IF(BUILD_STATIC)
-    ADD_LIBRARY(opendcp-lib STATIC ${OPENDCP_SRC_FILES})
+    ADD_LIBRARY(opendcp-lib STATIC ${OPENDCP_SRC_FILES} $<TARGET_OBJECTS:${ASDCP_LIBRARIES}> $<TARGET_OBJECTS:${LIB_CRYPTO}>)
     SET_TARGET_PROPERTIES(opendcp-lib PROPERTIES OUTPUT_NAME "opendcp")
     SET_TARGET_PROPERTIES(opendcp-lib PROPERTIES PREFIX "lib")
-    TARGET_LINK_LIBRARIES(opendcp-lib ${ASDCP_LIBRARIES} ${LIBS} ${LIB_RAGNAROK})
+    TARGET_LINK_LIBRARIES(opendcp-lib ${LIBS} ${LIB_RAGNAROK})
     IF(INSTALL_LIB)
         INSTALL(TARGETS opendcp-lib DESTINATION ${LIB_INSTALL_PATH})
     ENDIF()
