@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MPEG2_Parser.cpp
-    \version $Id: MPEG2_Parser.cpp,v 1.11 2011/08/30 17:04:25 jhurst Exp $
+    \version $Id: MPEG2_Parser.cpp,v 1.12 2014/01/02 23:29:22 jhurst Exp $
     \brief   AS-DCP library, MPEG2 raw essence reader implementation
 */
 
@@ -371,7 +371,7 @@ public:
   h__Parser() : m_TmpBuffer(VESReadSize*8) {}
   ~h__Parser() { Close(); }
 
-  Result_t OpenRead(const char* filename);
+  Result_t OpenRead(const std::string& filename);
   void     Close();
   Result_t Reset();
   Result_t ReadFrame(FrameBuffer&);
@@ -399,9 +399,8 @@ ASDCP::MPEG2::Parser::h__Parser::Close()
 
 //
 ASDCP::Result_t
-ASDCP::MPEG2::Parser::h__Parser::OpenRead(const char* filename)
+ASDCP::MPEG2::Parser::h__Parser::OpenRead(const std::string& filename)
 {
-  ASDCP_TEST_NULL_STR(filename)
   ui32_t read_count = 0;
 
   Result_t result = m_FileReader.OpenRead(filename);
@@ -443,7 +442,7 @@ ASDCP::MPEG2::Parser::h__Parser::OpenRead(const char* filename)
 
   if ( ASDCP_FAILURE(result) )
     {
-      DefaultLogSink().Error("Unable to identify a wrapping mode for the essence in file \"%s\"\n", filename);
+      DefaultLogSink().Error("Unable to identify a wrapping mode for the essence in file \"%s\"\n", filename.c_str());
       m_FileReader.Close();
     }
 
@@ -566,7 +565,7 @@ ASDCP::MPEG2::Parser::~Parser()
 // Opens the stream for reading, parses enough data to provide a complete
 // set of stream metadata for the MXFWriter below.
 ASDCP::Result_t
-ASDCP::MPEG2::Parser::OpenRead(const char* filename) const
+ASDCP::MPEG2::Parser::OpenRead(const std::string& filename) const
 {
   const_cast<ASDCP::MPEG2::Parser*>(this)->m_Parser = new h__Parser;
 

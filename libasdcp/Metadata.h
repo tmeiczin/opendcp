@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2012, John Hurst
+Copyright (c) 2005-2015, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    Metadata.h
-    \version $Id: Metadata.h,v 1.30 2013/04/12 23:39:31 mikey Exp $
+    \version $Id: Metadata.h,v 1.39 2015/10/10 20:26:29 jhurst Exp $
     \brief   MXF metadata objects
 */
 
@@ -57,7 +57,7 @@ namespace ASDCP
           UUID ProductUID;
           Kumu::Timestamp ModificationDate;
           VersionType ToolkitVersion;
-          UTF16String Platform;
+          optional_property<UTF16String > Platform;
 
       Identification(const Dictionary*& d);
       Identification(const Identification& rhs);
@@ -105,7 +105,7 @@ namespace ASDCP
 	public:
 	  const Dictionary*& m_Dict;
           UMID LinkedPackageUID;
-          ui32_t IndexSID;
+          optional_property<ui32_t > IndexSID;
           ui32_t BodySID;
 
       EssenceContainerData(const Dictionary*& d);
@@ -130,10 +130,10 @@ namespace ASDCP
 	public:
 	  const Dictionary*& m_Dict;
           UMID PackageUID;
-          UTF16String Name;
+          optional_property<UTF16String > Name;
           Kumu::Timestamp PackageCreationDate;
           Kumu::Timestamp PackageModifiedDate;
-          Batch<UUID> Tracks;
+          Array<UUID> Tracks;
 
       GenericPackage(const Dictionary*& d);
       GenericPackage(const GenericPackage& rhs);
@@ -154,6 +154,7 @@ namespace ASDCP
 
 	public:
 	  const Dictionary*& m_Dict;
+          optional_property<UUID > PackageMarker;
 
       MaterialPackage(const Dictionary*& d);
       MaterialPackage(const MaterialPackage& rhs);
@@ -201,8 +202,8 @@ namespace ASDCP
 	  const Dictionary*& m_Dict;
           ui32_t TrackID;
           ui32_t TrackNumber;
-          UTF16String TrackName;
-          UUID Sequence;
+          optional_property<UTF16String > TrackName;
+          optional_property<UUID > Sequence;
 
       GenericTrack(const Dictionary*& d);
       GenericTrack(const GenericTrack& rhs);
@@ -270,7 +271,7 @@ namespace ASDCP
 	public:
 	  const Dictionary*& m_Dict;
           UL DataDefinition;
-          ui64_t Duration;
+          optional_property<ui64_t > Duration;
 
       StructuralComponent(const Dictionary*& d);
       StructuralComponent(const StructuralComponent& rhs);
@@ -291,7 +292,7 @@ namespace ASDCP
 
 	public:
 	  const Dictionary*& m_Dict;
-          Batch<UUID> StructuralComponents;
+          Array<UUID> StructuralComponents;
 
       Sequence(const Dictionary*& d);
       Sequence(const Sequence& rhs);
@@ -364,8 +365,8 @@ namespace ASDCP
 
 	public:
 	  const Dictionary*& m_Dict;
-          Batch<UUID> Locators;
-          Batch<UUID> SubDescriptors;
+          Array<UUID> Locators;
+          Array<UUID> SubDescriptors;
 
       GenericDescriptor(const Dictionary*& d);
       GenericDescriptor(const GenericDescriptor& rhs);
@@ -386,11 +387,11 @@ namespace ASDCP
 
 	public:
 	  const Dictionary*& m_Dict;
-          ui32_t LinkedTrackID;
+          optional_property<ui32_t > LinkedTrackID;
           Rational SampleRate;
-          ui64_t ContainerDuration;
+          optional_property<ui64_t > ContainerDuration;
           UL EssenceContainer;
-          UL Codec;
+          optional_property<UL > Codec;
 
       FileDescriptor(const Dictionary*& d);
       FileDescriptor(const FileDescriptor& rhs);
@@ -415,10 +416,12 @@ namespace ASDCP
 	  const Dictionary*& m_Dict;
           Rational AudioSamplingRate;
           ui8_t Locked;
-          ui8_t AudioRefLevel;
+          optional_property<ui8_t > AudioRefLevel;
+          optional_property<ui8_t > ElectroSpatialFormulation;
           ui32_t ChannelCount;
           ui32_t QuantizationBits;
-          ui8_t DialNorm;
+          optional_property<ui8_t > DialNorm;
+          UL SoundEssenceCoding;
 
       GenericSoundEssenceDescriptor(const Dictionary*& d);
       GenericSoundEssenceDescriptor(const GenericSoundEssenceDescriptor& rhs);
@@ -442,9 +445,11 @@ namespace ASDCP
 	public:
 	  const Dictionary*& m_Dict;
           ui16_t BlockAlign;
-          ui8_t SequenceOffset;
+          optional_property<ui8_t > SequenceOffset;
           ui32_t AvgBps;
-          UL ChannelAssignment;
+          optional_property<UL > ChannelAssignment;
+          optional_property<Rational > ReferenceImageEditRate;
+          optional_property<ui8_t > ReferenceAudioAlignmentLevel;
 
       WaveAudioDescriptor(const Dictionary*& d);
       WaveAudioDescriptor(const WaveAudioDescriptor& rhs);
@@ -467,11 +472,36 @@ namespace ASDCP
 
 	public:
 	  const Dictionary*& m_Dict;
+          optional_property<ui8_t > SignalStandard;
           ui8_t FrameLayout;
           ui32_t StoredWidth;
           ui32_t StoredHeight;
+          optional_property<ui32_t > StoredF2Offset;
+          optional_property<ui32_t > SampledWidth;
+          optional_property<ui32_t > SampledHeight;
+          optional_property<ui32_t > SampledXOffset;
+          optional_property<ui32_t > SampledYOffset;
+          optional_property<ui32_t > DisplayHeight;
+          optional_property<ui32_t > DisplayWidth;
+          optional_property<ui32_t > DisplayXOffset;
+          optional_property<ui32_t > DisplayYOffset;
+          optional_property<ui32_t > DisplayF2Offset;
           Rational AspectRatio;
+          optional_property<ui8_t > ActiveFormatDescriptor;
+          optional_property<ui8_t > AlphaTransparency;
+          optional_property<UL > TransferCharacteristic;
+          optional_property<ui32_t > ImageAlignmentOffset;
+          optional_property<ui32_t > ImageStartOffset;
+          optional_property<ui32_t > ImageEndOffset;
+          optional_property<ui8_t > FieldDominance;
           UL PictureEssenceCoding;
+          optional_property<UL > CodingEquations;
+          optional_property<UL > ColorPrimaries;
+          optional_property<Batch<UL> > AlternativeCenterCuts;
+          optional_property<ui32_t > ActiveWidth;
+          optional_property<ui32_t > ActiveHeight;
+          optional_property<ui32_t > ActiveXOffset;
+          optional_property<ui32_t > ActiveYOffset;
 
       GenericPictureEssenceDescriptor(const Dictionary*& d);
       GenericPictureEssenceDescriptor(const GenericPictureEssenceDescriptor& rhs);
@@ -494,8 +524,11 @@ namespace ASDCP
 
 	public:
 	  const Dictionary*& m_Dict;
-          ui32_t ComponentMaxRef;
-          ui32_t ComponentMinRef;
+          optional_property<ui32_t > ComponentMaxRef;
+          optional_property<ui32_t > ComponentMinRef;
+          optional_property<ui32_t > AlphaMinRef;
+          optional_property<ui32_t > AlphaMaxRef;
+          optional_property<ui8_t > ScanningDirection;
 
       RGBAEssenceDescriptor(const Dictionary*& d);
       RGBAEssenceDescriptor(const RGBAEssenceDescriptor& rhs);
@@ -528,9 +561,10 @@ namespace ASDCP
           ui32_t XTOsize;
           ui32_t YTOsize;
           ui16_t Csize;
-          Raw PictureComponentSizing;
-          Raw CodingStyleDefault;
-          Raw QuantizationDefault;
+          optional_property<Raw > PictureComponentSizing;
+          optional_property<Raw > CodingStyleDefault;
+          optional_property<Raw > QuantizationDefault;
+          optional_property<RGBALayout > J2CLayout;
 
       JPEG2000PictureSubDescriptor(const Dictionary*& d);
       JPEG2000PictureSubDescriptor(const JPEG2000PictureSubDescriptor& rhs);
@@ -555,8 +589,14 @@ namespace ASDCP
 	  const Dictionary*& m_Dict;
           ui32_t ComponentDepth;
           ui32_t HorizontalSubsampling;
-          ui32_t VerticalSubsampling;
-          ui8_t ColorSiting;
+          optional_property<ui32_t > VerticalSubsampling;
+          optional_property<ui8_t > ColorSiting;
+          optional_property<ui8_t > ReversedByteOrder;
+          optional_property<ui16_t > PaddingBits;
+          optional_property<ui32_t > AlphaSampleDepth;
+          optional_property<ui32_t > BlackRefLevel;
+          optional_property<ui32_t > WhiteReflevel;
+          optional_property<ui32_t > ColorRange;
 
       CDCIEssenceDescriptor(const Dictionary*& d);
       CDCIEssenceDescriptor(const CDCIEssenceDescriptor& rhs);
@@ -579,10 +619,16 @@ namespace ASDCP
 
 	public:
 	  const Dictionary*& m_Dict;
-          ui8_t CodedContentType;
-          ui8_t LowDelay;
-          ui32_t BitRate;
-          ui8_t ProfileAndLevel;
+          optional_property<ui8_t > SingleSequence;
+          optional_property<ui8_t > ConstantBFrames;
+          optional_property<ui8_t > CodedContentType;
+          optional_property<ui8_t > LowDelay;
+          optional_property<ui8_t > ClosedGOP;
+          optional_property<ui8_t > IdenticalGOP;
+          optional_property<ui8_t > MaxGOP;
+          optional_property<ui8_t > BPictureCount;
+          optional_property<ui32_t > BitRate;
+          optional_property<ui8_t > ProfileAndLevel;
 
       MPEG2VideoDescriptor(const Dictionary*& d);
       MPEG2VideoDescriptor(const MPEG2VideoDescriptor& rhs);
@@ -708,6 +754,7 @@ namespace ASDCP
           UUID ResourceID;
           UTF16String UCSEncoding;
           UTF16String NamespaceURI;
+          optional_property<UTF16String > RFC5646LanguageTagList;
 
       TimedTextDescriptor(const Dictionary*& d);
       TimedTextDescriptor(const TimedTextDescriptor& rhs);
@@ -771,6 +818,28 @@ namespace ASDCP
 	};
 
       //
+      class ContainerConstraintSubDescriptor : public InterchangeObject
+	{
+	  ContainerConstraintSubDescriptor();
+
+	public:
+	  const Dictionary*& m_Dict;
+
+      ContainerConstraintSubDescriptor(const Dictionary*& d);
+      ContainerConstraintSubDescriptor(const ContainerConstraintSubDescriptor& rhs);
+      virtual ~ContainerConstraintSubDescriptor() {}
+
+      const ContainerConstraintSubDescriptor& operator=(const ContainerConstraintSubDescriptor& rhs) { Copy(rhs); return *this; }
+      virtual void Copy(const ContainerConstraintSubDescriptor& rhs);
+      virtual const char* HasName() { return "ContainerConstraintSubDescriptor"; }
+      virtual Result_t InitFromTLVSet(TLVReader& TLVSet);
+      virtual Result_t WriteToTLVSet(TLVWriter& TLVSet);
+      virtual void     Dump(FILE* = 0);
+      virtual Result_t InitFromBuffer(const byte_t* p, ui32_t l);
+      virtual Result_t WriteToBuffer(ASDCP::FrameBuffer&);
+	};
+
+      //
       class NetworkLocator : public InterchangeObject
 	{
 	  NetworkLocator();
@@ -803,9 +872,9 @@ namespace ASDCP
           UL MCALabelDictionaryID;
           UUID MCALinkID;
           UTF16String MCATagSymbol;
-          UTF16String MCATagName;
-          ui32_t MCAChannelID;
-          ISO8String RFC5646SpokenLanguage;
+          optional_property<UTF16String > MCATagName;
+          optional_property<ui32_t > MCAChannelID;
+          optional_property<ISO8String > RFC5646SpokenLanguage;
 
       MCALabelSubDescriptor(const Dictionary*& d);
       MCALabelSubDescriptor(const MCALabelSubDescriptor& rhs);
@@ -828,7 +897,7 @@ namespace ASDCP
 
 	public:
 	  const Dictionary*& m_Dict;
-          UUID SoundfieldGroupLinkID;
+          optional_property<UUID > SoundfieldGroupLinkID;
 
       AudioChannelLabelSubDescriptor(const Dictionary*& d);
       AudioChannelLabelSubDescriptor(const AudioChannelLabelSubDescriptor& rhs);
@@ -851,7 +920,7 @@ namespace ASDCP
 
 	public:
 	  const Dictionary*& m_Dict;
-          Array<UUID> GroupOfSoundfieldGroupsLinkID;
+          optional_property<Array<UUID> > GroupOfSoundfieldGroupsLinkID;
 
       SoundfieldGroupLabelSubDescriptor(const Dictionary*& d);
       SoundfieldGroupLabelSubDescriptor(const SoundfieldGroupLabelSubDescriptor& rhs);
@@ -890,7 +959,7 @@ namespace ASDCP
 	};
 
       //
-     class DCDataDescriptor : public GenericDataEssenceDescriptor
+      class DCDataDescriptor : public GenericDataEssenceDescriptor
 	{
 	  DCDataDescriptor();
 
@@ -918,11 +987,11 @@ namespace ASDCP
 
 	public:
 	  const Dictionary*& m_Dict;
-        UUID AtmosID;
-        ui32_t FirstFrame;
-        ui16_t MaxChannelCount;
-        ui16_t MaxObjectCount;
-        ui8_t AtmosVersion;
+          UUID AtmosID;
+          ui32_t FirstFrame;
+          ui16_t MaxChannelCount;
+          ui16_t MaxObjectCount;
+          ui8_t AtmosVersion;
 
       DolbyAtmosSubDescriptor(const Dictionary*& d);
       DolbyAtmosSubDescriptor(const DolbyAtmosSubDescriptor& rhs);
@@ -931,6 +1000,31 @@ namespace ASDCP
       const DolbyAtmosSubDescriptor& operator=(const DolbyAtmosSubDescriptor& rhs) { Copy(rhs); return *this; }
       virtual void Copy(const DolbyAtmosSubDescriptor& rhs);
       virtual const char* HasName() { return "DolbyAtmosSubDescriptor"; }
+      virtual Result_t InitFromTLVSet(TLVReader& TLVSet);
+      virtual Result_t WriteToTLVSet(TLVWriter& TLVSet);
+      virtual void     Dump(FILE* = 0);
+      virtual Result_t InitFromBuffer(const byte_t* p, ui32_t l);
+      virtual Result_t WriteToBuffer(ASDCP::FrameBuffer&);
+	};
+
+      //
+      class PHDRMetadataTrackSubDescriptor : public InterchangeObject
+	{
+	  PHDRMetadataTrackSubDescriptor();
+
+	public:
+	  const Dictionary*& m_Dict;
+          UL DataDefinition;
+          ui32_t SourceTrackID;
+          ui32_t SimplePayloadSID;
+
+      PHDRMetadataTrackSubDescriptor(const Dictionary*& d);
+      PHDRMetadataTrackSubDescriptor(const PHDRMetadataTrackSubDescriptor& rhs);
+      virtual ~PHDRMetadataTrackSubDescriptor() {}
+
+      const PHDRMetadataTrackSubDescriptor& operator=(const PHDRMetadataTrackSubDescriptor& rhs) { Copy(rhs); return *this; }
+      virtual void Copy(const PHDRMetadataTrackSubDescriptor& rhs);
+      virtual const char* HasName() { return "PHDRMetadataTrackSubDescriptor"; }
       virtual Result_t InitFromTLVSet(TLVReader& TLVSet);
       virtual Result_t WriteToTLVSet(TLVWriter& TLVSet);
       virtual void     Dump(FILE* = 0);

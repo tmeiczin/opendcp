@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    KLV.h
-  \version $Id: KLV.h,v 1.25.2.1 2013/12/21 01:36:19 jhurst Exp $
+  \version $Id: KLV.h,v 1.29 2014/09/21 13:27:43 jhurst Exp $
   \brief   KLV objects
 */
 
@@ -146,15 +146,14 @@ inline const char* ui64sz(ui64_t i, char* buf)
       std::map<ASDCP::UL, ui32_t>   m_md_lookup;
       std::map<std::string, ui32_t> m_md_sym_lookup;
       std::map<ui32_t, ASDCP::UL>   m_md_rev_lookup;
-      MDDEntry m_MDD_Table[(ui32_t)ASDCP::MDD_Max];
 
       ASDCP_NO_COPY_CONSTRUCT(Dictionary);
 
     public:
+      MDDEntry m_MDD_Table[(ui32_t)ASDCP::MDD_Max];
+
       Dictionary();
       ~Dictionary();
-
-      //      bool operator==(const Dictionary& rhs) const { return this == &rhs; }
 
       void Init();
       bool AddEntry(const MDDEntry& Entry, ui32_t index);
@@ -176,6 +175,7 @@ inline const char* ui64sz(ui64_t i, char* buf)
   const Dictionary& DefaultInteropDict();
   const Dictionary& DefaultCompositeDict();
 
+  void default_md_object_init();
 
   //
   class IPrimerLookup
@@ -196,22 +196,22 @@ inline const char* ui64sz(ui64_t i, char* buf)
       const byte_t* m_KeyStart;
       ui32_t        m_KLLength;
       const byte_t* m_ValueStart;
-      ui32_t        m_ValueLength;
+      ui64_t        m_ValueLength;
       UL m_UL;
 
     public:
       KLVPacket() : m_KeyStart(0), m_KLLength(0), m_ValueStart(0), m_ValueLength(0) {}
       virtual ~KLVPacket() {}
 
-      ui32_t  PacketLength() {
+      inline ui64_t  PacketLength() {
 	return m_KLLength + m_ValueLength;
       }
 
-      ui32_t   ValueLength() {
+      inline ui64_t   ValueLength() {
 	return m_ValueLength;
       }
 
-      ui32_t   KLLength() {
+      inline ui32_t   KLLength() {
 	return m_KLLength;
       }
 
@@ -221,10 +221,16 @@ inline const char* ui64sz(ui64_t i, char* buf)
       virtual Result_t InitFromBuffer(const byte_t*, ui32_t);
       virtual Result_t InitFromBuffer(const byte_t*, ui32_t, const UL& label);
       virtual Result_t WriteKLToBuffer(ASDCP::FrameBuffer&, const UL& label, ui32_t length);
-      virtual Result_t WriteKLToBuffer(ASDCP::FrameBuffer& fb, ui32_t length) {
+
+      virtual Result_t WriteKLToBuffer(ASDCP::FrameBuffer& fb, ui32_t length)
+      {
 	if ( ! m_UL.HasValue() )
-	  return RESULT_STATE;
-	return WriteKLToBuffer(fb, m_UL, length); }
+	  {
+	    return RESULT_STATE;
+	  }
+
+	return WriteKLToBuffer(fb, m_UL, length);
+      }
 
       virtual void     Dump(FILE*, const Dictionary& Dict, bool show_value);
     };

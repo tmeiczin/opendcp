@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2009, John Hurst
+Copyright (c) 2005-2014, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    JP2K.h
-    \version $Id: JP2K.h,v 1.4.2.1 2013/11/20 18:21:36 mikey Exp $
+    \version $Id: JP2K.h,v 1.6 2014/06/02 22:07:51 jhurst Exp $
     \brief   JPEG 2000 constants and data structures
 
     This is not a complete enumeration of all things JP2K.  There is just enough here to
@@ -113,18 +113,18 @@ namespace JP2K
 
 	  ~SIZ() {}
 
-	  inline ui16_t Rsize()   { return KM_i16_BE(*(ui16_t*)m_MarkerData); }
-	  inline ui32_t Xsize()   { return KM_i32_BE(*(ui32_t*)(m_MarkerData + 2)); }
-	  inline ui32_t Ysize()   { return KM_i32_BE(*(ui32_t*)(m_MarkerData + 6)); }
-	  inline ui32_t XOsize()  { return KM_i32_BE(*(ui32_t*)(m_MarkerData + 10)); }
-	  inline ui32_t YOsize()  { return KM_i32_BE(*(ui32_t*)(m_MarkerData + 14)); }
-	  inline ui32_t XTsize()  { return KM_i32_BE(*(ui32_t*)(m_MarkerData + 18)); }
-	  inline ui32_t YTsize()  { return KM_i32_BE(*(ui32_t*)(m_MarkerData + 22)); }
-	  inline ui32_t XTOsize() { return KM_i32_BE(*(ui32_t*)(m_MarkerData + 26)); }
-	  inline ui32_t YTOsize() { return KM_i32_BE(*(ui32_t*)(m_MarkerData + 30)); }
-	  inline ui16_t Csize()   { return KM_i16_BE(*(ui16_t*)(m_MarkerData + 34)); }
-	  void ReadComponent(ui32_t index, ImageComponent_t& IC);
-	  void Dump(FILE* stream = 0);
+	  inline ui16_t Rsize()   const { return KM_i16_BE(*(ui16_t*)m_MarkerData); }
+	  inline ui32_t Xsize()   const { return KM_i32_BE(*(ui32_t*)(m_MarkerData + 2)); }
+	  inline ui32_t Ysize()   const { return KM_i32_BE(*(ui32_t*)(m_MarkerData + 6)); }
+	  inline ui32_t XOsize()  const { return KM_i32_BE(*(ui32_t*)(m_MarkerData + 10)); }
+	  inline ui32_t YOsize()  const { return KM_i32_BE(*(ui32_t*)(m_MarkerData + 14)); }
+	  inline ui32_t XTsize()  const { return KM_i32_BE(*(ui32_t*)(m_MarkerData + 18)); }
+	  inline ui32_t YTsize()  const { return KM_i32_BE(*(ui32_t*)(m_MarkerData + 22)); }
+	  inline ui32_t XTOsize() const { return KM_i32_BE(*(ui32_t*)(m_MarkerData + 26)); }
+	  inline ui32_t YTOsize() const { return KM_i32_BE(*(ui32_t*)(m_MarkerData + 30)); }
+	  inline ui16_t Csize()   const { return KM_i16_BE(*(ui16_t*)(m_MarkerData + 34)); }
+	  void ReadComponent(const ui32_t index, ImageComponent_t& IC) const;
+	  void Dump(FILE* stream = 0) const;
 	};
 
       const int SGcodOFST = 1;
@@ -147,15 +147,50 @@ namespace JP2K
 
 	  ~COD() {}
 	  
-	  inline ui8_t  ProgOrder()        { return *(m_MarkerData + SGcodOFST ); }
-	  inline ui16_t Layers()           { return KM_i16_BE(*(ui16_t*)(m_MarkerData + SGcodOFST + 1));}
-	  inline ui8_t  DecompLevels()     { return *(m_MarkerData + SPcodOFST); }
-	  inline ui8_t  CodeBlockWidth()   { return *(m_MarkerData + SPcodOFST + 1) + 2; }
-	  inline ui8_t  CodeBlockHeight()  { return *(m_MarkerData + SPcodOFST + 2) + 2; }
-	  inline ui8_t  CodeBlockStyle()   { return *(m_MarkerData + SPcodOFST + 3); }
-	  inline ui8_t  Transformation()   { return *(m_MarkerData + SPcodOFST + 4); }
+	  inline ui8_t  ProgOrder()        const { return *(m_MarkerData + SGcodOFST ); }
+	  inline ui16_t Layers()           const { return KM_i16_BE(*(ui16_t*)(m_MarkerData + SGcodOFST + 1));}
+	  inline ui8_t  DecompLevels()     const { return *(m_MarkerData + SPcodOFST); }
+	  inline ui8_t  CodeBlockWidth()   const { return *(m_MarkerData + SPcodOFST + 1) + 2; }
+	  inline ui8_t  CodeBlockHeight()  const { return *(m_MarkerData + SPcodOFST + 2) + 2; }
+	  inline ui8_t  CodeBlockStyle()   const { return *(m_MarkerData + SPcodOFST + 3); }
+	  inline ui8_t  Transformation()   const { return *(m_MarkerData + SPcodOFST + 4); }
 
-	  void Dump(FILE* stream = 0);
+	  void Dump(FILE* stream = 0) const;
+	};
+
+      const int SqcdOFST = 1;
+      const int SPqcdOFST = 2;
+
+      enum QuantizationType_t
+      {
+	QT_NONE,
+	QT_DERIVED,
+	QT_EXP
+      };
+
+      const char* GetQuantizationTypeString(const QuantizationType_t m);
+
+      // Quantization default
+      class QCD
+        {
+	  const byte_t* m_MarkerData;
+	  ui32_t m_DataSize;
+
+	  KM_NO_COPY_CONSTRUCT(QCD);
+	  QCD();
+
+	public:
+	  QCD(const Marker& M)
+	    {
+	      assert(M.m_Type == MRK_QCD);
+	      m_MarkerData = M.m_Data + 2;
+	      m_DataSize = M.m_DataSize - 2;
+	    }
+
+	  ~QCD() {}
+	  inline QuantizationType_t QuantizationType() const { return static_cast<QuantizationType_t>(*(m_MarkerData + SqcdOFST) & 0x03); }
+	  inline ui8_t  GuardBits() const { return (*(m_MarkerData + SqcdOFST) & 0xe0) >> 5; }
+	  void Dump(FILE* stream = 0) const;
 	};
 
       // a comment
@@ -179,10 +214,10 @@ namespace JP2K
 
 	  ~COM() {}
 	  
-	  inline bool IsText() { return m_IsText; }
-	  inline const byte_t* CommentData() { return m_MarkerData; }
-	  inline ui32_t CommentSize() { return m_DataSize; }
-	  void Dump(FILE* stream = 0);
+	  inline bool IsText() const { return m_IsText; }
+	  inline const byte_t* CommentData() const { return m_MarkerData; }
+	  inline ui32_t CommentSize() const { return m_DataSize; }
+	  void Dump(FILE* stream = 0) const;
 	};
     } // namespace Accessor
 } // namespace JP2K

@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_DCData.cpp
-    \version $Id: AS_DCP_DCData.cpp,v 1.1 2013/04/12 23:39:30 mikey Exp $
+    \version $Id: AS_DCP_DCData.cpp,v 1.5 2014/01/02 23:29:22 jhurst Exp $
     \brief   AS-DCP library, Dcinema generic data essence reader and writer implementation
 */
 
@@ -39,7 +39,7 @@ namespace ASDCP
 {
 namespace DCData
 {
-  static std::string DC_DATA_PACKAGE_LABEL = "File Package: SMPTE 382M frame wrapping of D-Cinema Generic data";
+  static std::string DC_DATA_PACKAGE_LABEL = "File Package: SMPTE-GC frame wrapping of D-Cinema Generic data";
   static std::string DC_DATA_DEF_LABEL = "D-Cinema Generic Data Track";
 } // namespace DCData
 } // namespace ASDCP
@@ -91,24 +91,30 @@ ASDCP::DCData::h__Reader::MD_to_DCData_DDesc(DCData::DCDataDescriptor& DDesc)
 //
 //
 ASDCP::Result_t
-ASDCP::DCData::h__Reader::OpenRead(const char* filename)
+ASDCP::DCData::h__Reader::OpenRead(const std::string& filename)
 {
   Result_t result = OpenMXFRead(filename);
 
   if( ASDCP_SUCCESS(result) )
-  {
-    if (NULL == m_EssenceDescriptor)
     {
-      InterchangeObject* iObj = NULL;
-      result = m_HeaderPart.GetMDObjectByType(OBJ_TYPE_ARGS(DCDataDescriptor), &iObj);
-      m_EssenceDescriptor = static_cast<MXF::DCDataDescriptor*>(iObj);
-    }
+      if (NULL == m_EssenceDescriptor)
+	{
+	  InterchangeObject* iObj = NULL;
+	  result = m_HeaderPart.GetMDObjectByType(OBJ_TYPE_ARGS(DCDataDescriptor), &iObj);
+	  m_EssenceDescriptor = static_cast<MXF::DCDataDescriptor*>(iObj);
 
-    if ( ASDCP_SUCCESS(result) )
-    {
-      result = MD_to_DCData_DDesc(m_DDesc);
+	  if ( m_EssenceDescriptor == 0 )
+	    {
+	      DefaultLogSink().Error("DCDataDescriptor object not found.\n");
+	      return RESULT_FORMAT;
+	    }
+	}
+
+      if ( ASDCP_SUCCESS(result) )
+	{
+	  result = MD_to_DCData_DDesc(m_DDesc);
+	}
     }
-  }
 
   // check for sample/frame rate sanity
   if ( ASDCP_SUCCESS(result)
@@ -127,12 +133,6 @@ ASDCP::DCData::h__Reader::OpenRead(const char* filename)
 
     return RESULT_FORMAT;
   }
-
-  if( ASDCP_SUCCESS(result) )
-    result = InitMXFIndex();
-
-  if( ASDCP_SUCCESS(result) )
-    result = InitInfo();
 
   return result;
 }
@@ -161,6 +161,7 @@ class ASDCP::DCData::MXFReader::h__Reader : public DCData::h__Reader
 
   public:
     h__Reader(const Dictionary& d) : DCData::h__Reader(d) {}
+  virtual ~h__Reader() {}
 };
 
 
@@ -198,13 +199,13 @@ ASDCP::DCData::MXFReader::~MXFReader()
 // Warning: direct manipulation of MXF structures can interfere
 // with the normal operation of the wrapper.  Caveat emptor!
 //
-ASDCP::MXF::OPAtomHeader&
-ASDCP::DCData::MXFReader::OPAtomHeader()
+ASDCP::MXF::OP1aHeader&
+ASDCP::DCData::MXFReader::OP1aHeader()
 {
   if ( m_Reader.empty() )
     {
-      assert(g_OPAtomHeader);
-      return *g_OPAtomHeader;
+      assert(g_OP1aHeader);
+      return *g_OP1aHeader;
     }
 
   return m_Reader->m_HeaderPart;
@@ -222,13 +223,28 @@ ASDCP::DCData::MXFReader::OPAtomIndexFooter()
       return *g_OPAtomIndexFooter;
     }
 
-  return m_Reader->m_FooterPart;
+  return m_Reader->m_IndexAccess;
+}
+
+// Warning: direct manipulation of MXF structures can interfere
+// with the normal operation of the wrapper.  Caveat emptor!
+//
+ASDCP::MXF::RIP&
+ASDCP::DCData::MXFReader::RIP()
+{
+  if ( m_Reader.empty() )
+    {
+      assert(g_RIP);
+      return *g_RIP;
+    }
+
+  return m_Reader->m_RIP;
 }
 
 // Open the file for reading. The file must exist. Returns error if the
 // operation cannot be completed.
 ASDCP::Result_t
-ASDCP::DCData::MXFReader::OpenRead(const char* filename) const
+ASDCP::DCData::MXFReader::OpenRead(const std::string& filename) const
 {
   return m_Reader->OpenRead(filename);
 }
@@ -294,7 +310,7 @@ void
 ASDCP::DCData::MXFReader::DumpIndex(FILE* stream) const
 {
   if ( m_Reader->m_File.IsOpen() )
-    m_Reader->m_FooterPart.Dump(stream);
+    m_Reader->m_IndexAccess.Dump(stream);
 }
 
 //
@@ -330,7 +346,7 @@ ASDCP::DCData::h__Writer::DCData_DDesc_to_MD(DCData::DCDataDescriptor& DDesc)
 
 //
 ASDCP::Result_t
-ASDCP::DCData::h__Writer::OpenWrite(char const* filename, ui32_t HeaderSize,
+ASDCP::DCData::h__Writer::OpenWrite(const std::string& filename, ui32_t HeaderSize,
                                     const SubDescriptorList_t& subDescriptors)
 {
   if ( ! m_State.Test_BEGIN() )
@@ -398,9 +414,9 @@ ASDCP::DCData::h__Writer::SetSourceStream(DCDataDescriptor const& DDesc,
   {
     ui32_t TCFrameRate = m_DDesc.EditRate.Numerator;
 
-    result = WriteMXFHeader(packageLabel, UL(m_Dict->ul(MDD_DCDataWrapping)),
-                            defLabel, UL(m_EssenceUL), UL(m_Dict->ul(MDD_DataDataDef)),
-                            m_DDesc.EditRate, TCFrameRate);
+    result = WriteASDCPHeader(packageLabel, UL(m_Dict->ul(MDD_DCDataWrappingFrame)),
+			      defLabel, UL(m_EssenceUL), UL(m_Dict->ul(MDD_DataDataDef)),
+			      m_DDesc.EditRate, TCFrameRate);
   }
 
   return result;
@@ -441,7 +457,7 @@ ASDCP::DCData::h__Writer::Finalize()
 
   m_State.Goto_FINAL();
 
-  return WriteMXFFooter();
+  return WriteASDCPFooter();
 }
 
 
@@ -456,6 +472,7 @@ class ASDCP::DCData::MXFWriter::h__Writer : public DCData::h__Writer
 
   public:
     h__Writer(const Dictionary& d) : DCData::h__Writer(d) {}
+  virtual ~h__Writer() {}
 };
 
 
@@ -472,13 +489,13 @@ ASDCP::DCData::MXFWriter::~MXFWriter()
 // Warning: direct manipulation of MXF structures can interfere
 // with the normal operation of the wrapper.  Caveat emptor!
 //
-ASDCP::MXF::OPAtomHeader&
-ASDCP::DCData::MXFWriter::OPAtomHeader()
+ASDCP::MXF::OP1aHeader&
+ASDCP::DCData::MXFWriter::OP1aHeader()
 {
   if ( m_Writer.empty() )
     {
-      assert(g_OPAtomHeader);
-      return *g_OPAtomHeader;
+      assert(g_OP1aHeader);
+      return *g_OP1aHeader;
     }
 
   return m_Writer->m_HeaderPart;
@@ -499,10 +516,25 @@ ASDCP::DCData::MXFWriter::OPAtomIndexFooter()
   return m_Writer->m_FooterPart;
 }
 
+// Warning: direct manipulation of MXF structures can interfere
+// with the normal operation of the wrapper.  Caveat emptor!
+//
+ASDCP::MXF::RIP&
+ASDCP::DCData::MXFWriter::RIP()
+{
+  if ( m_Writer.empty() )
+    {
+      assert(g_RIP);
+      return *g_RIP;
+    }
+
+  return m_Writer->m_RIP;
+}
+
 // Open the file for writing. The file must not exist. Returns error if
 // the operation cannot be completed.
 ASDCP::Result_t
-ASDCP::DCData::MXFWriter::OpenWrite(const char* filename, const WriterInfo& Info,
+ASDCP::DCData::MXFWriter::OpenWrite(const std::string& filename, const WriterInfo& Info,
 				       const DCDataDescriptor& DDesc, ui32_t HeaderSize)
 {
   if ( Info.LabelSetType != LS_MXF_SMPTE )

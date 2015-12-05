@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    Dict.cpp
-  \version $Id: Dict.cpp,v 1.15 2012/02/08 02:59:21 jhurst Exp $
+  \version $Id: Dict.cpp,v 1.16 2013/06/07 00:41:00 jhurst Exp $
   \brief   MXF dictionary
 */
 
@@ -150,22 +150,22 @@ ASDCP::Dictionary::Init()
   m_md_lookup.clear();
   memset(m_MDD_Table, 0, sizeof(m_MDD_Table));
 
-  for ( ui32_t x = 0; x < (ui32_t)ASDCP::MDD_Max; x++ )
+  for ( ui32_t x = 0; x < (ui32_t)ASDCP::MDD_Max; ++x )
     {
       if ( x == MDD_PartitionMetadata_IndexSID_DEPRECATED  // 30
 	   || x == MDD_PartitionMetadata_BodySID_DEPRECATED  // 32
+	   || x == MDD_PartitionMetadata_OperationalPattern_DEPRECATED  // 33
 	   || x == MDD_PartitionMetadata_EssenceContainers_DEPRECATED  // 34
 	   || x == MDD_IndexTableSegmentBase_IndexSID_DEPRECATED  // 56
 	   || x == MDD_IndexTableSegmentBase_BodySID_DEPRECATED  // 57
 	   || x == MDD_PartitionArray_RandomIndexMetadata_BodySID_DEPRECATED  // 73
+	   || x == MDD_Preface_OperationalPattern_DEPRECATED  // 84
 	   || x == MDD_Preface_EssenceContainers_DEPRECATED  // 85
 	   || x == MDD_EssenceContainerData_IndexSID_DEPRECATED  // 103
 	   || x == MDD_EssenceContainerData_BodySID_DEPRECATED  // 104
+	   || x == MDD_TimedTextResourceSubDescriptor_EssenceStreamID_DEPRECATED // 264
 	   || x == MDD_DMSegment_DataDefinition_DEPRECATED // 266
 	   || x == MDD_DMSegment_Duration_DEPRECATED // 267
-	   || x == MDD_PartitionMetadata_OperationalPattern_DEPRECATED  // 33
-	   || x == MDD_Preface_OperationalPattern_DEPRECATED  // 84
-	   || x == MDD_TimedTextResourceSubDescriptor_EssenceStreamID_DEPRECATED // 264
 	   )
 	continue;
 

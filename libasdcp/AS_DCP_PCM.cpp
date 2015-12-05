@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2004-2012, John Hurst
+Copyright (c) 2004-2013, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_PCM.cpp
-    \version $Id: AS_DCP_PCM.cpp,v 1.39.2.1 2013/12/21 00:13:17 jhurst Exp $       
+    \version $Id: AS_DCP_PCM.cpp,v 1.47 2014/10/02 21:02:24 jhurst Exp $       
     \brief   AS-DCP library, PCM essence reader and writer implementation
 */
 
@@ -54,7 +54,7 @@ ASDCP::PCM_ADesc_to_MD(PCM::AudioDescriptor& ADesc, MXF::WaveAudioDescriptor* AD
   ADescObj->LinkedTrackID = ADesc.LinkedTrackID;
   ADescObj->ContainerDuration = ADesc.ContainerDuration;
 
-  ADescObj->ChannelAssignment.Reset();
+  ADescObj->ChannelAssignment.get().Reset();
 
   switch ( ADesc.ChannelFormat )
     {
@@ -104,7 +104,7 @@ ASDCP::MD_to_PCM_ADesc(MXF::WaveAudioDescriptor* ADescObj, PCM::AudioDescriptor&
 
   ADesc.ChannelFormat = PCM::CF_NONE;
 
-  if ( ADescObj->ChannelAssignment.HasValue() )
+  if ( ! ADescObj->ChannelAssignment.empty() )
     {
       if ( ADescObj->ChannelAssignment == DefaultSMPTEDict().Type(MDD_DCAudioChannelCfg_1_5p1).ul )
 	ADesc.ChannelFormat = PCM::CF_CFG_1;
@@ -170,7 +170,7 @@ ASDCP::PCM::operator << (std::ostream& strm, const AudioDescriptor& ADesc)
       break;
 
     case CF_CFG_6:
-      strm << "Config 6 (ST 377-1 MCA)";
+      strm << "Config 6 (ST 377-4 MCA)";
       break;
   }
   strm << std::endl;
@@ -247,8 +247,8 @@ public:
   AudioDescriptor m_ADesc;
 
   h__Reader(const Dictionary& d) : ASDCP::h__ASDCPReader(d) {}
-  ~h__Reader() {}
-  Result_t    OpenRead(const char*);
+  virtual ~h__Reader() {}
+  Result_t    OpenRead(const std::string&);
   Result_t    ReadFrame(ui32_t, FrameBuffer&, AESDecContext*, HMACContext*);
 };
 
@@ -256,18 +256,30 @@ public:
 //
 //
 ASDCP::Result_t
-ASDCP::PCM::MXFReader::h__Reader::OpenRead(const char* filename)
+ASDCP::PCM::MXFReader::h__Reader::OpenRead(const std::string& filename)
 {
   Result_t result = OpenMXFRead(filename);
 
   if( ASDCP_SUCCESS(result) )
     {
-      InterchangeObject* Object;
+      InterchangeObject* Object = 0
+;
       if ( ASDCP_SUCCESS(m_HeaderPart.GetMDObjectByType(OBJ_TYPE_ARGS(WaveAudioDescriptor), &Object)) )
 	{
-	  assert(Object);
+	  if ( Object == 0 )
+	    {
+	      DefaultLogSink().Error("WaveAudioDescriptor object not found.\n");
+	      return RESULT_FORMAT;
+	    }
+
 	  result = MD_to_PCM_ADesc((MXF::WaveAudioDescriptor*)Object, m_ADesc);
 	}
+    }
+
+  if ( m_ADesc.ContainerDuration == 0 )
+    {
+      DefaultLogSink().Error("ContainerDuration unset.\n");
+      return RESULT_FORMAT;
     }
 
   // check for sample/frame rate sanity
@@ -291,24 +303,18 @@ ASDCP::PCM::MXFReader::h__Reader::OpenRead(const char* filename)
 			     m_ADesc.EditRate.Numerator, m_ADesc.EditRate.Denominator);
 
       // oh, they gave us the audio sampling rate instead, assume 24/1
-      if ( m_ADesc.EditRate == SampleRate_48k )
+      if ( m_ADesc.EditRate == SampleRate_48k || m_ADesc.EditRate == SampleRate_96k )
 	{
 	  DefaultLogSink().Warn("adjusting EditRate to 24/1\n"); 
 	  m_ADesc.EditRate = EditRate_24;
 	}
       else
 	{
-      DefaultLogSink().Error("PCM EditRate not in expected value range.\n");
+	  DefaultLogSink().Error("PCM EditRate not in expected value range.\n");
 	  // or we just drop the hammer
 	  return RESULT_FORMAT;
 	}
     }
-
-  if( ASDCP_SUCCESS(result) )
-    result = InitMXFIndex();
-
-  if( ASDCP_SUCCESS(result) )
-    result = InitInfo();
 
   // TODO: test file for sane CBR index BytesPerEditUnit
 
@@ -324,6 +330,11 @@ ASDCP::PCM::MXFReader::h__Reader::ReadFrame(ui32_t FrameNum, FrameBuffer& FrameB
 {
   if ( ! m_File.IsOpen() )
     return RESULT_INIT;
+
+  if ( (FrameNum+1) > m_ADesc.ContainerDuration )
+    {
+      return RESULT_RANGE;
+    }
 
   assert(m_Dict);
   return ReadEKLVFrame(FrameNum, FrameBuf, m_Dict->ul(MDD_WAVEssence), Ctx, HMAC);
@@ -363,13 +374,13 @@ ASDCP::PCM::MXFReader::~MXFReader()
 // Warning: direct manipulation of MXF structures can interfere
 // with the normal operation of the wrapper.  Caveat emptor!
 //
-ASDCP::MXF::OPAtomHeader&
-ASDCP::PCM::MXFReader::OPAtomHeader()
+ASDCP::MXF::OP1aHeader&
+ASDCP::PCM::MXFReader::OP1aHeader()
 {
   if ( m_Reader.empty() )
     {
-      assert(g_OPAtomHeader);
-      return *g_OPAtomHeader;
+      assert(g_OP1aHeader);
+      return *g_OP1aHeader;
     }
 
   return m_Reader->m_HeaderPart;
@@ -387,13 +398,28 @@ ASDCP::PCM::MXFReader::OPAtomIndexFooter()
       return *g_OPAtomIndexFooter;
     }
 
-  return m_Reader->m_FooterPart;
+  return m_Reader->m_IndexAccess;
+}
+
+// Warning: direct manipulation of MXF structures can interfere
+// with the normal operation of the wrapper.  Caveat emptor!
+//
+ASDCP::MXF::RIP&
+ASDCP::PCM::MXFReader::RIP()
+{
+  if ( m_Reader.empty() )
+    {
+      assert(g_RIP);
+      return *g_RIP;
+    }
+
+  return m_Reader->m_RIP;
 }
 
 // Open the file for reading. The file must exist. Returns error if the
 // operation cannot be completed.
 ASDCP::Result_t
-ASDCP::PCM::MXFReader::OpenRead(const char* filename) const
+ASDCP::PCM::MXFReader::OpenRead(const std::string& filename) const
 {
   return m_Reader->OpenRead(filename);
 }
@@ -461,7 +487,7 @@ void
 ASDCP::PCM::MXFReader::DumpIndex(FILE* stream) const
 {
   if ( m_Reader->m_File.IsOpen() )
-    m_Reader->m_FooterPart.Dump(stream);
+    m_Reader->m_IndexAccess.Dump(stream);
 }
 
 //
@@ -481,7 +507,7 @@ ASDCP::PCM::MXFReader::Close() const
 //------------------------------------------------------------------------------------------
 
 //
-class ASDCP::PCM::MXFWriter::h__Writer : public ASDCP::h__Writer
+class ASDCP::PCM::MXFWriter::h__Writer : public ASDCP::h__ASDCPWriter
 {
   ASDCP_NO_COPY_CONSTRUCT(h__Writer);
   h__Writer();
@@ -490,13 +516,13 @@ public:
   AudioDescriptor m_ADesc;
   byte_t          m_EssenceUL[SMPTE_UL_LENGTH];
   
-  h__Writer(const Dictionary& d) : ASDCP::h__Writer(d) {
+  h__Writer(const Dictionary& d) : ASDCP::h__ASDCPWriter(d) {
     memset(m_EssenceUL, 0, SMPTE_UL_LENGTH);
   }
 
-  ~h__Writer(){}
+  virtual ~h__Writer(){}
 
-  Result_t OpenWrite(const char*, ui32_t HeaderSize);
+  Result_t OpenWrite(const std::string&, ui32_t HeaderSize);
   Result_t SetSourceStream(const AudioDescriptor&);
   Result_t WriteFrame(const FrameBuffer&, AESEncContext* = 0, HMACContext* = 0);
   Result_t Finalize();
@@ -507,7 +533,7 @@ public:
 // Open the file for writing. The file must not exist. Returns error if
 // the operation cannot be completed.
 ASDCP::Result_t
-ASDCP::PCM::MXFWriter::h__Writer::OpenWrite(const char* filename, ui32_t HeaderSize)
+ASDCP::PCM::MXFWriter::h__Writer::OpenWrite(const std::string& filename, ui32_t HeaderSize)
 {
   if ( ! m_State.Test_BEGIN() )
     return RESULT_STATE;
@@ -573,18 +599,10 @@ ASDCP::PCM::MXFWriter::h__Writer::SetSourceStream(const AudioDescriptor& ADesc)
 
   if ( ASDCP_SUCCESS(result) )
     {
-      ui32_t TCFrameRate = m_ADesc.EditRate.Numerator;
-
-      if ( m_ADesc.EditRate == EditRate_23_98  )
-	TCFrameRate = 24;
-      else if ( m_ADesc.EditRate == EditRate_18  )
-	TCFrameRate = 18;
-      else if ( m_ADesc.EditRate == EditRate_22  )
-	TCFrameRate = 22;
-      
-      result = WriteMXFHeader(PCM_PACKAGE_LABEL, UL(m_Dict->ul(MDD_WAVWrapping)),
-			      SOUND_DEF_LABEL, UL(m_EssenceUL), UL(m_Dict->ul(MDD_SoundDataDef)),
-			      m_ADesc.EditRate, TCFrameRate, calc_CBR_frame_size(m_Info, m_ADesc));
+      result = WriteASDCPHeader(PCM_PACKAGE_LABEL, UL(m_Dict->ul(MDD_WAVWrappingFrame)),
+				SOUND_DEF_LABEL, UL(m_EssenceUL), UL(m_Dict->ul(MDD_SoundDataDef)),
+				m_ADesc.EditRate, derive_timecode_rate_from_edit_rate(m_ADesc.EditRate),
+				calc_CBR_frame_size(m_Info, m_ADesc));
     }
 
   return result;
@@ -621,7 +639,7 @@ ASDCP::PCM::MXFWriter::h__Writer::Finalize()
 
   m_State.Goto_FINAL();
 
-  return WriteMXFFooter();
+  return WriteASDCPFooter();
 }
 
 
@@ -641,13 +659,13 @@ ASDCP::PCM::MXFWriter::~MXFWriter()
 // Warning: direct manipulation of MXF structures can interfere
 // with the normal operation of the wrapper.  Caveat emptor!
 //
-ASDCP::MXF::OPAtomHeader&
-ASDCP::PCM::MXFWriter::OPAtomHeader()
+ASDCP::MXF::OP1aHeader&
+ASDCP::PCM::MXFWriter::OP1aHeader()
 {
   if ( m_Writer.empty() )
     {
-      assert(g_OPAtomHeader);
-      return *g_OPAtomHeader;
+      assert(g_OP1aHeader);
+      return *g_OP1aHeader;
     }
 
   return m_Writer->m_HeaderPart;
@@ -668,10 +686,25 @@ ASDCP::PCM::MXFWriter::OPAtomIndexFooter()
   return m_Writer->m_FooterPart;
 }
 
+// Warning: direct manipulation of MXF structures can interfere
+// with the normal operation of the wrapper.  Caveat emptor!
+//
+ASDCP::MXF::RIP&
+ASDCP::PCM::MXFWriter::RIP()
+{
+  if ( m_Writer.empty() )
+    {
+      assert(g_RIP);
+      return *g_RIP;
+    }
+
+  return m_Writer->m_RIP;
+}
+
 // Open the file for writing. The file must not exist. Returns error if
 // the operation cannot be completed.
 ASDCP::Result_t
-ASDCP::PCM::MXFWriter::OpenWrite(const char* filename, const WriterInfo& Info,
+ASDCP::PCM::MXFWriter::OpenWrite(const std::string& filename, const WriterInfo& Info,
 				 const AudioDescriptor& ADesc, ui32_t HeaderSize)
 {
   if ( Info.LabelSetType == LS_MXF_SMPTE )

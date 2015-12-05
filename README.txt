@@ -19,9 +19,13 @@ OSX:
 Windows:
     Run the setup program
 
+<<<<<<< HEAD
 Linux:
     Install with the appropriate package manager 
 
 Support
 -------
 If you have any issues, please create a bug or enhancement at http://code.google.com/p/opendcp/issues/list.
+=======
+If you have any issues, please create a bug or enhancement at https://github.com/tmeiczin/opendcp
+>>>>>>> master

@@ -155,7 +155,7 @@ ENDIF()
 #--build---------------------------------------------------------------------
 SET_TARGET_PROPERTIES(${EXE_NAME} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
 SET_TARGET_PROPERTIES(${EXE_NAME} PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS})
-TARGET_LINK_LIBRARIES(${EXE_NAME} ${QT_LIBRARIES} ${OPENDCP_LIB} ${ASDCP_LIBRARIES} ${LIBS})
+TARGET_LINK_LIBRARIES(${EXE_NAME} ${QT_LIBRARIES} ${OPENDCP_LIB} ${LIBS})
 #----------------------------------------------------------------------------
 
 #--install-------------------------------------------------------------------

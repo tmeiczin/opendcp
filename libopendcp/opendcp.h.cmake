@@ -100,6 +100,7 @@ extern "C" {
         OPENDCP_ERROR_MSG(OPENDCP_FILEOPEN_WAV,            "Could not open wav file") \
         OPENDCP_ERROR_MSG(OPENDCP_FILEOPEN_TT,             "Could not open subtitle file") \
         OPENDCP_ERROR_MSG(OPENDCP_FILEWRITE_MXF,           "Could not write MXF file") \
+        OPENDCP_ERROR_MSG(OPENDCP_FILEREAD_MXF,            "Could not read MXF file") \
         OPENDCP_ERROR_MSG(OPENDCP_FINALIZE_MXF,            "Could not finalize MXF file") \
         OPENDCP_ERROR_MSG(OPENDCP_PARSER_RESET,            "Could not reset MXF parser") \
         OPENDCP_ERROR_MSG(OPENDCP_STRING_LENGTH,           "Input files have differing file lengths") \
@@ -422,6 +423,7 @@ int         hex2bin(const char* str, byte_t* buf, unsigned int buf_len);
 int         is_key(const char *s);
 int         is_uuid(const char *s);
 int         is_key_value_set(byte_t *key, int len);
+int         is_filename_ascii(const char *s);
 
 #ifndef HAVE_MEMSTREAM
 FILE       *open_memstream(char **ptr, size_t *sizeloc);
@@ -463,29 +465,6 @@ int video_decoder_find(const char *file);
 
 /* retrieve error string */
 char *error_string(int error_code);
-
-/* md5 checksum */
-typedef struct {
-    uint32_t buf[4];
-    uint32_t bits[2];
-    unsigned char in[64];
-} md5_t;
-
-/* sha1 checksum */
-typedef struct {
-    uint32_t state[5];
-    uint32_t count[2];
-    unsigned char buffer[64];
-} sha1_t;
-
-void md5_init(md5_t *ctx);
-void md5_update(md5_t *ctx, unsigned char const *buf, unsigned len);
-void md5_final(unsigned char digest[16], md5_t *ctx);
-void sha1_init(sha1_t *context);
-void sha1_update(sha1_t *context, const unsigned char *data, uint32_t len);
-void sha1_final(unsigned char digest[20], sha1_t *context);
-void base64_encode(const unsigned char *src, int src_len, char *dst);
-int  is_filename_ascii(const char *s);
 
 #ifdef __cplusplus
 }

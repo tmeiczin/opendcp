@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    Index.cpp
-    \version $Id: Index.cpp,v 1.22 2013/04/12 23:39:30 mikey Exp $
+    \version $Id: Index.cpp,v 1.25 2015/10/07 16:41:23 jhurst Exp $
     \brief   MXF index segment objects
 */
 
@@ -35,7 +35,7 @@ const ui32_t kl_length = ASDCP::SMPTE_UL_LENGTH + ASDCP::MXF_BER_LENGTH;
 
 //
 ASDCP::MXF::IndexTableSegment::IndexTableSegment(const Dictionary*& d) :
-  InterchangeObject(d), m_Dict(d),
+  InterchangeObject(d), m_Dict(d), RtFileOffset(0), RtEntryOffset(0),
   IndexStartPosition(0), IndexDuration(0), EditUnitByteCount(0),
   IndexSID(129), BodySID(1), SliceCount(0), PosTableCount(0)
 {
@@ -131,12 +131,12 @@ ASDCP::MXF::IndexTableSegment::Dump(FILE* stream)
   fprintf(stream, "  EditUnitByteCount  = %u\n",  EditUnitByteCount);
   fprintf(stream, "  IndexSID           = %u\n",  IndexSID);
   fprintf(stream, "  BodySID            = %u\n",  BodySID);
-  fprintf(stream, "  SliceCount         = %hu\n", SliceCount);
-  fprintf(stream, "  PosTableCount      = %hu\n", PosTableCount);
+  fprintf(stream, "  SliceCount         = %hhu\n", SliceCount);
+  fprintf(stream, "  PosTableCount      = %hhu\n", PosTableCount);
 
   fprintf(stream, "  DeltaEntryArray:\n");  DeltaEntryArray.Dump(stream);
 
-  if ( IndexEntryArray.size() < 100 )
+  if ( IndexEntryArray.size() < 1000 )
     {
       fprintf(stream, "  IndexEntryArray:\n");
       IndexEntryArray.Dump(stream);
@@ -154,7 +154,7 @@ ASDCP::MXF::IndexTableSegment::Dump(FILE* stream)
 const char*
 ASDCP::MXF::IndexTableSegment::DeltaEntry::EncodeString(char* str_buf, ui32_t buf_len) const
 {
-  snprintf(str_buf, buf_len, "%3d %-3hu %-3u", PosTableIndex, Slice, ElementData);
+  snprintf(str_buf, buf_len, "%3d %-3hhu %-3u", PosTableIndex, Slice, ElementData);
   return str_buf;
 }
 
@@ -207,7 +207,7 @@ ASDCP::MXF::IndexTableSegment::IndexEntry::EncodeString(char* str_buf, ui32_t bu
   txt_flags[4] = ( (Flags & 0x0f) == 3 ) ? 'B' : ( (Flags & 0x0f) == 2 ) ? 'P' : 'I';
   txt_flags[5] = 0;
 
-  snprintf(str_buf, buf_len, "%3i %-3hu %s %s",
+  snprintf(str_buf, buf_len, "%3i %-3hhu %s %s",
 	   TemporalOffset, KeyFrameOffset, txt_flags,
 	   i64sz(StreamOffset, intbuf));
 
