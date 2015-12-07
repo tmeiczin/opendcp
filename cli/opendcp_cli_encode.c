@@ -21,7 +21,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <opendcp.h>
-
 #include "opendcp_cli_encode.h"
 
 
@@ -29,94 +28,45 @@
 int   options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args);
 int   commands_to_args(cli_t *elements, opendcp_args_t *args);
 int   arguments_to_args(cli_t *elements, opendcp_args_t *args);
+void  print_usage(cli_t *c);
 
-const char usage[] =
-"Usage:\n"
-"  opendcp_encode j2k [options] <input> <output>\n"
-"  opendcp_encode j2k stereoscopic [options] <input> <output>\n"
-"  opendcp_encode mxf [options] <input> <output>\n"
-"  opendcp_encode mxf stereoscopic [options] <input_left> <input_right> <output>\n"
-"\n"
-"Options:\n"
-"     --help                         Show this screen.\n"
-"     --version                      Show version.\n"
-"     --no_overwrite                 Do no overwrite existing files\n"
-"     --no_xyz                       Disable XYZ<->RGB conversion                  \n"
-"     --resize                       Resize image to closest DCI compliant resolution\n"
-"     --bw         <bw>              Maximum JPEG2000 bandwidth [default: 125]\n"
-"     --colorspace <colorspace>      Source colorspace (srgb|rec709|p3|srgb_complex|rec709_complex) [default rec709]\n"
-"     --encoder    <encoder>         JPEG2000 j2kr (openjpeg|kakadu) [default openjpeg]\n"
-"     --profile    <profile>         Cinema profile (2k|4k) [default 2k]\n"
-"     --rate       <frame_rate>      Frame rate of source [default 24]\n"
-"     --type       <type>            Generate SMPTE or MXF Interop labels (smpte|interop)  [default smpte]\n"
-"     --start      <start_frame>     The start frame [default 0]\n"
-"     --end        <end_frame>       The end frame\n"
-"     --slideshow  <duration>        Create a slideshow with each image having duration specified in seconds\n"
-"     --log_level  <log_level>       Sets the log level 0-4. Higher means more logging [default 2]\n"
-"     --key        <key>             Set encryption key and enable encryption (not recommended)\n"
-"     --key_id     <key_id>          Set encryption key id (leaving blank generates a random uuid)\n"
-"     --threads    <threads>         The number of threads to use for encoding\n"
-"     --tmp_dir    <tmp_dir>         Temporary directory for intermediate files\n"
-"\n"
-"Commands:\n"
-"  j2k       Encode to JPEG2000\n"
-"  mxf       Encode to MXF\n"
-"\n"
-"  Supported formats are tif, dpx, bmp, jpeg2000, and some video formats\n"
-"\n"
-"Examples:\n"
-"  opendcp_encode j2k frame.tif frame_001.j2c\n"
-"  opendcp_encode j2k stereoscopic frame_left.tif frame_right.tif frame_left.j2c frame_right.j2c\n"
-"  opendcp_encode j2k tif_frames/ j2c_frames/\n"
-"  opendcp_encode mxf --rate 25 frames/ my.mxf\n"
-"";
+/* print usage */
+void print_usage(cli_t *c) {
+    int i;
 
-const char usage_j2k[] =
-"Usage:\n"
-"  opendcp_encode j2k [options] <input> <output>\n"
-"  opendcp_encode j2k stereoscopic [options] <input_left> <input_right> <output>\n"
-"\n"
-"Options:\n"
-"     --help                         Show this screen.\n"
-"     --version                      Show version.\n"
-"     --no_overwrite                 Do no overwrite existing files\n"
-"     --no_xyz                       Disable XYZ<->RGB conversion                  \n"
-"     --resize                       Resize image to closest DCI compliant resolution\n"
-"     --bw         <bw>              Maximum JPEG2000 bandwidth [default: 125]\n"
-"     --colorspace <colorspace>      Source colorspace (srgb|rec709|p3|srgb_complex|rec709_complex) [default rec709]\n"
-"     --encoder    <encoder>         JPEG2000 j2kr (openjpeg|kakadu) [default openjpeg]\n"
-"     --profile    <profile>         Cinema profile (2k|4k) [default 2k]\n"
-"     --rate       <frame_rate>      Frame rate of source [default 24]\n"
-"     --log_level  <log_level>       Sets the log level 0-4. Higher means more logging [default 2]\n"
-"     --threads    <threads>         The number of threads to use for encoding\n"
-"     --tmp_dir    <tmp_dir>         Temporary directory for intermediate files\n"
-"\n";
+    fprintf(stderr, "Usage: opendcp_encode [--version] [--help] [options] command <args>\n");
+    fprintf(stderr, "\nOptions:\n");
+    for (i = 0; i < c->n_options; i++) {
+        option_t o = c->options[i];
+        fprintf(stderr, "  --%-15.15s  %s [default %s]\n", o.name,  o.description, o.default_value);
+    }
+    fprintf(stderr, "\nCommands:\n");
 
-const char usage_mxf[] = 
-"Usage:\n"
-"  opendcp_encode mxf [options] <input> <output>\n"
-"  opendcp_encode mxf stereoscopic [options] <input_left> <input_right> <output>\n"
-"\n"
-"Options:\n"
-"     --help                         Show this screen.\n"
-"     --version                      Show version.\n"
-"     --rate       <frame_rate>      Frame rate of source [default 24]\n"
-"     --type       <type>            Generate SMPTE or MXF Interop labels (smpte|interop)  [default smpte]\n"
-"     --start      <start_frame>     Start frame [default 0]\n"
-"     --end        <end_frame>       End frame\n"
-"     --slideshow  <duration>        Create a slideshow with each image having duration specified in seconds\n"
-"     --log_level  <log_level>       Sets the log level 0-4. Higher means more logging [default 2]\n"
-"     --key        <key>             Set encryption key and enable encryption (not recommended)\n"
-"     --key_id     <key_id>          Set encryption key id (leaving blank generates a random uuid)\n"
-"     --threads    <threads>         The number of threads to use for encoding\n"
-"\n";
-
+    for (i = 0; i < c->n_commands; i++) {
+        command_t o = c->commands[i];
+        fprintf(stderr, "    %-15.15s  %s\n", o.name,  o.description);
+    }
+    fprintf(stderr, "\nCommand Usage:\n");
+    for (i = 0; i < c->n_commands; i++) {
+        command_t o = c->commands[i];
+        char *str = strdup(o.args_list);
+        char *name;
+        fprintf(stderr, "    opendcp_encode [options] %s ", o.name);
+        while ((name = strsep(&str, ","))) {
+            fprintf(stderr, " <%s>", name);
+        }
+        fprintf(stderr, "\n");
+    }
+} 
+     
+/* create context */
 argv_t argv_create(int argc, char **argv) {
     argv_t a = {argc, argv, 0, argv[0]};
 
     return a;
 }
 
+/* increment argv index */
 argv_t *argv_increment(argv_t *a) {
     if (a->i < a->argc) {
         a->current = a->argv[++a->i];
@@ -129,19 +79,21 @@ argv_t *argv_increment(argv_t *a) {
     return a;
 }
 
-int parse_options(argv_t *a, cli_t *elements) {
+/* get option from cli */
+int get_option(argv_t *a, cli_t *elements) {
     int i;
     int len_prefix;
     int n_options = elements->n_options;
     char *eq = strchr(a->current, '=');
     option_t *option;
     option_t *options = elements->options;
+    char *name = &a->current[2];
 
     len_prefix = (eq-(a->current)) / sizeof(char);
 
     for (i=0; i < n_options; i++) {
         option = &options[i];
-        if (!strncmp(a->current, option->name, len_prefix)) {
+        if (!strncmp(name, option->name, len_prefix)) {
             break;
         }
     }
@@ -161,10 +113,12 @@ int parse_options(argv_t *a, cli_t *elements) {
             }
             option->value = a->current;
             argv_increment(a);
-        } else {
+        }
+        else {
             option->value = eq + 1;
         }
-    } else {
+    }
+    else {
         if (eq != NULL) {
             fprintf(stderr, "%s must not have an argument\n", option->name);
             return 1;
@@ -175,121 +129,90 @@ int parse_options(argv_t *a, cli_t *elements) {
     return 0;
 }
 
-int parse_commands(argv_t *a, cli_t *elements) {
+/* get commnad from cli */
+int get_command(const char *a, cli_t *elements, command_t *c) {
     int i;
     int n_commands = elements->n_commands;
+
     command_t *command;
     command_t *commands = elements->commands;
 
     for (i=0; i < n_commands; i++) {
         command = &commands[i];
-
-        if (!strcmp(command->name, a->current) && !command->seen) {
+        if (!strcmp(command->name, a)) {
             command->value = true;
-            command->seen = true;
-            return 0;
+            memcpy(c, command, sizeof(command_t));
+            return true;
         }
     }
 
-    return 1;
+    return false;
 }
 
-int set_positional(const char *name, positional_t positional, cli_t *elements) {
+/* set argument element */
+int set_argument(char *name, char *value, cli_t *elements) {
     int i;
+    int n_arguments = elements->n_arguments;
+
     argument_t *argument;
     argument_t *arguments = elements->arguments;
 
-    for (i=0; i < elements->n_arguments; i++) {
+    for (i=0; i < n_arguments; i++) {
         argument = &arguments[i];
-        if (!strcmp(name, argument->name)) {
-            argument->value = positional.name;
-            return 0;
+        if (!strcmp(argument->name, name) && argument->value == NULL) {
+            argument->value = value;
+            return true;
         }
     }
 
-    return 1;
+    return false;
 }
 
-int parse_positional(cli_t *elements, opendcp_args_t *args) {
+/* get argument from cli */
+int get_argument(command_t *command, char *arg_value, cli_t *elements) {
+    char *str = strdup(command->args_list);
+    char *name;
 
-    /* j2k command */
-    if (args->j2k) {
-        if (args->stereoscopic) {
-            if (elements->n_positional != 3) {
-                fprintf(stderr, "j2k requires <input-left> <input-right> <output>\n");
-                return 1;
-            }
-            set_positional("<input_left>", elements->positionals[0], elements);
-            set_positional("<input_right>", elements->positionals[1], elements);
-            set_positional("<output_left>", elements->positionals[2], elements);
+    /* iterate command arg list */
+    while ((name = strsep(&str, ","))) {
+        if (set_argument(name, arg_value, elements) == true) {
+            return true;
         }
-        else {
-            if (elements->n_positional != 2) {
-                fprintf(stderr, "j2k requires <input> <output>\n");
-                return 1;
-            }
-
-            set_positional("<input>", elements->positionals[0], elements);
-            set_positional("<output>", elements->positionals[1], elements);
-        }
-
-        return 0;
     }
 
-    /* mxf command */
-    if (args->mxf) {
-        if (args->stereoscopic) {
-            if (elements->n_positional != 4) {
-                fprintf(stderr, "mxf stereoscopic requires <input_left> <input_right> <output_left> <output_right>\n");
-                return 1;
-            }
-            set_positional("<input_left>", elements->positionals[0], elements);
-            set_positional("<input_right>", elements->positionals[1], elements);
-            set_positional("<output_left>", elements->positionals[2], elements);
-            set_positional("<output_right>", elements->positionals[3], elements);
-        }
-        else {
-            if (elements->n_positional != 2) {
-                fprintf(stderr, "mxf requires <input> <output>\n");
-                return 1;
-            }
-            set_positional("<input>", elements->positionals[0], elements);
-            set_positional("<output>", elements->positionals[1], elements);
-        }
-
-        return 0;
-    }
-
-    return 0;
+    return false;
 }
 
+/* parse input arguments and build elements */
 int parse_args(argv_t *a, cli_t *elements) {
-    int ret;
+    size_t command_found = 0;
+    command_t command;
 
     /* first argv is the command, skip that */
     argv_increment(a);
 
     while (a->current != NULL) {
         if (a->current[0] == '-' && a->current[1] == '-') {
-            ret = parse_options(a, elements);
+            if (get_option(a, elements)) {
+                return 1;
+            }
         }
         else {
-            ret = parse_commands(a, elements);
-            if (ret) {
-                elements->positionals[elements->n_positional++].name = a->current;
-                ret = 0;
+            if (!command_found && get_command(a->current, elements, &command) == true) {
+                elements->n_commands_found++;
+                command_found = 1;
+            }
+            else if (get_argument(&command, a->current, elements) == true){
+                elements->n_arguments_found++;
             }
             argv_increment(a);
         }
-
-        if (ret) {
-            return ret;
-        }
     }
 
-    return ret;
+    return 0;
 }
 
+/* convert option elements to argument structure */
 int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
     option_t *option;
     int       value, i;
@@ -299,21 +222,15 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
         option = &elements->options[i];
         value = option->value != NULL ? 1:0;
 
-        if (!strcmp(option->name, "--help")) {
+        if (!strcmp(option->name, "help")) {
             if (value) {
                 fprintf(stdout, "%s version %s %s\n\n", OPENDCP_NAME, OPENDCP_VERSION, OPENDCP_COPYRIGHT);
-                if (args->j2k) {
-                    fprintf(stdout, "%s", usage_j2k);
-                } else if (args->mxf) {
-                    fprintf(stdout, "%s", usage_mxf);
-                } else {
-                    fprintf(stdout, "%s", usage);
-                }
-                exit(0);
+                print_usage(elements);
+                exit(1);
             }
         }
 
-        if  (!strcmp(option->name, "--version")) {
+        if  (!strcmp(option->name, "version")) {
             if (value) {
                 fprintf(stdout, "%s\n", OPENDCP_VERSION);
                 exit(0);
@@ -321,15 +238,15 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
         }
 
         /* flags */
-        if (!strcmp(option->name, "--no_overwrite")) {
+        if (!strcmp(option->name, "no_overwrite")) {
             opendcp->j2k.no_overwrite = value;
         }
 
-        if (!strcmp(option->name, "--no_xyz")) {
+        if (!strcmp(option->name, "no_xyz")) {
             opendcp->j2k.xyz = !value;
         }
 
-        if (!strcmp(option->name, "--resize")) {
+        if (!strcmp(option->name, "resize")) {
             opendcp->j2k.resize = value;
         }
 
@@ -338,11 +255,11 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
             continue;
         }
 
-        if (!strcmp(option->name, "--bw")) {
+        if (!strcmp(option->name, "bw")) {
             opendcp->j2k.bw = atoi(option->value);
         }
 
-        if (!strcmp(option->name, "--colorspace")) {
+        if (!strcmp(option->name, "colorspace")) {
             if (!strcmp(option->value, "srgb")) {
                 opendcp->j2k.lut = CP_SRGB;
             }
@@ -364,7 +281,7 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
             }
         }
 
-        if (!strcmp(option->name, "--encoder")) {
+        if (!strcmp(option->name, "encoder")) {
             if (!strcmp(option->value, "openjpeg")) {
                 opendcp->j2k.encoder = OPENDCP_ENCODER_OPENJPEG;
             }
@@ -383,7 +300,7 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
             }
         }
 
-        if (!strcmp(option->name, "--profile")) {
+        if (!strcmp(option->name, "profile")) {
             if (!strcmp(option->value, "2k")) {
                 opendcp->cinema_profile = DCP_CINEMA2K;
             }
@@ -396,11 +313,11 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
             }
         }
 
-        if (!strcmp(option->name, "--rate")) {
+        if (!strcmp(option->name, "rate")) {
             opendcp->frame_rate = atoi(option->value);
         }
 
-        if (!strcmp(option->name, "--type")) {
+        if (!strcmp(option->name, "type")) {
             if (!strcmp(option->value, "smpte")) {
                 opendcp->ns = XML_NS_SMPTE;
             }
@@ -408,62 +325,62 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
                 opendcp->ns = XML_NS_INTEROP;
             }
             else {
-                fprintf(stderr, "Invalid profile argument, must be smpte or interop");
+                fprintf(stderr, "Invalid profile argument, must be smpte or interop\n");
                 exit(1);
             }
         }
 
-        if (!strcmp(option->name, "--start")) {
+        if (!strcmp(option->name, "start")) {
             opendcp->j2k.start_frame = atoi(option->value);
         }
 
-        if (!strcmp(option->name, "--end")) {
+        if (!strcmp(option->name, "end")) {
             opendcp->j2k.end_frame = strtol(option->value, NULL, 10);
         }
 
-        if (!strcmp(option->name, "--slideshow")) {
+        if (!strcmp(option->name, "slideshow")) {
             opendcp->mxf.slide = 1;
             opendcp->mxf.frame_duration = atoi(option->value);
 
-            if (opendcp->mxf.frame_duration < 1) {
-                fprintf(stderr, "Slide duration  must be greater than 0");
+            if (opendcp->mxf.frame_duration < 0) {
+                fprintf(stderr, "Slide duration  must be greater than 0\n");
                 exit(1);
             }
         }
 
-        if (!strcmp(option->name, "--log_level")) {
+        if (!strcmp(option->name, "log_level")) {
             opendcp->log_level = atoi(option->value);
         }
 
-        if (!strcmp(option->name, "--key")) {
+        if (!strcmp(option->name, "key")) {
             if (!is_key(option->value)) {
-               fprintf(stderr, "Invalid encryption key format");
+               fprintf(stderr, "Invalid encryption key format\n");
             }
 
             if (hex2bin(option->value, opendcp->mxf.key_value, 16)) {
-               fprintf(stderr, "Invalid encryption key format");
+               fprintf(stderr, "Invalid encryption key format\n");
             }
             opendcp->mxf.key_flag = 1;
         }
 
-        if (!strcmp(option->name, "--key_id")) {
+        if (!strcmp(option->name, "key_id")) {
             if (!is_uuid(option->value)) {
-               fprintf(stderr, "Invalid encryption key id format");
+               fprintf(stderr, "Invalid encryption key id format\n");
             }
 
             strnchrdel(option->value, key_id, sizeof(key_id), '-');
 
             if (hex2bin(key_id, opendcp->mxf.key_id, 16)) {
-               fprintf(stderr, "Invalid encryption key format");
+               fprintf(stderr, "Invalid encryption key format\n");
             }
             opendcp->mxf.key_id_flag = 1;
         }
 
-        if (!strcmp(option->name, "--threads")) {
+        if (!strcmp(option->name, "threads")) {
             opendcp->threads = atoi(option->value);
         }
 
-        if (!strcmp(option->name, "--tmp_dir")) {
+        if (!strcmp(option->name, "tmp_dir")) {
             opendcp->tmp_path = option->value;
         }
     }
@@ -472,118 +389,53 @@ int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
 }
 
 int commands_to_args(cli_t *elements, opendcp_args_t *args) {
-    command_t *command;
     int i;
 
+    command_t *command;
     for (i=0; i < elements->n_commands; i++) {
         command = &elements->commands[i];
-
-        if (!strcmp(command->name, "j2k")) {
-            args->j2k = command->value;
-        }
-
-        if (!strcmp(command->name, "mxf")) {
-            args->mxf = command->value;
-        }
-
-        if (!strcmp(command->name, "stereoscopic")) {
-            args->stereoscopic = command->value;
-        }
+        FOREACH(COMMANDS, COMMAND_SET)
     }
 
     return 0;
 }
 
+/* convert argument elements to argument structure */
 int arguments_to_args(cli_t *elements, opendcp_args_t *args) {
-    argument_t *argument;
     int i;
 
+    argument_t *argument;
     for (i=0; i < elements->n_arguments; i++) {
         argument = &elements->arguments[i];
-
-        if (!strcmp(argument->name, "<input>")) {
-            args->input = argument->value;
-        }
-
-        if (!strcmp(argument->name, "<input_left>")) {
-            args->input_left = argument->value;
-        }
-
-        if (!strcmp(argument->name, "<input_right>")) {
-            args->input_right = argument->value;
-        }
-
-        if (!strcmp(argument->name, "<output>")) {
-            args->output = argument->value;
-        }
-
-        if (!strcmp(argument->name, "<output_left>")) {
-            args->output_left = argument->value;
-        }
-
-        if (!strcmp(argument->name, "<output_right>")) {
-            args->output_right = argument->value;
-        }
+        FOREACH(ARGUMENTS, ARGUMENT_SET)
     }
 
     return 0;
 }
 
+/* main parser */
 opendcp_args_t opendcp_args(opendcp_t *opendcp, int argc, char *argv[]) {
     int i = 0;
 
-    opendcp_args_t args = {
-        0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, NULL,
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-    };
-
+    opendcp_args_t args = {}; 
     argv_t a;
 
     command_t commands[] = {
-        {"j2k",          0, 0},
-        {"mxf",          0, 0},
-        {"stereoscopic", 0, 0},
-        {NULL,           0, 0}
+        FOREACH(COMMANDS, COMMAND_INITIALIZE)
+        {NULL, 0, NULL, 0, NULL, 0}
     };
 
     argument_t arguments[] = {
-        {"<input>",        NULL},
-        {"<input_left>",   NULL},
-        {"<input_right>",  NULL},
-        {"<output>",       NULL},
-        {"<output_left>",  NULL},
-        {"<output_right>", NULL},
-        {NULL,             NULL}
+        FOREACH(ARGUMENTS, ARGUMENT_INITIALIZE)
+        {NULL, NULL}
     };
 
     option_t options[] = {
-        {"--help",         0, NULL},
-        {"--version",      0, NULL},
-        {"--no_overwrite", 0, NULL},
-        {"--no_xyz",       0, NULL},
-        {"--resize",       0, NULL},
-        {"--bw",           1, "125"},
-        {"--colorspace",   1, "rec709"},
-        {"--encoder",      1, "openjpeg"},
-        {"--profile",      1, "2k"},
-        {"--rate",         1, "24"},
-        {"--type",         1, "smpte"},
-        {"--start",        1, "1"},
-        {"--end",          1, "NULL"},
-        {"--slideshow",    1, NULL},
-        {"--log_level",    1, "1"},
-        {"--key",          1, NULL},
-        {"--key_id",       1, NULL},
-        {"--threads",      1, "4"},
-        {"--tmp_dir",      1, NULL},
-        {NULL,             0, NULL}
+        FOREACH(OPTIONS, OPTION_INITIALIZE)
+        {NULL, 0, NULL, NULL, NULL}
     };
-
-    positional_t positionals[MAX_POSITIONALS] = {
-        {NULL}
-    };
-
-    cli_t elements = {0, 0, 0, 0, commands, arguments, options, positionals};
+ 
+    cli_t elements = {0, 0, 0, 0, 0, 0, commands, arguments, options};
 
     for (i = 0; commands[i].name != NULL; i++) {
         elements.n_commands++;
@@ -598,25 +450,34 @@ opendcp_args_t opendcp_args(opendcp_t *opendcp, int argc, char *argv[]) {
     }
 
     a = argv_create(argc, argv);
-
+   
     if (parse_args(&a, &elements)) {
         exit(1);
     }
 
-    commands_to_args(&elements, &args);
-
-    options_to_args(opendcp, &elements, &args);
-
-    if (parse_positional(&elements, &args)) {
+    if (elements.n_commands_found != 1) {
+        print_usage(&elements);
+        fprintf(stderr, "ERROR: No command supplied\n");
         exit(1);
     }
+  
+    /* populate the argument context (currently sub-commands are not supported) */
+    commands_to_args(&elements, &args);
+    command_t command = elements.commands[0];
 
+    /* check if right amount of arguments was found */
+    if (command.args_required != elements.n_arguments_found) {
+        fprintf(stderr, "ERROR: Missing arguments %s requires %s\n", command.name, command.args_list);
+        exit(1);
+    }
+    
+    options_to_args(opendcp, &elements, &args);
     arguments_to_args(&elements, &args);
-    //options_to_args(opendcp, &elements, &args);
 
     return args;
 }
 
+/* start of application */
 int main(int argc, char *argv[]) {
     opendcp_t *opendcp = opendcp_create();
     opendcp_args_t args = opendcp_args(opendcp, argc, argv);
@@ -654,10 +515,6 @@ int main(int argc, char *argv[]) {
     }
     else if (args.j2k) {
         opendcp_command_j2k(opendcp, &args);
-    }
-    else {
-        fprintf(stdout, "%s", usage);
-        exit(1);
     }
 
     return 0;
