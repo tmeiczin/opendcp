@@ -35,7 +35,7 @@ extern "C" {
 #define ARGUMENT_SET(name, ...) SET_VALUE(argument, args, name)
 #define ARGUMENT_INITIALIZE(var, ...) {#var, NULL}, 
 
-#define OPTION_SET(name, ...) SET_VALUE(argument, args, name)
+#define OPTION_SET(name, ...) SET_VALUE(option, args, name)
 #define OPTION_INITIALIZE(var, value, desc) {#var, 1, #value, #desc, #value}, 
 
 #define SET_VALUE(src, dst, var) if (!strcmp(src->name, #var)) { dst->var = src->value; }
@@ -78,7 +78,7 @@ extern "C" {
     GENERATOR(colorspace,     rec709,   Source colorspace (srgb|rec709|p3|srgb_complex|rec709_complex)) \
     GENERATOR(encoder,        openjpeg, JPEG2000 j2k (openjpeg|kakadu)) \
     GENERATOR(profile,        2k,       The cinema profile (2k | 4k)) \
-    GENERATOR(rate,           24,       Frame rate of source) \
+    GENERATOR(frame_rate,     24,       Frame rate of source) \
     GENERATOR(type,           smpte,    Generate SMPTE or MXF Interop labels (smpte|interop)) \
     GENERATOR(start,          1,        The start frame) \
     GENERATOR(end,            0,        The end frame) \
@@ -87,7 +87,7 @@ extern "C" {
     GENERATOR(key,            NULL,     Set encryption key and enable encryption (not recommended)) \
     GENERATOR(key_id,         NULL,     Set encryption key id (leaving blank generates a random uuid)) \
     GENERATOR(threads,        0,        The number of threads to use) \
-    GENERATOR(tmp_dir,        NULL,     Temporary directory for intermediate files)
+    GENERATOR(tmp_path,       NULL,     Temporary directory for intermediate files)
 
 enum OPENDCP_CLI_COMMAND_ENUM {
     FOREACH(COMMANDS, COMMAND_ENUM)
@@ -102,7 +102,7 @@ typedef struct {
     FOREACH(FLAGS, GENERATE_INT)
     /* options */
     FOREACH(OPTIONS, GENERATE_CHAR)
-} opendcp_args_t;
+} args_t;
 
 typedef struct {
     const char *name;
@@ -145,7 +145,7 @@ typedef struct {
     char *current;
 } argv_t;
 
-int opendcp_command_j2k(opendcp_t *opendcp, opendcp_args_t *args);
+int opendcp_command_j2k(opendcp_t *opendcp, args_t *args);
 
 #ifdef __cplusplus
 }

@@ -175,7 +175,7 @@ void progress_bar(int val, int total) {
     fflush(stdout);
 }
 
-int opendcp_command_j2k(opendcp_t *opendcp, opendcp_args_t *args) {
+int opendcp_command_j2k(opendcp_t *opendcp, args_t *args) {
     int rc, c, result, count = 0, input_type;
     int openmp_flag = 0;
     char *in_path  = args->input;

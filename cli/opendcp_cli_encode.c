@@ -25,9 +25,9 @@
 
 
 /* prototypes */
-int   options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args);
-int   commands_to_args(cli_t *elements, opendcp_args_t *args);
-int   arguments_to_args(cli_t *elements, opendcp_args_t *args);
+int   options_to_args(cli_t *elements, args_t *args);
+int   commands_to_args(cli_t *elements, args_t *args);
+int   arguments_to_args(cli_t *elements, args_t *args);
 void  print_usage(cli_t *c);
 
 /* print usage */
@@ -213,182 +213,20 @@ int parse_args(argv_t *a, cli_t *elements) {
 }
 
 /* convert option elements to argument structure */
-int options_to_args(opendcp_t *opendcp, cli_t *elements, opendcp_args_t *args) {
+int options_to_args(cli_t *elements, args_t *args) {
+    int i, value;
     option_t *option;
-    int       value, i;
-    char      key_id[40];
 
     for (i=0; i < elements->n_options; i++) {
         option = &elements->options[i];
         value = option->value != NULL ? 1:0;
-
-        if (!strcmp(option->name, "help")) {
-            if (value) {
-                fprintf(stdout, "%s version %s %s\n\n", OPENDCP_NAME, OPENDCP_VERSION, OPENDCP_COPYRIGHT);
-                print_usage(elements);
-                exit(1);
-            }
-        }
-
-        if  (!strcmp(option->name, "version")) {
-            if (value) {
-                fprintf(stdout, "%s\n", OPENDCP_VERSION);
-                exit(0);
-            }
-        }
-
-        /* flags */
-        if (!strcmp(option->name, "no_overwrite")) {
-            opendcp->j2k.no_overwrite = value;
-        }
-
-        if (!strcmp(option->name, "no_xyz")) {
-            opendcp->j2k.xyz = !value;
-        }
-
-        if (!strcmp(option->name, "resize")) {
-            opendcp->j2k.resize = value;
-        }
-
-        /* options */
-        if (!option->value) {
-            continue;
-        }
-
-        if (!strcmp(option->name, "bw")) {
-            opendcp->j2k.bw = atoi(option->value);
-        }
-
-        if (!strcmp(option->name, "colorspace")) {
-            if (!strcmp(option->value, "srgb")) {
-                opendcp->j2k.lut = CP_SRGB;
-            }
-            else if (!strcmp(option->value, "rec709")) {
-                opendcp->j2k.lut = CP_REC709;
-            }
-            else if (!strcmp(option->value, "p3")) {
-                opendcp->j2k.lut = CP_P3;
-            }
-            else if (!strcmp(option->value, "srgb_complex")) {
-                opendcp->j2k.lut = CP_SRGB_COMPLEX;
-            }
-            else if (!strcmp(option->value, "rec709_complex")) {
-                opendcp->j2k.lut = CP_REC709_COMPLEX;
-            }
-            else {
-                fprintf(stderr, "Invalid colorspace argument\n");
-                exit(1);
-            }
-        }
-
-        if (!strcmp(option->name, "encoder")) {
-            if (!strcmp(option->value, "openjpeg")) {
-                opendcp->j2k.encoder = OPENDCP_ENCODER_OPENJPEG;
-            }
-            else if (!strcmp(option->value, "kakadu")) {
-                opendcp->j2k.encoder = OPENDCP_ENCODER_KAKADU;
-            }
-            else if (!strcmp(option->value, "ragnarok")) {
-                opendcp->j2k.encoder = OPENDCP_ENCODER_RAGNAROK;
-            }
-            else if (!strcmp(option->value, "remote")) {
-                opendcp->j2k.encoder = OPENDCP_ENCODER_REMOTE;
-            }
-            else {
-                fprintf(stderr, "Invalid encoder argument\n");
-                exit(1);
-            }
-        }
-
-        if (!strcmp(option->name, "profile")) {
-            if (!strcmp(option->value, "2k")) {
-                opendcp->cinema_profile = DCP_CINEMA2K;
-            }
-            else if (!strcmp(option->value, "4k")) {
-                opendcp->cinema_profile = DCP_CINEMA4K;
-            }
-            else {
-                fprintf(stderr, "Invalid cinema profile argument\n");
-                exit(1);
-            }
-        }
-
-        if (!strcmp(option->name, "rate")) {
-            opendcp->frame_rate = atoi(option->value);
-        }
-
-        if (!strcmp(option->name, "type")) {
-            if (!strcmp(option->value, "smpte")) {
-                opendcp->ns = XML_NS_SMPTE;
-            }
-            else if (!strcmp(option->value, "interop")) {
-                opendcp->ns = XML_NS_INTEROP;
-            }
-            else {
-                fprintf(stderr, "Invalid profile argument, must be smpte or interop\n");
-                exit(1);
-            }
-        }
-
-        if (!strcmp(option->name, "start")) {
-            opendcp->j2k.start_frame = atoi(option->value);
-        }
-
-        if (!strcmp(option->name, "end")) {
-            opendcp->j2k.end_frame = strtol(option->value, NULL, 10);
-        }
-
-        if (!strcmp(option->name, "slideshow")) {
-            opendcp->mxf.slide = 1;
-            opendcp->mxf.frame_duration = atoi(option->value);
-
-            if (opendcp->mxf.frame_duration < 0) {
-                fprintf(stderr, "Slide duration  must be greater than 0\n");
-                exit(1);
-            }
-        }
-
-        if (!strcmp(option->name, "log_level")) {
-            opendcp->log_level = atoi(option->value);
-        }
-
-        if (!strcmp(option->name, "key")) {
-            if (!is_key(option->value)) {
-               fprintf(stderr, "Invalid encryption key format\n");
-            }
-
-            if (hex2bin(option->value, opendcp->mxf.key_value, 16)) {
-               fprintf(stderr, "Invalid encryption key format\n");
-            }
-            opendcp->mxf.key_flag = 1;
-        }
-
-        if (!strcmp(option->name, "key_id")) {
-            if (!is_uuid(option->value)) {
-               fprintf(stderr, "Invalid encryption key id format\n");
-            }
-
-            strnchrdel(option->value, key_id, sizeof(key_id), '-');
-
-            if (hex2bin(key_id, opendcp->mxf.key_id, 16)) {
-               fprintf(stderr, "Invalid encryption key format\n");
-            }
-            opendcp->mxf.key_id_flag = 1;
-        }
-
-        if (!strcmp(option->name, "threads")) {
-            opendcp->threads = atoi(option->value);
-        }
-
-        if (!strcmp(option->name, "tmp_dir")) {
-            opendcp->tmp_path = option->value;
-        }
+        FOREACH(OPTIONS, OPTION_SET)
     }
 
     return 0;
 }
 
-int commands_to_args(cli_t *elements, opendcp_args_t *args) {
+int commands_to_args(cli_t *elements, args_t *args) {
     int i;
 
     command_t *command;
@@ -401,7 +239,7 @@ int commands_to_args(cli_t *elements, opendcp_args_t *args) {
 }
 
 /* convert argument elements to argument structure */
-int arguments_to_args(cli_t *elements, opendcp_args_t *args) {
+int arguments_to_args(cli_t *elements, args_t *args) {
     int i;
 
     argument_t *argument;
@@ -414,10 +252,10 @@ int arguments_to_args(cli_t *elements, opendcp_args_t *args) {
 }
 
 /* main parser */
-opendcp_args_t opendcp_args(opendcp_t *opendcp, int argc, char *argv[]) {
+args_t get_args(int argc, char *argv[]) {
     int i = 0;
 
-    opendcp_args_t args = {}; 
+    args_t args = {}; 
     argv_t a;
 
     command_t commands[] = {
@@ -455,6 +293,20 @@ opendcp_args_t opendcp_args(opendcp_t *opendcp, int argc, char *argv[]) {
         exit(1);
     }
 
+    /* check if help was invoked */
+    if (args.help) {
+        fprintf(stdout, "%s version %s %s\n\n", OPENDCP_NAME, OPENDCP_VERSION, OPENDCP_COPYRIGHT);
+        print_usage(&elements);
+        exit(1);
+    }
+
+    /* check if version was invoked */
+    if  (args.version) {
+        fprintf(stdout, "%s\n", OPENDCP_VERSION);
+        exit(0);
+    }
+
+    /* check if command specified */
     if (elements.n_commands_found != 1) {
         print_usage(&elements);
         fprintf(stderr, "ERROR: No command supplied\n");
@@ -471,16 +323,132 @@ opendcp_args_t opendcp_args(opendcp_t *opendcp, int argc, char *argv[]) {
         exit(1);
     }
     
-    options_to_args(opendcp, &elements, &args);
+    options_to_args(&elements, &args);
     arguments_to_args(&elements, &args);
 
     return args;
 }
 
+/****************************/
+/***** APPLICATION CODE *****/
+/****************************/
+
+/* assign application arguments */
+int set_opendcp_args(opendcp_t *opendcp,  args_t *args) {
+    char      key_id[40];
+
+    opendcp->j2k.no_overwrite = TO_BOOL(args->overwrite);
+    opendcp->j2k.xyz = TO_BOOL(args->xyz);
+    opendcp->j2k.resize = TO_BOOL(args->resize);
+    opendcp->j2k.bw = atoi(args->bw);
+    opendcp->frame_rate = atoi(args->frame_rate);
+    opendcp->j2k.start_frame = atoi(args->start);
+    opendcp->j2k.end_frame = strtol(args->end, NULL, 10);
+    opendcp->log_level = atoi(args->log_level);
+    opendcp->threads = atoi(args->threads);
+    opendcp->tmp_path = args->tmp_path;
+
+    if (!strcmp(args->colorspace, "srgb")) {
+        opendcp->j2k.lut = CP_SRGB;
+    }
+    else if (!strcmp(args->colorspace, "rec709")) {
+        opendcp->j2k.lut = CP_REC709;
+    }
+    else if (!strcmp(args->colorspace, "p3")) {
+        opendcp->j2k.lut = CP_P3;
+    }
+    else if (!strcmp(args->colorspace, "srgb_complex")) {
+        opendcp->j2k.lut = CP_SRGB_COMPLEX;
+    }
+    else if (!strcmp(args->colorspace, "rec709_complex")) {
+        opendcp->j2k.lut = CP_REC709_COMPLEX;
+    }
+    else {
+        fprintf(stderr, "Invalid colorspace argument\n");
+        exit(1);
+    }
+
+    if (!strcmp(args->encoder, "openjpeg")) {
+        opendcp->j2k.encoder = OPENDCP_ENCODER_OPENJPEG;
+    }
+    else if (!strcmp(args->encoder, "kakadu")) {
+        opendcp->j2k.encoder = OPENDCP_ENCODER_KAKADU;
+    }
+    else if (!strcmp(args->encoder, "ragnarok")) {
+        opendcp->j2k.encoder = OPENDCP_ENCODER_RAGNAROK;
+    }
+    else if (!strcmp(args->encoder, "remote")) {
+        opendcp->j2k.encoder = OPENDCP_ENCODER_REMOTE;
+    }
+    else {
+        fprintf(stderr, "Invalid encoder argument\n");
+        exit(1);
+    }
+
+    if (!strcmp(args->profile, "2k")) {
+        opendcp->cinema_profile = DCP_CINEMA2K;
+    }
+    else if (!strcmp(args->profile, "4k")) {
+        opendcp->cinema_profile = DCP_CINEMA4K;
+    }
+    else {
+        fprintf(stderr, "Invalid cinema profile argument\n");
+        exit(1);
+    }
+
+    if (!strcmp(args->type, "smpte")) {
+        opendcp->ns = XML_NS_SMPTE;
+    }
+    else if (!strcmp(args->type, "interop")) {
+        opendcp->ns = XML_NS_INTEROP;
+    }
+    else {
+        fprintf(stderr, "Invalid profile argument, must be smpte or interop\n");
+        exit(1);
+    }
+
+    if (args->slideshow) {
+        opendcp->mxf.slide = 1;
+        opendcp->mxf.frame_duration = atoi(args->slideshow);
+        if (opendcp->mxf.frame_duration < 0) {
+            fprintf(stderr, "Slide duration  must be greater than 0\n");
+            exit(1);
+        }
+    }
+
+    if (args->key) {
+        if (!is_key(args->key)) {
+            fprintf(stderr, "Invalid encryption key format\n");
+        }
+
+        if (hex2bin(args->key, opendcp->mxf.key_value, 16)) {
+            fprintf(stderr, "Invalid encryption key format\n");
+        }
+        opendcp->mxf.key_flag = 1;
+    }
+
+    if (args->key_id) {
+        if (!is_uuid(args->key_id)) {
+            fprintf(stderr, "Invalid encryption key id format\n");
+        }
+
+        strnchrdel(args->key_id, key_id, sizeof(key_id), '-');
+
+        if (hex2bin(key_id, opendcp->mxf.key_id, 16)) {
+            fprintf(stderr, "Invalid encryption key format\n");
+        }
+        opendcp->mxf.key_id_flag = 1;
+    }
+
+    return 0;
+}
+
 /* start of application */
 int main(int argc, char *argv[]) {
     opendcp_t *opendcp = opendcp_create();
-    opendcp_args_t args = opendcp_args(opendcp, argc, argv);
+    args_t args = get_args(argc, argv);
+
+    set_opendcp_args(opendcp, &args);
 
     /* set log level */
     opendcp_log_init(opendcp->log_level);
