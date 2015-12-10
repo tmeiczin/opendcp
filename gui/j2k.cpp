@@ -219,7 +219,7 @@ void MainWindow::j2kConvert() {
             return;
         }
 
-        if (!QFileInfo(outFile).exists() || context->j2k.no_overwrite == 0) {
+        if (!QFileInfo(outFile).exists() || context->j2k.overwrite == 1) {
             list.append(pair);
             iterations++;
         }
@@ -230,7 +230,7 @@ void MainWindow::j2kConvert() {
             outFile = outRightDir % "/" % inRightList.at(i).completeBaseName() % ".j2c";
             pair << inFile << outFile ;
 
-            if (!QFileInfo(outFile).exists() || context->j2k.no_overwrite == 0) {
+            if (!QFileInfo(outFile).exists() || context->j2k.overwrite == 1) {
                 list.append(pair);
                 iterations++;
             }
@@ -327,9 +327,9 @@ void MainWindow::processOptions(opendcp_t *opendcp) {
     }
 
     if (ui->overwritej2kCB->checkState())
-        opendcp->j2k.no_overwrite = 0;
+        opendcp->j2k.overwrite = 1;
     else {
-        opendcp->j2k.no_overwrite = 1;
+        opendcp->j2k.overwrite = 0;
     }
 
     opendcp->frame_rate = ui->frameRateComboBox->currentText().toInt();

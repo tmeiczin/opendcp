@@ -310,7 +310,7 @@ typedef struct {
     int            start_frame;
     int            end_frame;
     int            encoder;
-    int            no_overwrite;
+    int            overwrite;
     int            bw;
     int            duration;
     int            dpx;

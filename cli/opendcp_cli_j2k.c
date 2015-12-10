@@ -190,6 +190,8 @@ int opendcp_command_j2k(opendcp_t *opendcp, args_t *args) {
     sigaction(SIGINT,  &sig_action, NULL);
 #endif
 
+    printf("xyz: %d, overwrite: %d\n", opendcp->j2k.xyz, opendcp->j2k.overwrite);
+
     if (opendcp->log_level > 0 && opendcp->log_level < 3) {
         opendcp->j2k.frame_done.callback  = frame_done;
     }
@@ -354,7 +356,7 @@ int opendcp_command_j2k(opendcp_t *opendcp, args_t *args) {
         if (!SIGINT_received) {
             OPENDCP_LOG(LOG_INFO, "JPEG2000 conversion %s started OPENMP: %d", filelist->files[c], openmp_flag);
 
-            if(access(out, F_OK) != 0 || opendcp->j2k.no_overwrite == 0) {
+            if(access(out, F_OK) != 0 || opendcp->j2k.overwrite == 1) {
                 if (input_type == VIDEO) {
                     result = decode_video(opendcp, filelist->files[c]);
                 } else {

@@ -34,7 +34,7 @@ void  print_usage(cli_t *c);
 void print_usage(cli_t *c) {
     int i;
 
-    fprintf(stderr, "Usage: opendcp_encode [--version] [--help] [options] command <args>\n");
+    fprintf(stderr, "Usage: %s [--version] [--help] [options] command <args>\n", c->app_name);
     fprintf(stderr, "\nOptions:\n");
     for (i = 0; i < c->n_options; i++) {
         option_t o = c->options[i];
@@ -58,6 +58,12 @@ void print_usage(cli_t *c) {
         fprintf(stderr, "\n");
     }
 } 
+
+char *cli_get_name(char *path) {
+    char *base = strrchr(path, '/');
+
+    return base ? base+1 : path;
+}
      
 /* create context */
 argv_t argv_create(int argc, char **argv) {
@@ -91,7 +97,7 @@ int get_option(argv_t *a, cli_t *elements) {
 
     len_prefix = (eq-(a->current)) / sizeof(char);
 
-    for (i=0; i < n_options; i++) {
+    for (i = 0; i < n_options; i++) {
         option = &options[i];
         if (!strncmp(name, option->name, len_prefix)) {
             break;
@@ -137,7 +143,7 @@ int get_command(const char *a, cli_t *elements, command_t *c) {
     command_t *command;
     command_t *commands = elements->commands;
 
-    for (i=0; i < n_commands; i++) {
+    for (i = 0; i < n_commands; i++) {
         command = &commands[i];
         if (!strcmp(command->name, a)) {
             command->value = true;
@@ -157,7 +163,7 @@ int set_argument(char *name, char *value, cli_t *elements) {
     argument_t *argument;
     argument_t *arguments = elements->arguments;
 
-    for (i=0; i < n_arguments; i++) {
+    for (i = 0; i < n_arguments; i++) {
         argument = &arguments[i];
         if (!strcmp(argument->name, name) && argument->value == NULL) {
             argument->value = value;
@@ -217,9 +223,10 @@ int options_to_args(cli_t *elements, args_t *args) {
     int i, value;
     option_t *option;
 
-    for (i=0; i < elements->n_options; i++) {
+    for (i = 0; i < elements->n_options; i++) {
         option = &elements->options[i];
-        value = option->value != NULL ? 1:0;
+        value = (!strcmp(option->value, "1")) ? 1: 0;
+        FOREACH(FLAGS, FLAG_SET)
         FOREACH(OPTIONS, OPTION_SET)
     }
 
@@ -228,9 +235,9 @@ int options_to_args(cli_t *elements, args_t *args) {
 
 int commands_to_args(cli_t *elements, args_t *args) {
     int i;
-
     command_t *command;
-    for (i=0; i < elements->n_commands; i++) {
+
+    for (i = 0; i < elements->n_commands; i++) {
         command = &elements->commands[i];
         FOREACH(COMMANDS, COMMAND_SET)
     }
@@ -241,9 +248,9 @@ int commands_to_args(cli_t *elements, args_t *args) {
 /* convert argument elements to argument structure */
 int arguments_to_args(cli_t *elements, args_t *args) {
     int i;
-
     argument_t *argument;
-    for (i=0; i < elements->n_arguments; i++) {
+
+    for (i = 0; i < elements->n_arguments; i++) {
         argument = &elements->arguments[i];
         FOREACH(ARGUMENTS, ARGUMENT_SET)
     }
@@ -258,22 +265,26 @@ args_t get_args(int argc, char *argv[]) {
     args_t args = {}; 
     argv_t a;
 
+    /* name, desc, enum, args_list, args_required, value */
     command_t commands[] = {
         FOREACH(COMMANDS, COMMAND_INITIALIZE)
-        {NULL, 0, NULL, 0, NULL, 0}
+        {NULL, NULL, 0, NULL, 0, 0}
     };
 
+    /* name, description, value */
     argument_t arguments[] = {
         FOREACH(ARGUMENTS, ARGUMENT_INITIALIZE)
-        {NULL, NULL}
+        {NULL, NULL, NULL}
     };
 
+    /* name, desc, value_required, default, value */
     option_t options[] = {
         FOREACH(OPTIONS, OPTION_INITIALIZE)
-        {NULL, 0, NULL, NULL, NULL}
+        FOREACH(FLAGS, OPTION_INITIALIZE)
+        {NULL, NULL, 0, NULL, NULL}
     };
  
-    cli_t elements = {0, 0, 0, 0, 0, 0, commands, arguments, options};
+    cli_t elements = {0, 0, 0, 0, 0, 0, commands, arguments, options, cli_get_name(argv[0])};
 
     for (i = 0; commands[i].name != NULL; i++) {
         elements.n_commands++;
@@ -293,38 +304,35 @@ args_t get_args(int argc, char *argv[]) {
         exit(1);
     }
 
+    options_to_args(&elements, &args);
+    arguments_to_args(&elements, &args);
+    commands_to_args(&elements, &args);
+
     /* check if help was invoked */
     if (args.help) {
-        fprintf(stdout, "%s version %s %s\n\n", OPENDCP_NAME, OPENDCP_VERSION, OPENDCP_COPYRIGHT);
         print_usage(&elements);
         exit(1);
     }
 
     /* check if version was invoked */
     if  (args.version) {
-        fprintf(stdout, "%s\n", OPENDCP_VERSION);
-        exit(0);
+        return args;
     }
 
     /* check if command specified */
     if (elements.n_commands_found != 1) {
-        print_usage(&elements);
+        //print_usage(&elements);
         fprintf(stderr, "ERROR: No command supplied\n");
         exit(1);
     }
-  
-    /* populate the argument context (currently sub-commands are not supported) */
-    commands_to_args(&elements, &args);
-    command_t command = elements.commands[0];
 
+    /* get the command issued (currently sub-commands are not supported) */
+    command_t command = elements.commands[0];
     /* check if right amount of arguments was found */
     if (command.args_required != elements.n_arguments_found) {
         fprintf(stderr, "ERROR: Missing arguments %s requires %s\n", command.name, command.args_list);
         exit(1);
     }
-    
-    options_to_args(&elements, &args);
-    arguments_to_args(&elements, &args);
 
     return args;
 }
@@ -337,9 +345,9 @@ args_t get_args(int argc, char *argv[]) {
 int set_opendcp_args(opendcp_t *opendcp,  args_t *args) {
     char      key_id[40];
 
-    opendcp->j2k.no_overwrite = TO_BOOL(args->overwrite);
-    opendcp->j2k.xyz = TO_BOOL(args->xyz);
-    opendcp->j2k.resize = TO_BOOL(args->resize);
+    opendcp->j2k.overwrite = STRING_TO_BOOL(args->overwrite);
+    opendcp->j2k.xyz = STRING_TO_BOOL(args->xyz);
+    opendcp->j2k.resize = STRING_TO_BOOL(args->resize);
     opendcp->j2k.bw = atoi(args->bw);
     opendcp->frame_rate = atoi(args->frame_rate);
     opendcp->j2k.start_frame = atoi(args->start);
@@ -454,7 +462,15 @@ int main(int argc, char *argv[]) {
     opendcp_log_init(opendcp->log_level);
 
     /* set stereoscopic option */
-    opendcp->stereoscopic = args.stereoscopic;
+    if (args.stereoscopic) {
+        opendcp->stereoscopic = 1;
+    }
+
+    /* check if version was invoked */
+    if  (args.version) {
+        fprintf(stdout, "%s\n", OPENDCP_VERSION);
+        exit(0);
+    }
 
     printf("Commands:\n");
     printf("    mxf == %s\n", args.mxf ? "true" : "false");
@@ -469,14 +485,14 @@ int main(int argc, char *argv[]) {
     printf("    output_right == %s\n", args.output_right);
 
     printf("Flags:\n");
-    printf("    --no_xyz       == %s\n", opendcp->j2k.xyz ? "true" : "false");
-    printf("    --no_overwrite == %s\n", opendcp->j2k.no_overwrite ? "true" : "false");
-    printf("    --resize       == %s\n", opendcp->j2k.resize ? "true" : "false");
+    printf("    --help         == %s\n", args.help ? "true" : "false");
+    printf("    --version      == %s\n", args.version ? "true" : "false");
     printf("Options:\n");
     printf("    --bw      == %d\n", opendcp->j2k.bw);
     printf("    --encoder == %d\n", opendcp->j2k.encoder);
     printf("    --profile == %d\n", opendcp->cinema_profile);
     printf("    --rate    == %d\n", opendcp->frame_rate);
+    printf("    --overwrite == %d\n", opendcp->j2k.overwrite);
 
     if (args.mxf) {
         printf("mxf\n");
