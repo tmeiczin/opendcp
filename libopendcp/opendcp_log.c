@@ -81,7 +81,7 @@ char *opendcp_log_timestamp() {
 void opendcp_log_init(int level) {
     opendcp_log_cb_t cb;
 
-    cb.level    = level; 
+    cb.level    = level;
     cb.callback = (void *)opendcp_log_print_message;
     cb.argument = NULL;
 

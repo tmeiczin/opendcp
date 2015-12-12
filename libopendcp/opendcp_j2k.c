@@ -61,7 +61,8 @@ int convert_to_j2k(opendcp_t *opendcp, char *sfile, char *dfile) {
                 opendcp_image_free(opendcp_image);
                 return OPENDCP_ERROR;
             }
-        } else {
+        }
+        else {
             OPENDCP_LOG(LOG_WARN, "the image resolution of %s is not DCI compliant", sfile);
             opendcp_image_free(opendcp_image);
             return OPENDCP_ERROR;

@@ -101,8 +101,10 @@ int strcasefind(const char *s, const char *find) {
                 if ((sc = *s++) == 0) {
                     return 0;
                 }
-            } while ((char)tolower((unsigned char)sc) != c);
-        } while (strncasecmp(s, find, len) != 0);
+            }
+            while ((char)tolower((unsigned char)sc) != c);
+        }
+        while (strncasecmp(s, find, len) != 0);
 
         s--;
     }

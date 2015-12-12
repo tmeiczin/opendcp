@@ -55,7 +55,8 @@ char *strsep (char **stringp, const char *delim) {
                 *stringp = s;
                 return (tok);
             }
-        } while (sc != 0);
+        }
+        while (sc != 0);
     }
 }
 #endif
@@ -104,14 +105,18 @@ int write_cpl_asset(opendcp_t *opendcp, xmlTextWriterPtr xml, asset_t asset) {
         if (asset.stereoscopic) {
             xmlTextWriterStartElement(xml, BAD_CAST "msp-cpl:MainStereoscopicPicture");
             xmlTextWriterWriteAttribute(xml, BAD_CAST "xmlns:msp-cpl", BAD_CAST NS_CPL_3D[opendcp->ns]);
-        } else {
+        }
+        else {
             xmlTextWriterStartElement(xml, BAD_CAST "MainPicture");
         }
-    } else if (asset.essence_class == ACT_SOUND) {
+    }
+    else if (asset.essence_class == ACT_SOUND) {
         xmlTextWriterStartElement(xml, BAD_CAST "MainSound");
-    } else if (asset.essence_class == ACT_TIMED_TEXT) {
+    }
+    else if (asset.essence_class == ACT_TIMED_TEXT) {
         xmlTextWriterStartElement(xml, BAD_CAST "MainSubtitle");
-    } else {
+    }
+    else {
         return OPENDCP_NO_ERROR;
     }
 
@@ -133,7 +138,8 @@ int write_cpl_asset(opendcp_t *opendcp, xmlTextWriterPtr xml, asset_t asset) {
 
         if (opendcp->ns == XML_NS_SMPTE) {
             xmlTextWriterWriteFormatElement(xml, BAD_CAST "ScreenAspectRatio", "%s", asset.aspect_ratio);
-        } else {
+        }
+        else {
             xmlTextWriterWriteFormatElement(xml, BAD_CAST "ScreenAspectRatio", "%s", get_aspect_ratio(asset.aspect_ratio));
         }
     }
@@ -156,14 +162,18 @@ int write_pkl_asset(opendcp_t *opendcp, xmlTextWriterPtr xml, asset_t asset) {
 
     if (opendcp->ns == XML_NS_SMPTE) {
         xmlTextWriterWriteFormatElement(xml, BAD_CAST "Type", "%s", "application/mxf");
-    } else {
+    }
+    else {
         if (asset.essence_class == ACT_PICTURE) {
             xmlTextWriterWriteFormatElement(xml, BAD_CAST "Type", "%s", "application/x-smpte-mxf;asdcpKind=Picture");
-        } else if (asset.essence_class == ACT_SOUND) {
+        }
+        else if (asset.essence_class == ACT_SOUND) {
             xmlTextWriterWriteFormatElement(xml, BAD_CAST "Type", "%s", "application/x-smpte-mxf;asdcpKind=Sound");
-        } else if (asset.essence_class == ACT_TIMED_TEXT) {
+        }
+        else if (asset.essence_class == ACT_TIMED_TEXT) {
             xmlTextWriterWriteFormatElement(xml, BAD_CAST "Type", "%s", "application/x-smpte-mxf;asdcpKind=Subtitle");
-        } else {
+        }
+        else {
             return OPENDCP_NO_ERROR;
         }
     }
@@ -264,7 +274,8 @@ int write_cpl(opendcp_t *opendcp, cpl_t *cpl) {
             write_cpl_asset(opendcp, xml, cpl->reel[r].main_sound);
             write_cpl_asset(opendcp, xml, cpl->reel[r].main_subtitle);
             write_cpl_asset(opendcp, xml, cpl->reel[r].main_picture);
-        } else {
+        }
+        else {
             write_cpl_asset(opendcp, xml, cpl->reel[r].main_picture);
             write_cpl_asset(opendcp, xml, cpl->reel[r].main_sound);
             write_cpl_asset(opendcp, xml, cpl->reel[r].main_subtitle);
@@ -382,7 +393,8 @@ int write_pkl(opendcp_t *opendcp, pkl_t *pkl) {
 
         if (opendcp->ns == XML_NS_SMPTE) {
             xmlTextWriterWriteFormatElement(xml, BAD_CAST "Type", "%s", "text/xml");
-        } else {
+        }
+        else {
             xmlTextWriterWriteFormatElement(xml, BAD_CAST "Type", "%s", "text/xml;asdcpKind=CPL");
         }
 

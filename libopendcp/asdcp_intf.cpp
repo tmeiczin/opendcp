@@ -102,7 +102,8 @@ extern "C" int calculate_digest(opendcp_t *opendcp, const char *filename, char *
 
     if (ASDCP_SUCCESS(result)) {
         return OPENDCP_NO_ERROR;
-    } else {
+    }
+    else {
         return OPENDCP_CALC_DIGEST;
     }
 }
@@ -142,7 +143,8 @@ extern "C" int get_wav_info(const char *filename, int frame_rate, wav_info_t *wa
         wav->nchannels  = audio_desc.ChannelCount;
         wav->bitdepth   = audio_desc.QuantizationBits;
         wav->samplerate = audio_desc.AudioSamplingRate.Numerator;
-    } else {
+    }
+    else {
         return OPENDCP_FILEOPEN_WAV;
     }
 
@@ -158,7 +160,8 @@ extern "C" int get_file_essence_class(char *filename, int raw) {
 
     if (raw) {
         result = ASDCP::RawEssenceType(filename, essence_type);
-    } else {
+    }
+    else {
         result = ASDCP::EssenceType(filename, essence_type);
     }
 
@@ -320,7 +323,8 @@ extern "C" int read_asset_info(asset_t *asset) {
 
                 reader.FillPictureDescriptor(desc);
                 reader.FillWriterInfo(info);
-            } else {
+            }
+            else {
                 reader.FillPictureDescriptor(desc);
                 reader.FillWriterInfo(info);
             }
@@ -400,7 +404,8 @@ extern "C" int read_asset_info(asset_t *asset) {
     if (info.EncryptedEssence) {
         asset->encrypted  = 1;
         sprintf(asset->key_id, "%.36s", Kumu::bin2UUIDhex(info.CryptographicKeyID, 16, uuid_buffer, 64));
-    } else {
+    }
+    else {
         asset->encrypted  = 0;
     }
 
@@ -422,7 +427,8 @@ extern "C" int write_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_
         case ESS_JPEG_2000:
             if ( opendcp->stereoscopic ) {
                 return write_j2k_s_mxf(opendcp, filelist, output_file);
-            } else {
+            }
+            else {
                 return write_j2k_mxf(opendcp, filelist, output_file);
             }
 
@@ -475,9 +481,11 @@ Result_t fill_writer_info(opendcp_t *opendcp, writer_info_t *writer_info) {
     /* set the label type */
     if (opendcp->ns == XML_NS_INTEROP) {
         writer_info->info.LabelSetType = LS_MXF_INTEROP;
-    } else if (opendcp->ns == XML_NS_SMPTE) {
+    }
+    else if (opendcp->ns == XML_NS_SMPTE) {
         writer_info->info.LabelSetType = LS_MXF_SMPTE;
-    } else {
+    }
+    else {
         writer_info->info.LabelSetType = LS_MXF_UNKNOWN;
     }
 
@@ -491,7 +499,8 @@ Result_t fill_writer_info(opendcp_t *opendcp, writer_info_t *writer_info) {
 
         if (is_key_value_set(opendcp->mxf.key_id, sizeof(opendcp->mxf.key_id))) {
             memcpy(writer_info->info.CryptographicKeyID, opendcp->mxf.key_id, UUIDlen);
-        } else {
+        }
+        else {
             rng.FillRandom(writer_info->info.CryptographicKeyID, UUIDlen);
         }
 
@@ -537,7 +546,8 @@ int write_j2k_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
     /* set the starting frame */
     if (opendcp->mxf.start_frame && filelist->nfiles >= (opendcp->mxf.start_frame - 1)) {
         start_frame = opendcp->mxf.start_frame - 1;  /* adjust for zero base */
-    } else {
+    }
+    else {
         start_frame = 0;
     }
 
@@ -564,9 +574,11 @@ int write_j2k_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
     if (opendcp->mxf.slide) {
         mxf_duration = opendcp->mxf.duration;
         slide_duration = mxf_duration / filelist->nfiles;
-    } else if (opendcp->mxf.duration && (filelist->nfiles >= opendcp->mxf.duration)) {
+    }
+    else if (opendcp->mxf.duration && (filelist->nfiles >= opendcp->mxf.duration)) {
         mxf_duration = opendcp->mxf.duration;
-    } else {
+    }
+    else {
         mxf_duration = filelist->nfiles;
     }
 
@@ -600,7 +612,8 @@ int write_j2k_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
                 i++;
                 read = 1;
             }
-        } else {
+        }
+        else {
             i++;
         }
 
@@ -650,7 +663,8 @@ int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file)
     /* set the starting frame */
     if (opendcp->mxf.start_frame && filelist->nfiles >= (opendcp->mxf.start_frame - 1)) {
         start_frame = opendcp->mxf.start_frame - 1; /* adjust for zero base */
-    } else {
+    }
+    else {
         start_frame = 0;
     }
 
@@ -681,7 +695,8 @@ int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file)
     /* set the duration of the output mxf, set to half the filecount since it is 3D */
     if ((filelist->nfiles / 2) < opendcp->duration || !opendcp->duration) {
         mxf_duration = filelist->nfiles / 2;
-    } else {
+    }
+    else {
         mxf_duration = opendcp->duration;
     }
 
@@ -689,9 +704,11 @@ int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file)
     if (opendcp->mxf.slide) {
         mxf_duration = opendcp->mxf.duration;
         slide_duration = mxf_duration / (filelist->nfiles / 2);
-    } else if (opendcp->mxf.duration && (filelist->nfiles / 2 >= opendcp->mxf.duration)) {
+    }
+    else if (opendcp->mxf.duration && (filelist->nfiles / 2 >= opendcp->mxf.duration)) {
         mxf_duration = opendcp->mxf.duration;
-    } else {
+    }
+    else {
         mxf_duration = filelist->nfiles / 2;
     }
 
@@ -741,7 +758,8 @@ int write_j2k_s_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file)
                 i++;
                 read = 1;
             }
-        } else {
+        }
+        else {
             i++;
         }
 
@@ -861,7 +879,8 @@ int write_pcm_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file) {
     /* set duration */
     if (!opendcp->duration) {
         mxf_duration = 0xffffffff;
-    } else {
+    }
+    else {
         mxf_duration = opendcp->duration;
     }
 
@@ -1026,7 +1045,8 @@ int write_mpeg2_mxf(opendcp_t *opendcp, filelist_t *filelist, char *output_file)
 
     if (!opendcp->duration) {
         mxf_duration = 0xffffffff;
-    } else {
+    }
+    else {
         mxf_duration = opendcp->duration;
     }
 
@@ -1095,7 +1115,7 @@ extern "C" int read_j2k_mxf(opendcp_t *opendcp, const char *mxf_file) {
                 result = hmac->InitKey(opendcp->mxf.key_value, info.LabelSetType);
             }
             else {
-              OPENDCP_LOG(LOG_ERROR, "File does not contain HMAC values");
+                OPENDCP_LOG(LOG_ERROR, "File does not contain HMAC values");
             }
         }
         else {
