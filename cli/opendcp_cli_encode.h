@@ -16,8 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _OPENDCP_CLI_ENCODE_H_
-#define _OPENDCP_CLI_ENCODE_H_
+#ifndef _CLI_H_
+#define _CLI_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,7 +27,7 @@ extern "C" {
 
 #define TO_INT(x) atoi(x)
 #define TO_BOOL(x) x != NULL ? 1:0
-#define STRING_TO_BOOL(x) !strcmp(x, "true") ? 0:1
+#define STRING_TO_BOOL(x) !strcmp(x, "true") ? 1:0 
 
 #define COMMAND_ENUM(cmd, desc, count, args...) cmd,
 #define COMMAND_SET(cmd, desc, count, ...) SET_VALUE(command, args, cmd)
@@ -150,10 +150,10 @@ typedef struct {
     char *current;
 } argv_t;
 
-int opendcp_command_j2k(opendcp_t *opendcp, args_t *args);
+int opendcp_command_j2k(args_t *args);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // _OPENDCP_CLI_ENCODE_H_
+#endif // _CLI_H_

@@ -20,7 +20,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <opendcp.h>
 #include "opendcp_cli_encode.h"
 
 
@@ -341,136 +340,9 @@ args_t get_args(int argc, char *argv[]) {
 /***** APPLICATION CODE *****/
 /****************************/
 
-/* assign application arguments */
-int set_opendcp_args(opendcp_t *opendcp,  args_t *args) {
-    char      key_id[40];
-
-    opendcp->j2k.overwrite = STRING_TO_BOOL(args->overwrite);
-    opendcp->j2k.xyz = STRING_TO_BOOL(args->xyz);
-    opendcp->j2k.resize = STRING_TO_BOOL(args->resize);
-    opendcp->j2k.bw = atoi(args->bw);
-    opendcp->frame_rate = atoi(args->frame_rate);
-    opendcp->j2k.start_frame = atoi(args->start);
-    opendcp->j2k.end_frame = strtol(args->end, NULL, 10);
-    opendcp->log_level = atoi(args->log_level);
-    opendcp->threads = atoi(args->threads);
-    opendcp->tmp_path = args->tmp_path;
-
-    if (!strcmp(args->colorspace, "srgb")) {
-        opendcp->j2k.lut = CP_SRGB;
-    }
-    else if (!strcmp(args->colorspace, "rec709")) {
-        opendcp->j2k.lut = CP_REC709;
-    }
-    else if (!strcmp(args->colorspace, "p3")) {
-        opendcp->j2k.lut = CP_P3;
-    }
-    else if (!strcmp(args->colorspace, "srgb_complex")) {
-        opendcp->j2k.lut = CP_SRGB_COMPLEX;
-    }
-    else if (!strcmp(args->colorspace, "rec709_complex")) {
-        opendcp->j2k.lut = CP_REC709_COMPLEX;
-    }
-    else {
-        fprintf(stderr, "Invalid colorspace argument\n");
-        exit(1);
-    }
-
-    if (!strcmp(args->encoder, "openjpeg")) {
-        opendcp->j2k.encoder = OPENDCP_ENCODER_OPENJPEG;
-    }
-    else if (!strcmp(args->encoder, "kakadu")) {
-        opendcp->j2k.encoder = OPENDCP_ENCODER_KAKADU;
-    }
-    else if (!strcmp(args->encoder, "ragnarok")) {
-        opendcp->j2k.encoder = OPENDCP_ENCODER_RAGNAROK;
-    }
-    else if (!strcmp(args->encoder, "remote")) {
-        opendcp->j2k.encoder = OPENDCP_ENCODER_REMOTE;
-    }
-    else {
-        fprintf(stderr, "Invalid encoder argument\n");
-        exit(1);
-    }
-
-    if (!strcmp(args->profile, "2k")) {
-        opendcp->cinema_profile = DCP_CINEMA2K;
-    }
-    else if (!strcmp(args->profile, "4k")) {
-        opendcp->cinema_profile = DCP_CINEMA4K;
-    }
-    else {
-        fprintf(stderr, "Invalid cinema profile argument\n");
-        exit(1);
-    }
-
-    if (!strcmp(args->type, "smpte")) {
-        opendcp->ns = XML_NS_SMPTE;
-    }
-    else if (!strcmp(args->type, "interop")) {
-        opendcp->ns = XML_NS_INTEROP;
-    }
-    else {
-        fprintf(stderr, "Invalid profile argument, must be smpte or interop\n");
-        exit(1);
-    }
-
-    if (args->slideshow) {
-        opendcp->mxf.slide = 1;
-        opendcp->mxf.frame_duration = atoi(args->slideshow);
-        if (opendcp->mxf.frame_duration < 0) {
-            fprintf(stderr, "Slide duration  must be greater than 0\n");
-            exit(1);
-        }
-    }
-
-    if (args->key) {
-        if (!is_key(args->key)) {
-            fprintf(stderr, "Invalid encryption key format\n");
-        }
-
-        if (hex2bin(args->key, opendcp->mxf.key_value, 16)) {
-            fprintf(stderr, "Invalid encryption key format\n");
-        }
-        opendcp->mxf.key_flag = 1;
-    }
-
-    if (args->key_id) {
-        if (!is_uuid(args->key_id)) {
-            fprintf(stderr, "Invalid encryption key id format\n");
-        }
-
-        strnchrdel(args->key_id, key_id, sizeof(key_id), '-');
-
-        if (hex2bin(key_id, opendcp->mxf.key_id, 16)) {
-            fprintf(stderr, "Invalid encryption key format\n");
-        }
-        opendcp->mxf.key_id_flag = 1;
-    }
-
-    return 0;
-}
-
 /* start of application */
 int main(int argc, char *argv[]) {
-    opendcp_t *opendcp = opendcp_create();
     args_t args = get_args(argc, argv);
-
-    set_opendcp_args(opendcp, &args);
-
-    /* set log level */
-    opendcp_log_init(opendcp->log_level);
-
-    /* set stereoscopic option */
-    if (args.stereoscopic) {
-        opendcp->stereoscopic = 1;
-    }
-
-    /* check if version was invoked */
-    if  (args.version) {
-        fprintf(stdout, "%s\n", OPENDCP_VERSION);
-        exit(0);
-    }
 
     printf("Commands:\n");
     printf("    mxf == %s\n", args.mxf ? "true" : "false");
@@ -488,17 +360,17 @@ int main(int argc, char *argv[]) {
     printf("    --help         == %s\n", args.help ? "true" : "false");
     printf("    --version      == %s\n", args.version ? "true" : "false");
     printf("Options:\n");
-    printf("    --bw      == %d\n", opendcp->j2k.bw);
-    printf("    --encoder == %d\n", opendcp->j2k.encoder);
-    printf("    --profile == %d\n", opendcp->cinema_profile);
-    printf("    --rate    == %d\n", opendcp->frame_rate);
-    printf("    --overwrite == %d\n", opendcp->j2k.overwrite);
+    printf("    --bw      == %s\n", args.bw);
+    printf("    --encoder == %s\n", args.encoder);
+    printf("    --profile == %s\n", args.profile);
+    printf("    --rate    == %s\n", args.frame_rate);
+    printf("    --overwrite == %s\n", args.overwrite);
 
     if (args.mxf) {
         printf("mxf\n");
     }
     else if (args.j2k) {
-        opendcp_command_j2k(opendcp, &args);
+        opendcp_command_j2k(&args);
     }
 
     return 0;
