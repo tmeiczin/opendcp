@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "opendcp_cli_encode.h"
+#include "encode.h"
 
 
 /* prototypes */

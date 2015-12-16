@@ -8,7 +8,7 @@ MESSAGE(STATUS "----------------------------------------------------------------
 #--set output targets and paths-----------------------------------------------
 SET(OPENDCP_TARGETS opendcp_encode opendcp_xml opendcp_mxf opendcp_extract opendcp_largefile)
 IF(ENABLE_XMLSEC)
-    SET(OPENDCP_TARGETS ${OPENDCP_TARGETS} opendcp_xml_verify)
+    SET(OPENDCP_TARGETS ${OPENDCP_TARGETS} opendcp_signature_verify)
 ENDIF(ENABLE_XMLSEC)
 SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}")
 #-----------------------------------------------------------------------------
@@ -29,24 +29,24 @@ ENDIF()
 #-----------------------------------------------------------------------------
 
 #--compile cli tools----------------------------------------------------------
-ADD_EXECUTABLE(opendcp_largefile opendcp_largefile.c)
+ADD_EXECUTABLE(opendcp_largefile largefile.c)
 TARGET_LINK_LIBRARIES(opendcp_largefile ${LIBS})
 
-ADD_EXECUTABLE(opendcp_xml opendcp_xml_cmd.c)
+ADD_EXECUTABLE(opendcp_xml xml.c)
 TARGET_LINK_LIBRARIES(opendcp_xml ${OPENDCP_LIB} ${LIBS})
 
-ADD_EXECUTABLE(opendcp_mxf opendcp_mxf_cmd.c opendcp_cli.c)
+ADD_EXECUTABLE(opendcp_mxf mxf.c cli.c)
 TARGET_LINK_LIBRARIES(opendcp_mxf ${OPENDCP_LIB} ${LIBS})
 
-ADD_EXECUTABLE(opendcp_extract opendcp_extract_cmd.c opendcp_cli.c)
+ADD_EXECUTABLE(opendcp_extract extract.c cli.c)
 TARGET_LINK_LIBRARIES(opendcp_extract ${OPENDCP_LIB} ${LIBS})
 
-ADD_EXECUTABLE(opendcp_encode opendcp_cli_encode.c opendcp_cli.c opendcp_cli_j2k.c)
+ADD_EXECUTABLE(opendcp_encode encode.c cli.c j2k.c)
 TARGET_LINK_LIBRARIES(opendcp_encode ${OPENDCP_LIB} ${LIBS})
 
 IF(ENABLE_XMLSEC)
-    ADD_EXECUTABLE(opendcp_xml_verify opendcp_xml_verify_cmd.c)
-    TARGET_LINK_LIBRARIES(opendcp_xml_verify ${OPENDCP_LIB} ${LIBS})
+    ADD_EXECUTABLE(opendcp_signature_verify signature_verify.c)
+    TARGET_LINK_LIBRARIES(opendcp_signature_verify ${OPENDCP_LIB} ${LIBS})
 ENDIF(ENABLE_XMLSEC)
 #-----------------------------------------------------------------------------
 
