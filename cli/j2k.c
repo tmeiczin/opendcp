@@ -36,6 +36,7 @@
 #include <opendcp_decoder.h>
 #include "cli.h"
 #include "encode.h"
+#include "cli_parser.h"
 
 #ifndef _WIN32
 sig_atomic_t SIGINT_received = 0;
@@ -189,6 +190,7 @@ int set_opendcp_args(opendcp_t *opendcp,  args_t *args) {
     opendcp->threads = atoi(args->threads);
     opendcp->tmp_path = args->tmp_path;
 
+
     if (!strcmp(args->colorspace, "srgb")) {
         opendcp->j2k.lut = CP_SRGB;
     }
@@ -257,7 +259,7 @@ int set_opendcp_args(opendcp_t *opendcp,  args_t *args) {
         }
     }
 
-    if (strcmp(args->key, "NULL")) {
+    if (args->key) {
         if (!is_key(args->key)) {
             fprintf(stderr, "Invalid encryption key format %s\n", args->key);
             return 1;
@@ -270,7 +272,7 @@ int set_opendcp_args(opendcp_t *opendcp,  args_t *args) {
         opendcp->mxf.key_flag = 1;
     }
 
-    if (strcmp(args->key_id, "NULL")) {
+    if (args->key_id) {
         if (!is_uuid(args->key_id)) {
             fprintf(stderr, "Invalid encryption key id format\n");
             return 1;

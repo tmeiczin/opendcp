@@ -41,7 +41,7 @@ TARGET_LINK_LIBRARIES(opendcp_mxf ${OPENDCP_LIB} ${LIBS})
 ADD_EXECUTABLE(opendcp_extract extract.c cli.c)
 TARGET_LINK_LIBRARIES(opendcp_extract ${OPENDCP_LIB} ${LIBS})
 
-ADD_EXECUTABLE(opendcp_encode encode.c cli.c j2k.c)
+ADD_EXECUTABLE(opendcp_encode encode.c cli.c j2k.c cli_parser.c)
 TARGET_LINK_LIBRARIES(opendcp_encode ${OPENDCP_LIB} ${LIBS})
 
 IF(ENABLE_XMLSEC)
