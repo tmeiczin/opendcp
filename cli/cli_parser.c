@@ -18,7 +18,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 #include "cli_parser.h"
 
@@ -162,11 +161,11 @@ int set_argument(char *name, char *value, argument_t *arguments, size_t argument
     for (i = 0; i < arguments_len; i++) {
         if (!strcmp(arguments[i].name, name) && arguments[i].value == NULL) {
             arguments[i].value = value;
-            return true;
+            return 0;
         }
     }
 
-    return false;
+    return 1;
 }
 
 /* get argument from cli */
@@ -176,12 +175,12 @@ int get_argument(command_t *command, char *arg_value, argument_t *arguments, siz
 
     /* iterate command arg list */
     while ((name = strsep(&str, ","))) {
-        if (set_argument(name, arg_value, arguments, arguments_len) == true) {
-            return true;
+        if (!set_argument(name, arg_value, arguments, arguments_len)) {
+            return 0;
         }
     }
 
-    return false;
+    return 1;
 }
 
 /* parse input arguments and build cli */
@@ -204,7 +203,7 @@ int parse_args(argv_t *a, cli_t *cli) {
                     cli->n_commands.found++;
                 }
             }
-            else if (get_argument(&command, a->current, cli->arguments, cli->n_arguments.len) == true){
+            else if (!get_argument(&command, a->current, cli->arguments, cli->n_arguments.len)){
                 cli->n_arguments.found++;
             }
             argv_increment(a);
@@ -235,7 +234,7 @@ int cli_parser(cli_t *cli, int argc, char *argv[]) {
         if (!strcmp("help", cli->options[i].name)) {
             if (cli->options[i].value) {
                 print_usage(cli);
-                exit(1);
+                return 1;
             }
         }
     }
@@ -243,7 +242,7 @@ int cli_parser(cli_t *cli, int argc, char *argv[]) {
     /* check if command specified */
     if (cli->n_commands.found != 1) {
         fprintf(stderr, "ERROR: No command supplied\n");
-        exit(1);
+        return 1;
     }
 
     /* get the command issued (currently sub-commands are not supported) */
@@ -258,7 +257,7 @@ int cli_parser(cli_t *cli, int argc, char *argv[]) {
     /* check if right amount of arguments was found */
     if (args_required != cli->n_arguments.found) {
         fprintf(stderr, "ERROR: Missing arguments %s requires %s\n", command.name, command.args_list);
-        exit(1);
+        return 1;
     }
 
     return 0;
