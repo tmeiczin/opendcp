@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     printf("    --bw      == %s\n", args.bw);
     printf("    --encoder == %s\n", args.encoder);
     printf("    --profile == %s\n", args.profile);
-    printf("    --rate    == %s\n", args.frame_rate);
+    printf("    --rate    == %s\n", args.rate);
     printf("    --overwrite == %s\n", args.overwrite);
 
     if (args.mxf) {

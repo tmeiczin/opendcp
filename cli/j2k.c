@@ -182,7 +182,7 @@ int set_opendcp_args(opendcp_t *opendcp,  args_t *args) {
     opendcp->j2k.xyz = STRING_TO_BOOL(args->xyz);
     opendcp->j2k.resize = STRING_TO_BOOL(args->resize);
     opendcp->j2k.bw = atoi(args->bw);
-    opendcp->frame_rate = atoi(args->frame_rate);
+    opendcp->frame_rate = atoi(args->rate);
     opendcp->j2k.start_frame = atoi(args->start);
     opendcp->j2k.end_frame = strtol(args->end, NULL, 10);
     opendcp->log_level = atoi(args->log_level);

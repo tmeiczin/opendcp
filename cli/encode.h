@@ -53,7 +53,7 @@ extern "C" {
     GENERATOR(colorspace,     1, rec709,   "Source colorspace (srgb|rec709|p3|srgb_complex|rec709_complex)") \
     GENERATOR(encoder,        1, openjpeg, "JPEG2000 j2k (openjpeg|kakadu)") \
     GENERATOR(profile,        1, 2k,       "The cinema profile (2k | 4k)") \
-    GENERATOR(frame_rate,     1, 24,       "Frame rate of source") \
+    GENERATOR(rate,           1, 24,       "Frame rate of source") \
     GENERATOR(type,           1, smpte,    "Generate SMPTE or MXF Interop labels (smpte|interop)") \
     GENERATOR(start,          1, 1,        "The start frame") \
     GENERATOR(end,            1, 0,        "The end frame") \
