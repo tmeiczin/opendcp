@@ -25,6 +25,7 @@ extern "C" {
 
 #include "cli_parser.h"
 
+
 /* (command, desc, arg count, args) */
 #define COMMANDS(GENERATOR) \
      GENERATOR(j2k,    "Encode JPEG2000",              input,output)  \

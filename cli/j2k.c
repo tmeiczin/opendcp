@@ -36,7 +36,6 @@
 #include <opendcp_decoder.h>
 #include "cli.h"
 #include "encode.h"
-#include "cli_parser.h"
 
 #ifndef _WIN32
 sig_atomic_t SIGINT_received = 0;

@@ -20,8 +20,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "encode.h"
 #include "cli_parser.h"
+
+#include "encode.h"
 
 
 /****************************/
@@ -31,7 +32,12 @@
 /* start of application */
 int main(int argc, char *argv[]) {
     /* include parser macro */
+
     CLI_PARSER
+
+    if (cli_result) {
+        exit(1);
+    }
 
     printf("Commands:\n");
     printf("    mxf == %s\n", args.mxf ? "true" : "false");
@@ -54,10 +60,6 @@ int main(int argc, char *argv[]) {
     printf("    --profile == %s\n", args.profile);
     printf("    --rate    == %s\n", args.frame_rate);
     printf("    --overwrite == %s\n", args.overwrite);
-
-    if (cli_result) {
-        exit(1);
-    }
 
     if (args.mxf) {
         printf("mxf\n");
