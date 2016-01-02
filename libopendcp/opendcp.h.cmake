@@ -455,6 +455,7 @@ int write_assetmap(opendcp_t *opendcp);
 int write_volumeindex(opendcp_t *opendcp);
 int xml_verify(char *filename);
 int xml_sign(opendcp_t *opendcp, char *filename);
+int read_j2k_mxf(opendcp_t *opendcp, const char *mxf_file);
 
 /* j2k functions */
 int convert_to_j2k(opendcp_t *opendcp, char *in_file, char *out_file);
