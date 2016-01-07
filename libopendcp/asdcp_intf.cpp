@@ -105,7 +105,8 @@ extern "C" int calculate_digest(opendcp_t *opendcp, const char *filename, char *
 
     if (ASDCP_SUCCESS(result)) {
         return OPENDCP_NO_ERROR;
-    } else {
+    }
+    else {
         return OPENDCP_CALC_DIGEST;
     }
 }
@@ -145,7 +146,8 @@ extern "C" int get_wav_info(const char *filename, int frame_rate, wav_info_t *wa
         wav->nchannels  = audio_desc.ChannelCount;
         wav->bitdepth   = audio_desc.QuantizationBits;
         wav->samplerate = audio_desc.AudioSamplingRate.Numerator;
-    } else {
+    }
+    else {
         return OPENDCP_FILEOPEN_WAV;
     }
 
@@ -161,7 +163,8 @@ extern "C" int get_file_essence_class(char *filename, int raw) {
 
     if (raw) {
         result = ASDCP::RawEssenceType(filename, essence_type);
-    } else {
+    }
+    else {
         result = ASDCP::EssenceType(filename, essence_type);
     }
 
@@ -323,7 +326,8 @@ extern "C" int read_asset_info(asset_t *asset) {
 
                 reader.FillPictureDescriptor(desc);
                 reader.FillWriterInfo(info);
-            } else {
+            }
+            else {
                 reader.FillPictureDescriptor(desc);
                 reader.FillWriterInfo(info);
             }
@@ -403,7 +407,8 @@ extern "C" int read_asset_info(asset_t *asset) {
     if (info.EncryptedEssence) {
         asset->encrypted  = 1;
         sprintf(asset->key_id, "%.36s", Kumu::bin2UUIDhex(info.CryptographicKeyID, 16, uuid_buffer, 64));
-    } else {
+    }
+    else {
         asset->encrypted  = 0;
     }
 
@@ -439,7 +444,8 @@ extern "C" int mxf_create(opendcp_t *opendcp, filelist_t *filelist, char *output
                 if (j2k_s_context_create(opendcp, filelist, output_file) != OPENDCP_NO_ERROR) {
                     return OPENDCP_ERROR;
                 }
-            } else {
+            }
+            else {
                 OPENDCP_LOG(LOG_INFO, "Creating J2K MXF Context");
                 if (j2k_context_create(opendcp, filelist, output_file) != OPENDCP_NO_ERROR) {
                     return OPENDCP_ERROR;
@@ -540,9 +546,11 @@ Result_t fill_writer_info(opendcp_t *opendcp, writer_info_t *writer_info) {
     /* set the label type */
     if (opendcp->ns == XML_NS_INTEROP) {
         writer_info->info.LabelSetType = LS_MXF_INTEROP;
-    } else if (opendcp->ns == XML_NS_SMPTE) {
+    }
+    else if (opendcp->ns == XML_NS_SMPTE) {
         writer_info->info.LabelSetType = LS_MXF_SMPTE;
-    } else {
+    }
+    else {
         writer_info->info.LabelSetType = LS_MXF_UNKNOWN;
     }
 
@@ -556,7 +564,8 @@ Result_t fill_writer_info(opendcp_t *opendcp, writer_info_t *writer_info) {
 
         if (is_key_value_set(opendcp->mxf.key_id, sizeof(opendcp->mxf.key_id))) {
             memcpy(writer_info->info.CryptographicKeyID, opendcp->mxf.key_id, UUIDlen);
-        } else {
+        }
+        else {
             rng.FillRandom(writer_info->info.CryptographicKeyID, UUIDlen);
         }
 
@@ -1060,7 +1069,8 @@ char *output_file = NULL;
 
     if (!opendcp->duration) {
         mxf_duration = 0xffffffff;
-    } else {
+    }
+    else {
         mxf_duration = opendcp->duration;
     }
 
@@ -1129,7 +1139,7 @@ extern "C" int read_j2k_mxf(opendcp_t *opendcp, const char *mxf_file) {
                 result = hmac->InitKey(opendcp->mxf.key_value, info.LabelSetType);
             }
             else {
-              OPENDCP_LOG(LOG_ERROR, "File does not contain HMAC values");
+                OPENDCP_LOG(LOG_ERROR, "File does not contain HMAC values");
             }
         }
         else {

@@ -206,7 +206,8 @@ void strnchrdel(const char *src, char *dst, int dst_len, char d) {
     for (i = 0; i < len; i++) {
         if (src[i] != d) {
             *dst++ = src[i];
-        } else {
+        }
+        else {
             len++;
         }
     }
@@ -226,8 +227,10 @@ int strcasefind(const char *s, const char *find) {
                 if ((sc = *s++) == 0) {
                     return 0;
                 }
-            } while ((char)tolower((unsigned char)sc) != c);
-        } while (strncasecmp(s, find, len) != 0);
+            }
+            while ((char)tolower((unsigned char)sc) != c);
+        }
+        while (strncasecmp(s, find, len) != 0);
 
         s--;
     }
@@ -308,7 +311,9 @@ int ensure_sequential(char *files[], int nfiles) {
 
     for (i = 0; i < nfiles - 1; i++) {
         if (get_index(files[i], prefix_len) + 1 != get_index(files[i + 1], prefix_len)) {
-            if (!i) { i++; }
+            if (!i) {
+                i++;
+            }
             return i;
         }
     }
@@ -562,7 +567,8 @@ void create_pkl(dcp_t dcp, pkl_t *pkl) {
     /* Generate XML filename */
     if ( !strcmp(dcp.basename, "") ) {
         sprintf(pkl->filename, "PKL_%.40s.xml", pkl->uuid);
-    } else {
+    }
+    else {
         sprintf(pkl->filename, "PKL_%.40s.xml", dcp.basename);
     }
 
@@ -615,7 +621,8 @@ void create_cpl(dcp_t dcp, cpl_t *cpl) {
     /* Generate XML filename */
     if ( !strcmp(dcp.basename, "") ) {
         sprintf(cpl->filename, "CPL_%.40s.xml", cpl->uuid);
-    } else {
+    }
+    else {
         sprintf(cpl->filename, "CPL_%.40s.xml", dcp.basename);
     }
 
@@ -675,7 +682,8 @@ int validate_reel(opendcp_t *opendcp, reel_t *reel, int reel_number) {
     if (picture < 1) {
         OPENDCP_LOG(LOG_ERROR, "Reel %d has no picture track", reel_number);
         return OPENDCP_NO_PICTURE_TRACK;
-    } else if (picture > 1) {
+    }
+    else if (picture > 1) {
         OPENDCP_LOG(LOG_ERROR, "Reel %d has multiple picture tracks", reel_number);
         return OPENDCP_MULTIPLE_PICTURE_TRACK;
     }
@@ -738,7 +746,8 @@ int add_asset(opendcp_t *opendcp, asset_t *asset, char *filename) {
     if ((fp = fopen(filename, "r")) == NULL) {
         OPENDCP_LOG(LOG_ERROR, "add_asset: Could not open file: %s", filename);
         return OPENDCP_FILEOPEN;
-    } else {
+    }
+    else {
         fclose (fp);
     }
 
@@ -768,7 +777,8 @@ int add_asset(opendcp_t *opendcp, asset_t *asset, char *filename) {
     if (opendcp->duration) {
         if  (opendcp->duration < asset->duration) {
             asset->duration = opendcp->duration;
-        } else {
+        }
+        else {
             OPENDCP_LOG(LOG_WARN, "Desired duration %d cannot be greater than assset duration %d, ignoring value", opendcp->duration, asset->duration);
         }
     }
@@ -777,7 +787,8 @@ int add_asset(opendcp_t *opendcp, asset_t *asset, char *filename) {
     if (opendcp->entry_point) {
         if (opendcp->entry_point < asset->duration) {
             asset->entry_point = opendcp->entry_point;
-        } else {
+        }
+        else {
             OPENDCP_LOG(LOG_WARN, "Desired entry point %d cannot be greater than assset duration %d, ignoring value", opendcp->entry_point, asset->duration);
         }
     }
@@ -796,7 +807,8 @@ int add_asset_to_reel(opendcp_t *opendcp, reel_t *reel, asset_t asset) {
     if (opendcp->ns == XML_NS_UNKNOWN) {
         opendcp->ns = asset.xml_ns;
         OPENDCP_LOG(LOG_DEBUG, "add_asset_to_reel: Label type detected: %d", opendcp->ns);
-    } else {
+    }
+    else {
         if (opendcp->ns != asset.xml_ns) {
             OPENDCP_LOG(LOG_ERROR, "Warning DCP specification mismatch in assets. Please make sure all assets are MXF Interop or SMPTE");
             return OPENDCP_SPECIFICATION_MISMATCH;

@@ -317,6 +317,8 @@ int opendcp_command_j2k(args_t *args) {
         dcp_fatal(opendcp, "Invalid arguments");
     }
 
+    opendcp_log_init(opendcp->log_level);
+
     printf("xyz: %d, overwrite: %d\n", opendcp->j2k.xyz, opendcp->j2k.overwrite);
 
     if (opendcp->log_level > 0 && opendcp->log_level < 3) {

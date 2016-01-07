@@ -173,11 +173,13 @@ int check_image_compliance(int profile, opendcp_image_t *image, char *file) {
             h = tmp->h;
             w = tmp->w;
             opendcp_image_free(tmp);
-        } else {
+        }
+        else {
             opendcp_image_free(tmp);
             return OPENDCP_ERROR;
         }
-    } else {
+    }
+    else {
         h = image->h;
         w = image->w;
     }
@@ -195,12 +197,12 @@ int check_image_compliance(int profile, opendcp_image_t *image, char *file) {
     if ((w > dci_w) || (h > dci_h)) {
         OPENDCP_LOG(LOG_WARN, "image dimension exceeds DCI container");
         return OPENDCP_ERROR;
-    } 
+    }
 
-    if ((w % 2) || (h % 2)) { 
+    if ((w % 2) || (h % 2)) {
         OPENDCP_LOG(LOG_WARN, "image dimensions are not an even value");
         return OPENDCP_ERROR;
-    } 
+    }
 
     return OPENDCP_NO_ERROR;
 }
@@ -224,14 +226,17 @@ float complex_gamma(float p, float gamma, int index) {
     if (index) {
         if (p > 0.081) {
             v = pow((p + 0.099) / 1.099, gamma);
-        } else {
+        }
+        else {
             v = p / 4.5;
             v = pow((p + 0.099) / 1.099, gamma);
         }
-    } else {
+    }
+    else {
         if (p > 0.04045) {
             v = pow((p + 0.055) / 1.055, gamma);
-        } else {
+        }
+        else {
             v = p / 12.92;
         }
     }
@@ -269,7 +274,8 @@ int rgb_to_xyz(opendcp_image_t *image, int index, int method) {
     if (method) {
         OPENDCP_LOG(LOG_DEBUG, "rgb_to_xyz_calculate, index: %d", index);
         result = rgb_to_xyz_calculate(image, index);
-    } else {
+    }
+    else {
         OPENDCP_LOG(LOG_DEBUG, "rgb_to_xyz_lut, index: %d", index);
         result = rgb_to_xyz_lut(image, index);
     }
@@ -423,7 +429,8 @@ int resize(opendcp_image_t **image, int profile, int method) {
     if (aspect <= 2.10) {
         w = (ptr->w * MAX_HEIGHT_2K / ptr->h);
         h = MAX_HEIGHT_2K;
-    } else {
+    }
+    else {
         w = MAX_WIDTH_2K;
         h = (ptr->h * MAX_WIDTH_2K / ptr->w);
     }
@@ -441,11 +448,11 @@ int resize(opendcp_image_t **image, int profile, int method) {
     }
 
     /* the image dimensions must be even values */
-    if (w % 2) { 
+    if (w % 2) {
         w = w - 1;
     }
 
-    if (h % 2) { 
+    if (h % 2) {
         h = h - 1;
     }
 
