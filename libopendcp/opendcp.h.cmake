@@ -28,6 +28,7 @@ extern "C" {
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 /* min and max values */
 #define MAX_ASSETS          10   /* Soft limit */
@@ -394,22 +395,22 @@ typedef struct {
 } opendcp_t;
 
 /* common functions */
-void  opendcp_log(int level, const char *file, const char *function, int line,  const char *fmt, ...);
-void  opendcp_log_init(int level);
-void  dcp_fatal(opendcp_t *opendcp, char *error, ...);
-void  get_timestamp(char *timestamp);
-int   get_asset_type(asset_t asset);
-int   get_file_essence_class(char *filename, int raw);
-int   validate_reel(opendcp_t *opendcp, reel_t *reel, int reel_number);
-int   add_asset(opendcp_t *opendcp, asset_t *asset, char *filename);
-int   add_asset_to_reel(opendcp_t *opendcp, reel_t *reel, asset_t asset);
-void  add_reel_to_cpl(cpl_t *cpl, reel_t reel);
-void  add_cpl_to_pkl(pkl_t *pkl, cpl_t cpl);
-void  add_pkl_to_dcp(dcp_t *dcp, pkl_t pkl);
-void  create_pkl(dcp_t dcp, pkl_t *pkl);
-void  create_cpl(dcp_t dcp, cpl_t *cpl);
-void  create_reel(dcp_t dcp, reel_t *reel);
-void  dcp_set_log_level(int log_level);
+void        opendcp_log(int level, const char *file, const char *function, int line,  const char *fmt, ...);
+void        opendcp_log_init(int level);
+void        dcp_fatal(opendcp_t *opendcp, char *error, ...);
+int         get_asset_type(asset_t asset);
+int         get_file_essence_class(char *filename, int raw);
+int         validate_reel(opendcp_t *opendcp, reel_t *reel, int reel_number);
+int         add_asset(opendcp_t *opendcp, asset_t *asset, char *filename);
+int         add_asset_to_reel(opendcp_t *opendcp, reel_t *reel, asset_t asset);
+void        add_reel_to_cpl(cpl_t *cpl, reel_t reel);
+void        add_cpl_to_pkl(pkl_t *pkl, cpl_t cpl);
+void        add_pkl_to_dcp(dcp_t *dcp, pkl_t pkl);
+void        create_pkl(dcp_t dcp, pkl_t *pkl);
+void        create_cpl(dcp_t dcp, cpl_t *cpl);
+void        create_reel(dcp_t dcp, reel_t *reel);
+void        dcp_set_log_level(int log_level);
+void        opendcp_log_subscribe(opendcp_log_cb_t *cb);
 
 /* utility functions */
 int         ensure_sequential(char *files[], int nfiles);
@@ -417,13 +418,15 @@ int         order_indexed_files(char *files[], int nfiles);
 filelist_t *filelist_alloc(int nfiles);
 void        filelist_free(filelist_t *filelist);
 void        strnchrdel(const char *src, char *dst, int dst_len, char d);
-int         strcasefind(const char *s, const char *find);
-void        opendcp_log_subscribe(opendcp_log_cb_t *cb);
+bool        strcasefind(const char *s, const char *find);
+void        generate_timestamp(char *timestamp);
+int         htob(int x);
 int         hex2bin(const char* str, byte_t* buf, unsigned int buf_len);
-int         is_key(const char *s);
-int         is_uuid(const char *s);
-int         is_key_value_set(byte_t *key, int len);
-int         is_filename_ascii(const char *s);
+bool        is_dir(const char *path);
+bool        is_key(const char *s);
+bool        is_uuid(const char *s);
+bool        is_key_value_set(byte_t *key, int len);
+bool        is_filename_ascii(const char *s);
 
 #ifndef HAVE_MEMSTREAM
 FILE       *open_memstream(char **ptr, size_t *sizeloc);

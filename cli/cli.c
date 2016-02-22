@@ -36,20 +36,6 @@
 #include "cli.h"
 
 
-int is_dir(const char *path) {
-    struct stat st_in;
-
-    if (stat(path, &st_in) != 0 ) {
-        return 0;
-    }
-
-    if (S_ISDIR(st_in.st_mode)) {
-        return 1;
-    }
-
-    return 0;
-}
-
 int check_extension(char *filename, char *pattern) {
     char *extension;
 

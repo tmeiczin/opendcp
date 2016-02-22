@@ -183,6 +183,7 @@ IF(COMPILE_OPENJPEG)
         09_OpenJPEG
         URL ${URL}
         GIT_REPOSITORY "https://github.com/uclouvain/openjpeg.git"
+        #GIT_REPOSITORY "https://github.com/GrokImageCompression/ronin.git"
         GIT_TAG "tags/version.2.1"
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
         CONFIGURE_COMMAND ${CMAKE} ../09_OpenJPEG -DBUILD_CODEC=OFF -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DBUILD_SHARED_LIBS=OFF -DOPENJPEG_INSTALL_INCLUDE_DIR=${INSTALL_PREFIX}/include -DCMAKE_BUILD_TYPE=RELEASE

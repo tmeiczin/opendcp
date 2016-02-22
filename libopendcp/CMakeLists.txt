@@ -20,6 +20,7 @@ SET(OPENDCP_LIB_SRC
      opendcp_image.c
      opendcp_reader.c
      opendcp_writer.c
+     opendcp_utilities.c
      asdcp_intf.cpp
 )
 
