@@ -34,8 +34,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <KM_mutex.h>
 #include <string.h>
 #include <assert.h>
-#include <openssl/aes.h>
 
+#include <aes.h>
 #include <sha1.h>
 #include <ttmath/ttmath.h>
 

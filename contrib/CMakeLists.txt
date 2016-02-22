@@ -163,7 +163,7 @@ IF(COMPILE_TIFF)
     ENDIF()
     EXTERNALPROJECT_ADD(
         08_TIFF
-        URL ${URL}tiff-4.0.0.tar.gz
+        URL ${URL}tiff-4.0.6.tar.gz
         BUILD_IN_SOURCE 1
         PATCH_COMMAND patch -d <SOURCE_DIR> -p0 -t -N < ${PROJECT_SOURCE_DIR}/contrib/libtiff-4.0.0.patch
         CONFIGURE_COMMAND ${CONFIGURE} ${PREFIX_ARG} ${AUTO_CFLAGS} ${AUTO_CXXFLAGS} ${AUTO_LDFLAGS}

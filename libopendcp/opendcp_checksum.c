@@ -27,7 +27,8 @@ static void byte_reverse(unsigned char *buf, unsigned longs) {
                 ((unsigned) buf[1] << 8 | buf[0]);
             * (uint32_t *) buf = t;
             buf += 4;
-        } while (--longs);
+        }
+        while (--longs);
     }
 }
 
@@ -188,7 +189,8 @@ void md5_final(unsigned char digest[16], md5_t *ctx) {
         byte_reverse(ctx->in, 16);
         md5_transform(ctx->buf, (uint32_t *) ctx->in);
         memset(ctx->in, 0, 56);
-    } else {
+    }
+    else {
         memset(p, 0, count - 8);
     }
 
@@ -299,7 +301,8 @@ void sha1_update(sha1_t* context, const unsigned char* data, uint32_t len) {
         }
 
         j = 0;
-    } else {
+    }
+    else {
         i = 0;
     }
 

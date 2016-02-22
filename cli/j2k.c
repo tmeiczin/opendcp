@@ -36,7 +36,6 @@
 #include <opendcp_decoder.h>
 #include "cli.h"
 #include "encode.h"
-#include "cli_parser.h"
 
 #ifndef _WIN32
 sig_atomic_t SIGINT_received = 0;
@@ -166,7 +165,7 @@ int set_opendcp_args(opendcp_t *opendcp,  args_t *args) {
     opendcp->j2k.xyz = STRING_TO_BOOL(args->xyz);
     opendcp->j2k.resize = STRING_TO_BOOL(args->resize);
     opendcp->j2k.bw = atoi(args->bw);
-    opendcp->frame_rate = atoi(args->frame_rate);
+    opendcp->frame_rate = atoi(args->rate);
     opendcp->j2k.start_frame = atoi(args->start);
     opendcp->j2k.end_frame = strtol(args->end, NULL, 10);
     opendcp->log_level = atoi(args->log_level);
@@ -301,6 +300,8 @@ int opendcp_command_j2k(args_t *args) {
     if (rc) {
         dcp_fatal(opendcp, "Invalid arguments");
     }
+
+    opendcp_log_init(opendcp->log_level);
 
     printf("xyz: %d, overwrite: %d\n", opendcp->j2k.xyz, opendcp->j2k.overwrite);
 
