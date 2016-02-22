@@ -34,7 +34,7 @@ typedef struct {
     filelist_t *filelist;
 } filelist_writer_t;
 
-int filelist_write_frame(opendcp_writer_t *self, int frame, opendcp_t *opendcp, opendcp_image_t *image);
+int filelist_write_frame(opendcp_writer_t *self, opendcp_t *opendcp, int frame, opendcp_image_t *image);
 int filelist_write_next(opendcp_writer_t *self, opendcp_image_t *image);
 
 int is_a_dir(char *path) {
@@ -86,10 +86,7 @@ opendcp_writer_t *writer_new(filelist_t *filelist) {
 
     opendcp_writer_t *writer = (opendcp_writer_t *)malloc(sizeof(opendcp_writer_t));
 
-    char out[MAX_FILENAME_LENGTH];
-    build_filename(filelist->files[0], "/tmp/foo.j2c", out);
-
-    extension = strrchr(out, '.');
+    extension = strrchr(filelist->files[0], '.');
     extension++; 
 
     writer->encoder = opendcp_encoder_find(NULL, extension, 0);
@@ -106,7 +103,7 @@ opendcp_writer_t *writer_new(filelist_t *filelist) {
 
     writer->context = context;
     writer->write_frame = filelist_write_frame;
-    writer->write_next = filelist_write_frame;
+    writer->write_next = filelist_write_next;
     writer->current = 0;
     writer->total = filelist->nfiles;
 
@@ -123,10 +120,10 @@ void writer_free(opendcp_writer_t *self) {
 }
 
 int filelist_write_next(opendcp_writer_t *self, opendcp_image_t *image) {
-    return filelist_write_frame(self, self->current++, NULL, image);
+    return filelist_write_frame(self, NULL, self->current++, image);
 }
 
-int filelist_write_frame(opendcp_writer_t *self, int frame, opendcp_t *opendcp, opendcp_image_t *image) {
+int filelist_write_frame(opendcp_writer_t *self, opendcp_t *opendcp, int frame, opendcp_image_t *image) {
     char *filename;
     int   result;
 
@@ -134,13 +131,10 @@ int filelist_write_frame(opendcp_writer_t *self, int frame, opendcp_t *opendcp, 
         return 0;
     }
 
-
     filelist_writer_t *context = (filelist_writer_t *)self->context;
     filename = context->filelist->files[frame];
-    char out[MAX_FILENAME_LENGTH];
-    build_filename(filename, "/tmp/test", out);
-
-    result = self->encoder->encode(opendcp, image, out);
+   
+    result = self->encoder->encode(opendcp, image, filename);
 
     if (result != OPENDCP_NO_ERROR) {
         return OPENDCP_ERROR;

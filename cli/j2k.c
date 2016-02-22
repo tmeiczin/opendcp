@@ -51,7 +51,6 @@ int SIGINT_received = 0;
 #endif
 
 /* prototypes */
-void  build_j2k_filename(const char *in, char *path, char *out);
 void  progress_bar(int val, int total);
 int   frame_count;
 int   frame_index;
@@ -120,22 +119,6 @@ int get_input_type(const char *file) {
     }
 
     return UNKNOWN;
-}
-
-void build_j2k_filename(const char *in, char *path, char *out) {
-    OPENDCP_LOG(LOG_DEBUG, "Building filename from %s", in);
-
-    if (!is_dir(path)) {
-        snprintf(out, MAX_FILENAME_LENGTH, "%s", path);
-    }
-    else {
-        char *base = basename_noext(in);
-        snprintf(out, MAX_FILENAME_LENGTH, "%s/%s.j2c", path, base);
-
-        if (base) {
-            free(base);
-        }
-    }
 }
 
 int frame_done(void *p) {
@@ -295,7 +278,8 @@ int opendcp_command_j2k(args_t *args) {
     int openmp_flag = 0;
     char *in_path  = args->input;
     char *out_path = args->output;
-    filelist_t *filelist;
+    filelist_t *reader_filelist;
+    filelist_t *writer_filelist;
 
 #ifndef _WIN32
     struct sigaction sig_action;
@@ -410,24 +394,24 @@ int opendcp_command_j2k(args_t *args) {
 
     char *extensions = opendcp_decoder_extensions();
 
-    filelist = get_filelist(in_path, extensions);
+    reader_filelist = get_filelist(in_path, extensions);
 
     if (extensions != NULL) {
         free(extensions);
     }
 
-    if (filelist == NULL || filelist->nfiles < 1) {
+    if (reader_filelist == NULL || reader_filelist->nfiles < 1) {
         dcp_fatal(opendcp, "No input files located");
     }
 
     /* end frame check */
     if (opendcp->j2k.end_frame) {
-        if (opendcp->j2k.end_frame > filelist->nfiles) {
+        if (opendcp->j2k.end_frame > reader_filelist->nfiles) {
             dcp_fatal(opendcp, "End frame is greater than the actual frame count");
         }
     }
     else {
-        opendcp->j2k.end_frame = filelist->nfiles;
+        opendcp->j2k.end_frame = reader_filelist->nfiles;
     }
 
     /* start frame check */
@@ -438,21 +422,21 @@ int opendcp_command_j2k(args_t *args) {
     OPENDCP_LOG(LOG_DEBUG, "checking file sequence", in_path);
 
     /* Sort files by index, and make sure they're sequential. */
-    if (order_indexed_files(filelist->files, filelist->nfiles) != OPENDCP_NO_ERROR) {
+    if (order_indexed_files(reader_filelist->files, reader_filelist->nfiles) != OPENDCP_NO_ERROR) {
         dcp_fatal(opendcp, "Could not order image files");
     }
 
-    rc = ensure_sequential(filelist->files, filelist->nfiles);
+    rc = ensure_sequential(reader_filelist->files, reader_filelist->nfiles);
 
     if (rc != OPENDCP_NO_ERROR) {
-        OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", filelist->files[rc], filelist->files[rc + 1]);
+        OPENDCP_LOG(LOG_WARN, "Filenames not sequential between %s and %s.", reader_filelist->files[rc], reader_filelist->files[rc + 1]);
     }
 
     if (opendcp->log_level > 0 && opendcp->log_level < 3) {
         progress_bar(0, 0);
     }
 
-    input_type = get_input_type(filelist->files[0]);
+    input_type = get_input_type(reader_filelist->files[0]);
 
 #ifdef OPENMP
     omp_set_num_threads(opendcp->threads);
@@ -462,35 +446,32 @@ int opendcp_command_j2k(args_t *args) {
     frame_index = opendcp->j2k.start_frame;
     frame_count = opendcp->j2k.end_frame - (opendcp->j2k.start_frame -1);
 
-    opendcp_reader_t *reader = reader_new(filelist);
-    opendcp_writer_t *writer = writer_new(filelist);
+    writer_filelist = get_output_filelist(reader_filelist, out_path, "j2c");
+
+    opendcp_reader_t *reader = reader_new(reader_filelist);
+    opendcp_writer_t *writer = writer_new(writer_filelist);
 
     #pragma omp parallel for private(c)
     for (c = opendcp->j2k.start_frame - 1; c < opendcp->j2k.end_frame; c++) {
         #pragma omp flush(SIGINT_received)
 
-        /* check for non-ascii filenames under windows */
 #ifdef _WIN32
-
-        if (is_filename_ascii(filelist->files[c]) == 0) {
+        /* check for non-ascii filenames under windows */
+        if (is_filename_ascii(reader_filelist->files[c]) == 0) {
             OPENDCP_LOG(LOG_WARN, "Filename %s contains non-ascii characters, skipping", filelist->files[c]);
             continue;
         }
-
 #endif
-        char out[MAX_FILENAME_LENGTH];
-        build_j2k_filename(filelist->files[c], out_path, out);
-
         if (!SIGINT_received) {
-            OPENDCP_LOG(LOG_INFO, "JPEG2000 conversion %s started OPENMP: %d", filelist->files[c], openmp_flag);
+            OPENDCP_LOG(LOG_INFO, "JPEG2000 conversion %s started OPENMP: %d", reader_filelist->files[c], openmp_flag);
 
-            if(access(out, F_OK) != 0 || opendcp->j2k.overwrite == 1) {
+            if(access(writer_filelist->files[c], F_OK) != 0 || opendcp->j2k.overwrite == 1) {
                 if (input_type == VIDEO) {
-                    result = decode_video(opendcp, filelist->files[c]);
+                    result = decode_video(opendcp, reader_filelist->files[c]);
                 } else {
                     opendcp_image_t *image;
                     result = reader->read_frame(reader, c, &image);
-                    result = writer->write_frame(writer, c, opendcp, image);
+                    result = writer->write_frame(writer, opendcp, c, image);
                     opendcp_image_free(image);
                 }
             }
@@ -505,11 +486,11 @@ int opendcp_command_j2k(args_t *args) {
             }
 
             if (result == OPENDCP_ERROR) {
-                OPENDCP_LOG(LOG_ERROR, "JPEG2000 conversion %s failed", filelist->files[c]);
+                OPENDCP_LOG(LOG_ERROR, "JPEG2000 conversion %s failed", reader_filelist->files[c]);
                 dcp_fatal(opendcp, "Exiting...");
             }
             else {
-                OPENDCP_LOG(LOG_INFO, "JPEG2000 conversion %s complete", filelist->files[c]);
+                OPENDCP_LOG(LOG_INFO, "JPEG2000 conversion %s complete", reader_filelist->files[c]);
             }
 
             count++;
@@ -520,7 +501,8 @@ int opendcp_command_j2k(args_t *args) {
         progress_bar(opendcp->j2k.end_frame, opendcp->j2k.end_frame);
     }
 
-    filelist_free(filelist);
+    filelist_free(reader_filelist);
+    filelist_free(writer_filelist);
 
     if (opendcp->log_level > 0) {
         printf("\n");

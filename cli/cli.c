@@ -36,7 +36,7 @@
 #include "cli.h"
 
 
-int is_dir(char *path) {
+int is_dir(const char *path) {
     struct stat st_in;
 
     if (stat(path, &st_in) != 0 ) {
@@ -110,6 +110,35 @@ int file_selector(const char *filename, const char *filter) {
     }
 
     return 0;
+}
+
+void build_output_filename(const char *in, const char *path, char *out, const char *ext) {
+    OPENDCP_LOG(LOG_DEBUG, "Building filename from %s", in);
+
+    if (!is_dir(path)) {
+        snprintf(out, MAX_FILENAME_LENGTH, "%s", path);
+    }
+    else {
+        char *base = basename_noext(in);
+        snprintf(out, MAX_FILENAME_LENGTH, "%s/%s.%s", path, base, ext);
+
+        if (base) {
+            free(base);
+        }
+    }
+}
+
+filelist_t *get_output_filelist(filelist_t *in, const char *path, const char *ext) {
+    size_t i, count;
+
+    count = in->nfiles;
+    filelist_t *out = filelist_alloc(count);
+
+    for (i = 0; i < count; i++) {
+        build_output_filename(in->files[i], path, out->files[i], ext); 
+    }
+
+    return out;
 }
 
 filelist_t *get_filelist(const char *path, const char *filter) {

@@ -7,6 +7,8 @@ typedef struct {
     opendcp_encoder_t *encoder;
     int (*write_next)();
     int (*write_frame)();
+    char *path;
+    char *ext;
 } opendcp_writer_t;
 
 opendcp_writer_t *writer_new(filelist_t *filelist);
