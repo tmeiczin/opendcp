@@ -30,6 +30,11 @@
 #include "opendcp.h"
 
 
+/************************************************/
+/* This file contains various utility functions */
+/************************************************/
+
+
 bool is_dir(const char *path) {
     struct stat st_in;
 
