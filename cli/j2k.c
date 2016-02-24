@@ -470,8 +470,11 @@ int opendcp_command_j2k(args_t *args) {
                 if (input_type == VIDEO) {
                     result = decode_video(opendcp, reader_filelist->files[c]);
                 } else {
+                    OPENDCP_LOG(LOG_INFO, "Image conversion id %d", c);
                     opendcp_image_t *image;
                     result = reader->read_frame(reader, c, &image);
+                    image->id = c;
+                    convert_to_jpeg2000(opendcp, image);
                     result = writer->write_frame(writer, opendcp, c, image);
                     opendcp_image_free(image);
                 }

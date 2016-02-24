@@ -60,6 +60,7 @@ typedef struct {
     int signed_bit;
     opendcp_image_component_t *component;
     int n_components;
+    int id;
 } opendcp_image_t;
 
 int  read_image(opendcp_image_t **image, char *file);

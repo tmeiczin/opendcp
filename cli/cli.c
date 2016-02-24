@@ -65,17 +65,6 @@ char *get_basename(const char *filename) {
     return(base);
 }
 
-char *basename_noext(const char *str) {
-    if (str == 0 || strlen(str) == 0) {
-        return NULL;
-    }
-
-    char *base = strrchr(str, '/') + 1;
-    char *ext  = strrchr(str, '.');
-
-    return strndup(base, ext - base);
-}
-
 int file_selector(const char *filename, const char *filter) {
     char *extension;
 

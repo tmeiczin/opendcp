@@ -43,7 +43,8 @@ extern "C" {
 /* string sizes */
 #define MAX_TITLE_LENGTH    255  /* maximum title length */
 #define TEXT_LENGTH         80   /* length of long text fields */
-#define RATING_SIZE         32   /* length of long text fields */
+#define LABEL_LENGTH        24   /* length of short text fields */
+#define RATING_SIZE         32   /* length of ratings field */
 #define UUID_SIZE           40   /* uuid size */
 #define DIGEST_SIZE         40   /* digest of size */
 #define KEY_SIZE            16   /* key size */
@@ -416,6 +417,7 @@ void        opendcp_log_subscribe(opendcp_log_cb_t *cb);
 int         ensure_sequential(char *files[], int nfiles);
 int         order_indexed_files(char *files[], int nfiles);
 filelist_t *filelist_alloc(int nfiles);
+char       *basename_noext(const char *str);
 void        filelist_free(filelist_t *filelist);
 void        strnchrdel(const char *src, char *dst, int dst_len, char d);
 bool        strcasefind(const char *s, const char *find);

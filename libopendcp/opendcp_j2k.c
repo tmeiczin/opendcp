@@ -23,6 +23,40 @@
 #include "opendcp.h"
 #include "opendcp_encoder.h"
 
+int convert_to_jpeg2000(opendcp_t *opendcp, opendcp_image_t *image) {
+
+    if (!image) {
+        OPENDCP_LOG(LOG_ERROR, "no image to convert");
+        return OPENDCP_ERROR;
+    }
+
+    /* verify image is dci compliant */
+    if (check_image_compliance(opendcp->cinema_profile, image, NULL) != OPENDCP_NO_ERROR) {
+
+        /* resize image */
+        if (opendcp->j2k.resize) {
+            if (resize(&image, opendcp->cinema_profile, opendcp->j2k.resize) != OPENDCP_NO_ERROR) {
+                return OPENDCP_ERROR;
+            }
+        }
+        else {
+            OPENDCP_LOG(LOG_WARN, "the image resolution of %d is not DCI compliant", image->id);
+            return OPENDCP_ERROR;
+        }
+    }
+
+    if (opendcp->j2k.xyz) {
+        OPENDCP_LOG(LOG_INFO, "RGB->XYZ color conversion %d", image->id);
+
+        if (rgb_to_xyz(image, opendcp->j2k.lut, opendcp->j2k.xyz_method)) {
+            OPENDCP_LOG(LOG_ERROR, "color conversion failed %d", image->id);
+            return OPENDCP_ERROR;
+        }
+    }
+
+    return OPENDCP_NO_ERROR;
+}
+
 int convert_to_j2k(opendcp_t *opendcp, char *sfile, char *dfile) {
     opendcp_image_t *opendcp_image;
     opendcp_encoder_t *encoder;

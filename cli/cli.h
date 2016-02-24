@@ -24,7 +24,6 @@ int   check_extension(char *filename, char *pattern);
 int   find_ext_offset(char str[]);
 int   find_seq_offset (char str1[], char str2[]);
 char *get_basename(const char *filename);
-char *basename_noext(const char *str);
 void  build_output_filename(const char *in, const char *path, char *out, const char *ext);
 filelist_t *get_filelist(const char *path, const char *filter);
 filelist_t *get_output_filelist(filelist_t *in, const char *path, const char *ext);

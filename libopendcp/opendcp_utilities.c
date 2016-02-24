@@ -137,6 +137,17 @@ bool is_filename_ascii(const char *s) {
     return true;
 }
 
+char *basename_noext(const char *str) {
+    if (str == 0 || strlen(str) == 0) {
+        return NULL;
+    }
+
+    char *base = strrchr(str, '/') + 1;
+    char *ext  = strrchr(str, '.');
+
+    return strndup(base, ext - base);
+}
+
 /**
 This function will generate a timestamp string based on the current local time.
 
