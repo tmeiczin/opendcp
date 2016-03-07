@@ -35,6 +35,15 @@
 /************************************************/
 
 
+/**
+Tests whether the path is a directory. 
+
+@param
+  path          path to check 
+
+@return
+  bool          true if a directory 
+*/
 bool is_dir(const char *path) {
     struct stat st_in;
 
@@ -98,10 +107,28 @@ bool is_key_value_set(byte_t *key, int len) {
     return false;
 }
 
+/**
+Tests if the string is a valid UUID. 
+
+@param
+  s             string to check 
+
+@return
+  bool          true if string is valid UUID
+*/
 bool is_uuid(const char *s) {
     return is_key(s);
 }
 
+/**
+Tests if the string is a valid key. 
+
+@param
+  s             string to check 
+
+@return
+  bool          true if string is valid key. 
+*/
 bool is_key(const char *s) {
     int i, len;
     char strip[40] = "";
@@ -123,6 +150,15 @@ bool is_key(const char *s) {
     return true;
 }
 
+/**
+Tests if the string contains only ascii characters.
+
+@param
+  s             string to check 
+
+@return
+  bool          true if string is ascii only 
+*/
 bool is_filename_ascii(const char *s) {
     int i, len;
 
@@ -137,6 +173,15 @@ bool is_filename_ascii(const char *s) {
     return true;
 }
 
+/**
+Returns the basename of a path without the file extension
+
+@param
+  s             string to check 
+
+@return
+  *char         basename without extension 
+*/
 char *basename_noext(const char *str) {
     if (str == 0 || strlen(str) == 0) {
         return NULL;
@@ -169,7 +214,7 @@ void generate_timestamp(char *timestamp) {
 }
 
 /**
-Allocate a list of filenames.
+locate a list of filenames.
 
 This function allocates memory for a list of filenames.
 
