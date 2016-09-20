@@ -21,6 +21,7 @@
             OPENDCP_DECODER(OPENDCP_DECODER_DPX,  dpx, "dpx", 1)  \
             OPENDCP_DECODER(OPENDCP_DECODER_OPENJPEG,  openjpeg, "j2c;j2k;jp2;jpf", 1) \
             OPENDCP_DECODER(OPENDCP_DECODER_TIFF, tif, "tif;tiff", 1)  \
+            OPENDCP_DECODER(OPENDCP_DECODER_EXR, exr, "exr", 1) \
             OPENDCP_DECODER(OPENDCP_DECODER_NONE, none, "none", 1)
 
 #define GENERATE_DECODER_ENUM(DECODER, NAME, EXT, ENABLED) DECODER,
