@@ -45,3 +45,40 @@ typedef struct {
     exr_image_header_t       image;
     int                      row_order;
 } exr_image_t;
+
+/* for change half become float */
+union {
+    unsigned int i;
+    unsigned float f;
+} u_intfloat;
+
+float half2float( unsigned short half ) {
+    
+    u_intfloat int_fl;
+
+    // zero +
+    if( half == 0x0000 )
+        int_fl.i = 0;
+ 
+    // zero -
+    else if( half == 0x8000 )
+        int_fl.i = 0x80000000;
+ 
+    // infinity +
+    else if( half == 0x7c00 ) 
+        int_fl.i = 0x7f800000;
+  
+    // infinity -
+    else if( half == 0xfc00 ) {
+        int_fl.i = 0xff800000;
+
+    // NaN +
+    else if( (half > 0x7c00) && (half < 0x8000) ) 
+        int_fl.i = ((half & 0x3ff) << 13) | 0x7f800000;
+ 
+    // NaN -
+    else if( half > 0xfc00 )
+        int_fl.i = ((half & 0x3ff) << 13) | 0xff800000;
+
+    return int_fl.f;
+}
