@@ -56,9 +56,33 @@ float half2float( unsigned short half ) {
     
     u_intfloat int_fl;
 
+    // normal number +
+    if( (half > 0x03ff) && (half < 0x7c00) ) {
+       unsigned int exponent = ((half & 0x7c00) + 112) << 23;
+       unsigned int value = (half & 0x03ff) << 13;
+       inf_fl.i = exponent | value;
+    }
+     // normal number -
+    else if( (half > 0x83ff) && (half < 0xfc00) ) {
+       unsigned int exponent = ((half & 0x7c00) + 112) << 23;
+       unsigned int value = (half & 0x03ff) << 13;
+       inf_fl.i = 0x80000000 + exponent + value;
+    }
+    // not normal number +
+    else if( (half > 0x0000) && (half < 0x0400) ) {
+       unsigned int exponent = ((half & 0x7c00) + 102) << 23;
+       unsigned int value = (half & 0x03ff) << 13;
+      inf_fl.i = exponent + value;
+    }
+    // not normal number -
+    else if( (half > 0x8000) && (half < 0x8400) ) {
+       unsigned int exponent = ((half & 0x7c00) + 102) << 23;
+       unsigned int value = (half & 0x03ff) << 13;
+      inf_fl.i = 0x80000000 + exponent + value;
+    }
     // zero +
-    if( half == 0x0000 )
-        int_fl.i = 0;
+    else if( half == 0x0000 )
+        int_fl.i = 0x00000000;
  
     // zero -
     else if( half == 0x8000 )
