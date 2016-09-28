@@ -103,15 +103,15 @@ float half2float( unsigned short half ) {
     // not normal number +
     else if( (half > 0x0000) && (half < 0x0400) ) {
        unsigned char shift = shiftForNumber( half );
-       unsigned int exponent = ((half & 0x7c00) + shift + 102) << 23;
-       unsigned int value = (half & 0x03ff) << 13;
+       unsigned int exponent = (shift + 102) << 23;
+       unsigned int value = (half << (24 - shift)) & 0x007fffff;
       int_fl.i = exponent + value;
     }
     // not normal number -
     else if( (half > 0x8000) && (half < 0x8400) ) {
        unsigned char shift = shiftForNumber( half & 0x7fff );
-       unsigned int exponent = ((half & 0x7c00) + shift + 102) << 23;
-       unsigned int value = (half & 0x03ff) << 13;
+       unsigned int exponent = (shift + 102) << 23;
+       unsigned int value = (half << (24 - shift)) & 0x007fffff;
       int_fl.i = 0x80000000 + exponent + value;
     }
     // zero +
