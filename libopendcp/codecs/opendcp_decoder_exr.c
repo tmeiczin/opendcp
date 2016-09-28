@@ -236,9 +236,9 @@ int opendcp_decode_exr(opendcp_image_t **image_ptr, const char *sfile) {
    // ---- skip two bytes, not used
    fgetc(exr_fp);
    fgetc(exr_fp);
-  
-   // ---- read standard EXR attritubes
-   
+
+   // ---- read EXR attritubes need for dcp
+   exr_attributes attritbute = readAttributes( exr_fp );
        
    // ---- 
 }
