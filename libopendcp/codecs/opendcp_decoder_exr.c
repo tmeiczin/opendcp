@@ -175,19 +175,70 @@ unsigned char readString255FromFile( FILE *fp, char *string ) {
    return index-1;
 }
 
-
-exr_channel_list readChannelData( FILE *exr_fp ) {
+exr_channel_list readChannelData( FILE *exr_fp) {
    
    exr_channel_list channel_list;
-   channel_list.num_channels = 0;
    unsigned char finish = 0x00;
- 
+   channel_list.num_channels = 0;
+   unsigned short channel_index = 0;
+      // ---- read channel name
+      
    do {
- 
-   } while( !finish );
+      // ---- find channels 'B', 'G', 'R'
+      exr_channel channel;
+      unsigned char stringLength = readString255FromFile( exr_fp, channel.channel_name );
+
+      if( stringLength ) {
+         unsigned char find_channel = 0x00;
+
+         if( channel.channel_name[0] == 'B' ) {
+            find_channel = 0x01;
+         }
+         else if( channel_list.channel[channel_index].channel_name[0] == 'G' ) {
+            find_channel = 0x01;
+         }
+         else if( channel_list.channel[channel_index].channel_name[0] == 'R' ) {
+            find_channel = 0x01;
+         }
+
+         if( find_channel ) {
+            // ---- read channel data type
+            channel.data_type = fgetc( exr_fp );
+            fgetc( exr_fp );
+            fgetc( exr_fp );
+            fgetc( exr_fp );
+            // ---- read channel non linear
+            channel.non_linear = fgetc( exr_fp );
+            fgetc( exr_fp );
+            fgetc( exr_fp );
+            fgetc( exr_fp );
+            // ---- read sample x
+            channel.sample_x = fgetc( exr_fp );
+            fgetc( exr_fp );
+            fgetc( exr_fp );
+            fgetc( exr_fp );
+            // ---- read sample y
+            channel.sample_y = fgetc( exr_fp );
+            fgetc( exr_fp );
+            fgetc( exr_fp );
+            fgetc( exr_fp );
+            // ---- save channel
+            channel_list.channel[channel_index] = channel;
+            channel_list.num_channels++;
+            channel_index++;
+         }
+         // ---- skip channel
+         else
+            fseek( exr_fp, ftell( exr_fp ) + 16, SEEK_SET );
+   }
+   else
+       finish = 0x01;
+
+   } while( !finish && (channel_index < 3) );
  
    return channel_list;
 }
+
 
 exr_attributes readAttributes( FILE *exr_fp ) {
 
