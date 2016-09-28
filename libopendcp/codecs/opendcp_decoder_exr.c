@@ -222,14 +222,27 @@ exr_channel_list readChannelData( FILE *exr_fp) {
             fgetc( exr_fp );
             fgetc( exr_fp );
             fgetc( exr_fp );
+            // ---- offset
+            channel.offset = offset;
+            if( channel.data_type == EXR_HALF)
+               offset += 2;
+            else
+               offset += 4;
             // ---- save channel
             channel_list.channel[channel_index] = channel;
             channel_list.num_channels++;
             channel_index++;
          }
          // ---- skip channel
-         else
-            fseek( exr_fp, ftell( exr_fp ) + 16, SEEK_SET );
+         else {
+            // ---- data offset
+            unsigned char data_type = fgetc( exr_fp );
+            if( data_type == EXR_HALF)
+               offset += 2;
+            else
+               offset += 4; 
+            fseek( exr_fp, ftell( exr_fp ) + 15, SEEK_SET );
+         }
    }
    else
        finish = 0x01;
