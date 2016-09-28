@@ -335,7 +335,7 @@ int opendcp_decode_exr(opendcp_image_t **image_ptr, const char *sfile) {
 
    // ---- file type: normal, deep pixel, multipart (only support normal)
    unsigned char type = fgetc(exr_fp);
-   if( type & 0x1b != 0x00 ) {
+   if( type & 0x1a != 0x00 ) {
       OPENDCP_LOG(LOG_ERROR,"Only support normal scanline exr file, no tile, deep pixel, multipart file");
      return OPENDCP_FATAL;
    }
@@ -347,5 +347,7 @@ int opendcp_decode_exr(opendcp_image_t **image_ptr, const char *sfile) {
    // ---- read EXR attritubes need for dcp
    exr_attributes attritbute = readAttributes( exr_fp );
        
-   // ---- 
+   // ---- read offset table
+
+   // ---- read file data
 }
