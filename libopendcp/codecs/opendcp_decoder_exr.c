@@ -29,22 +29,26 @@ typedef enum {
 } exr_compression_enum;
 
 typedef struct {
-    uint32_t magic_num;         /* magic number 0x762f3101 (file signature) */
-} exr_magic_num_t;
-
-typedef struct {
     uint16 num_channel;
 } exr_channel_list;
 
 typedef struct {
-    int32_t  width;              /* width of image                */
-    int32_t  height;             /* height of image               */
-} exr_image_header_t;
+    int left;
+    int right;
+    int bottom;
+    int top;
+} exr_window;
 
+/* exr attributes, only save data for create dip */
 typedef struct {
-    exr_image_header_t       image;
-    int                      row_order;
-} exr_image_t;
+    exr_channel_list channel_list;    /* channel list */
+    unsigned char compression;        /* compression */
+    exr_window dataWindow;            /* data window */
+    unsigned char lineOrder;          /* line order */
+    unsigned int  width;              /* width of image - calculate */
+    unsigned int  height;             /* height of image - calculate */
+} exr_attributes;
+
 
 #pragma mark ---- Half --> Float
 /* for change half become float */
@@ -142,7 +146,51 @@ float half2float( unsigned short half ) {
    return int_fl.f;
 }
 
+
+#pragma mark ---- Read Attributes
+unsigned char readString255FromFile( FILE *fp, char *string ) {
+
+   unsigned char index = 0;
+   do {
+     string[index] = fgetc( fp );
+     index++;
+   } while( string[index-1] != 0x00 );
+
+   return index-1;
+}
+
+exr_attributes readAttributes( FILE *exr_fp ) {
+
+   exr_attributes attributes;
+   unsigned char finish = 0;
+
+   do {
+      // ----
+      char attribute_name[255];
+      unsigned char string_length = readString255FromFile( exr_fp, attribute_name );
+ 
+      if( string_length ) {
+         // ---- read attribute data type
+         char attribute_data_type[255];
+         readString255FromFile( exr_fp, attribute_data_type );
+
+         // ---- read attribute length
+         unsigned int attribute_length = 0;
+         fread( &attribute_length, 4, 1, exr_fp );
+
+         // ---- skip attribute
+         fseek( exr_fp, ftell( exr_fp ) + attribute_length, SEEK_SET );
+      }
+      else 
+         finish = 0x01;
+   } while( !finish );
+
+   return attributes;
+}
+
+
 #pragma mark ---- Read EXR File
+/* decode exr file */
 int opendcp_decode_exr(opendcp_image_t **image_ptr, const char *sfile) {
 
    FILE *exr_fp;
