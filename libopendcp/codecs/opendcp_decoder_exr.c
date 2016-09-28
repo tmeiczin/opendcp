@@ -28,8 +28,24 @@ typedef enum {
     EXR_DWAB     = 9            /* dwab 256 lines (not supported) */
 } exr_compression_enum;
 
+typedef enum {
+    EXR_UINT      = 0,          /* unsigned int 32 bit, never use for color data */
+    EXR_HALF      = 1,          /* half, 16 bit floating point */
+    EXR_FLOAT     = 2,          /* float, 32 bit floating point */
+} exr_dataType_enum;
+
 typedef struct {
-    uint16 num_channel;
+    char channelName[255];
+    unsigned char dataType;    /* channel data type, int, half, float               */
+    unsigned char non_linear;  /* non linear, only use for B44 and B44A compression */
+    unsigned int sample_x;     /* sample x direction, only support == 1             */
+    unsigned int sample_y;     /* sample y direction, only support == 1             */
+    unsigned int offset;       /* position in image data                            */
+} exr_channel;
+
+typedef struct {
+    unsigned short num_channels; /* number channels       */
+    exr_channel channel[3];      /* channel array, only read data for B, G, R channel */
 } exr_channel_list;
 
 typedef struct {
@@ -159,16 +175,31 @@ unsigned char readString255FromFile( FILE *fp, char *string ) {
    return index-1;
 }
 
+
+exr_channel_list readChannelData( FILE *exr_fp ) {
+   
+   exr_channel_list channel_list;
+   channel_list.num_channels = 0;
+   unsigned char finish = 0x00;
+ 
+   do {
+ 
+   } while( !finish );
+ 
+   return channel_list;
+}
+
 exr_attributes readAttributes( FILE *exr_fp ) {
 
    exr_attributes attributes;
    unsigned char finish = 0;
 
+   // ---- read attributes, after last attribute have byte == 0x00 
    do {
-      // ----
+      // ---- read attribute name
       char attribute_name[255];
       unsigned char string_length = readString255FromFile( exr_fp, attribute_name );
- 
+
       if( string_length ) {
          // ---- read attribute data type
          char attribute_data_type[255];
@@ -178,8 +209,33 @@ exr_attributes readAttributes( FILE *exr_fp ) {
          unsigned int attribute_length = 0;
          fread( &attribute_length, 4, 1, exr_fp );
 
+         if( !strcmp( "channels", attribute_name ) ) {
+            // ---- skip attribute, chưa làm hàm này
+            attributes.channel_list = readChannelData( exr_fp );
+ //           fseek( exr_fp, ftell( exr_fp ) + attribute_length, SEEK_SET );
+         }
+         else if( !strcmp( "compression", attribute_name ) )
+             attributes.compression = fgetc( exr_fp );
+        else if( !strcmp( "dataWindow", attribute_name ) ) {
+           fread( &(attributes.dataWindow.bottom), 4, 1, exr_fp );
+           fread( &(attributes.dataWindow.left), 4, 1, exr_fp );
+           fread( &(attributes.dataWindow.top), 4, 1, exr_fp );
+           fread( &(attributes.dataWindow.right), 4, 1, exr_fp );
+        }
+        else if( !strcmp( "displayWindow", attribute_name ) ) {
+           fread( &(attributes.displayWindow.bottom), 4, 1, exr_fp );
+           fread( &(attributes.displayWindow.left), 4, 1, exr_fp );
+           fread( &(attributes.displayWindow.top), 4, 1, exr_fp );
+           fread( &(attributes.displayWindow.right), 4, 1, exr_fp );
+        }
+        else if( !strcmp( "lineOrder", attribute_name ) ) {
+           attributes.lineOrder = fgetc( exr_fp );
+        }
+        else
          // ---- skip attribute
          fseek( exr_fp, ftell( exr_fp ) + attribute_length, SEEK_SET );
+
+ //        printf( "%s %s %d\n", attribute_name, attribute_data_type, attribute_length );
       }
       else 
          finish = 0x01;
