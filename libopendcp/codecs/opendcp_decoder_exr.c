@@ -47,10 +47,42 @@ typedef struct {
 } exr_image_t;
 
 /* for change half become float */
-union {
+typedef union {
     unsigned int i;
-    unsigned float f;
+    float f;
 } u_intfloat;
+
+/* shift for not normal numbers */
+unsigned char shiftForNumber( unsigned short value ) {
+ 
+    unsigned char shift = 0;
+  
+   if( value < 1 )   // never see this case
+      shift = 0;
+   else if( value < 2 )
+      shift = 1;
+   else if( value < 4 )
+      shift = 2;
+   else if( value < 8 )
+      shift = 3;
+   else if( value < 16 )
+      shift = 4;
+   else if( value < 32 )
+      shift = 5;
+   else if( value < 64 )
+      shift = 6;
+   else if( value < 128 )
+      shift = 7;
+   else if( value < 256 )
+      shift = 8;
+   else if( value < 512 )
+      shift = 9;
+   else if( value < 1024 )
+      shift = 10;
+   // never see case after 1024
+    
+   return shift;
+}
 
 float half2float( unsigned short half ) {
     
@@ -58,27 +90,29 @@ float half2float( unsigned short half ) {
 
     // normal number +
     if( (half > 0x03ff) && (half < 0x7c00) ) {
-       unsigned int exponent = ((half & 0x7c00) + 112) << 23;
+       unsigned int exponent = (((half & 0x7c00) >> 10) + 112) << 23;
        unsigned int value = (half & 0x03ff) << 13;
-       inf_fl.i = exponent | value;
+       int_fl.i = exponent | value;
     }
      // normal number -
     else if( (half > 0x83ff) && (half < 0xfc00) ) {
-       unsigned int exponent = ((half & 0x7c00) + 112) << 23;
+       unsigned int exponent = (((half & 0x7c00) >> 10) + 112) << 23;
        unsigned int value = (half & 0x03ff) << 13;
-       inf_fl.i = 0x80000000 + exponent + value;
+       int_fl.i = 0x80000000 + exponent + value;
     }
     // not normal number +
     else if( (half > 0x0000) && (half < 0x0400) ) {
-       unsigned int exponent = ((half & 0x7c00) + 102) << 23;
+       unsigned char shift = shiftForNumber( half );
+       unsigned int exponent = ((half & 0x7c00) + shift + 102) << 23;
        unsigned int value = (half & 0x03ff) << 13;
-      inf_fl.i = exponent + value;
+      int_fl.i = exponent + value;
     }
     // not normal number -
     else if( (half > 0x8000) && (half < 0x8400) ) {
-       unsigned int exponent = ((half & 0x7c00) + 102) << 23;
+       unsigned char shift = shiftForNumber( half & 0x7fff );
+       unsigned int exponent = ((half & 0x7c00) + shift + 102) << 23;
        unsigned int value = (half & 0x03ff) << 13;
-      inf_fl.i = 0x80000000 + exponent + value;
+      int_fl.i = 0x80000000 + exponent + value;
     }
     // zero +
     else if( half == 0x0000 )
@@ -93,7 +127,7 @@ float half2float( unsigned short half ) {
         int_fl.i = 0x7f800000;
   
     // infinity -
-    else if( half == 0xfc00 ) {
+    else if( half == 0xfc00 )
         int_fl.i = 0xff800000;
 
     // NaN +
