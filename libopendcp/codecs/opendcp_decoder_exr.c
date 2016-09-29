@@ -35,7 +35,7 @@ typedef enum {
 } exr_dataType_enum;
 
 typedef struct {
-    char channelName[255];
+    char name[255];            /* channel name                                      */
     unsigned char dataType;    /* channel data type, int, half, float               */
     unsigned char non_linear;  /* non linear, only use for B44 and B44A compression */
     unsigned int sample_x;     /* sample x direction, only support == 1             */
@@ -65,6 +65,17 @@ typedef struct {
     unsigned int  height;             /* height of image - calculate */
 } exr_attributes;
 
+/* exr chunk data */
+typedef struct {
+   unsigned int num_chunks;
+   unsigned long *chunk_table;
+} exr_chunk_data;
+
+typedef struct {
+   float *channel_b;
+   float *channel_g;
+   float *channel_r;
+} exr_image_data;
 
 #pragma mark ---- Half --> Float
 /* for change half become float */
@@ -186,18 +197,18 @@ exr_channel_list readChannelData( FILE *exr_fp) {
    do {
       // ---- find channels 'B', 'G', 'R'
       exr_channel channel;
-      unsigned char stringLength = readString255FromFile( exr_fp, channel.channel_name );
+      unsigned char stringLength = readString255FromFile( exr_fp, channel.name );
 
       if( stringLength ) {
          unsigned char find_channel = 0x00;
 
-         if( channel.channel_name[0] == 'B' ) {
+         if( channel.name[0] == 'B' ) {
             find_channel = 0x01;
          }
-         else if( channel_list.channel[channel_index].channel_name[0] == 'G' ) {
+         else if( channel.name[0] == 'G' ) {
             find_channel = 0x01;
          }
-         else if( channel_list.channel[channel_index].channel_name[0] == 'R' ) {
+         else if( channel.name[0] == 'R' ) {
             find_channel = 0x01;
          }
 
@@ -308,6 +319,28 @@ exr_attributes readAttributes( FILE *exr_fp ) {
    return attributes;
 }
 
+exr_chunk_data read_chunk_data( FILE *exr_fp, exr_attributes *attributes ) {
+
+   exr_chunk_data chunk_data;
+   chunk_data.num_chunks = (attributes->dataWindow.top - attributes->dataWindow.bottom) + 1;
+    
+   // ---- if EXR_COMPRESSION_ZIP, 16 rows per chunk
+   if( attributes->compression == EXR_COMPRESSION_ZIP )  // 
+       chunk_data.num_chunks = ((attributes->dataWindow.top - attributes->dataWindow.bottom) >> 4) + 1;
+   
+   // ---- get memory for chunk table
+   chunk_data.chunk_table = malloc( chunk_data.num_chunks << 3 );  // 8 bytes
+    
+   // ----- read address for chunks
+   unsigned int chunk_index = 0;
+   while( chunk_index < chunk_data.num_chunks ) {
+      fread( &(chunk_data.chunk_table[chunk_index]), 8, 1, exr_fp );
+      chunk_index++;
+   }
+    
+   return chunk_data;
+}
+
 
 #pragma mark ---- Read EXR File
 /* decode exr file */
@@ -365,7 +398,25 @@ int opendcp_decode_exr(opendcp_image_t **image_ptr, const char *sfile) {
       OPENDCP_LOG(LOG_ERROR,"Only support NO, RLE, ZIPS, ZIP compression in exr file");
       return OPENDCP_FATAL;
    }
+    
+   // ---- check number channels, need all B, G, R channels
+    if( attributes.channel_list.num_channels != 3 ) {
+      OPENDCP_LOG(LOG_ERROR,"Exr file not have all B, G, R channels");
+      return OPENDCP_FATAL;
+   }
+   
    // ---- read offset table
+   exr_chunk_data chunk_data = read_chunk_data( exr_fp, &attributes );
 
    // ---- read file data
+   if( attributes.compression == EXR_COMPRESSION_NO )
+      read_data_compression_no( exr_fp, number_chunks, chunk_table );
+   else if( attributes.compression == EXR_COMPRESSION_RLE )
+      read_data_compression_rle( exr_fp, number_chunks, chunk_table );
+   else if( attributes.compression == EXR_COMPRESSION_ZIPS )
+      read_data_compression_zip( exr_fp , 1, number_chunks, chunk_table );
+   else // f( attributes.compression == EXR_COMPRESSION_ZIP )
+      read_data_compression_zip( exr_fp, 16, number_chunks, chunk_table );
+   // ---- free memory
+   free( chunk_table );
 }
