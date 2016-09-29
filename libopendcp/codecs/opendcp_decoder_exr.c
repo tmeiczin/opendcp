@@ -244,7 +244,7 @@ exr_channel_list readChannelData( FILE *exr_fp) {
             channel_list.num_channels++;
             channel_index++;
          }
-         // ---- skip channel
+         // ---- not need this channel skip channel; need read all channel data for next attribute
          else {
             // ---- data offset
             unsigned char data_type = fgetc( exr_fp );
@@ -258,7 +258,7 @@ exr_channel_list readChannelData( FILE *exr_fp) {
    else
        finish = 0x01;
 
-   } while( !finish && (channel_index < 3) );
+   } while( !finish );
  
    return channel_list;
 }
