@@ -16,16 +16,16 @@ typedef enum {
 } line_order;
 
 typedef enum {
-    EXR_NO       = 0,          /* no compression                  */
-    EXR_RLE      = 1,          /* 8-bit run-length-encoded (not supported) */
-    EXR_ZIPS     = 2,          /* zip single line (not supported) */
-    EXR_ZIP      = 3,          /* zip 16 lines                    */
-    EXR_PIZ      = 4,          /* piz (not supported)             */
-    EXR_PXR24    = 5           /* pixar 24 bit (not supported)    */
-    EXR_B44      = 6           /* b44 (not supported)             */
-    EXR_B44A     = 7           /* b44a (not supported)            */
-    EXR_DWAA     = 8            /* dwaa 32 lines (not supported)  */
-    EXR_DWAB     = 9            /* dwab 256 lines (not supported) */
+    EXR_COMPRESSION_NO       = 0,          /* no compression                  */
+    EXR_COMPRESSION_RLE      = 1,          /* 8-bit run-length-encoded (not supported) */
+    EXR_COMPRESSION_ZIPS     = 2,          /* zip single line (not supported) */
+    EXR_COMPRESSION_ZIP      = 3,          /* zip 16 lines                    */
+    EXR_COMPRESSION_PIZ      = 4,          /* piz (not supported)             */
+    EXR_COMPRESSION_PXR24    = 5           /* pixar 24 bit (not supported)    */
+    EXR_COMPRESSION_B44      = 6           /* b44 (not supported)             */
+    EXR_COMPRESSION_B44A     = 7           /* b44a (not supported)            */
+    EXR_COMPRESSION_DWAA     = 8            /* dwaa 32 lines (not supported)  */
+    EXR_COMPRESSION_DWAB     = 9            /* dwab 256 lines (not supported) */
 } exr_compression_enum;
 
 typedef enum {
@@ -359,7 +359,12 @@ int opendcp_decode_exr(opendcp_image_t **image_ptr, const char *sfile) {
 
    // ---- read EXR attritubes need for dcp
    exr_attributes attritbute = readAttributes( exr_fp );
-       
+   
+   // ---- check compression
+   if( attributes.compression > EXR_COMPRESSION_ZIP ) {
+      OPENDCP_LOG(LOG_ERROR,"Only support NO, RLE, ZIPS, ZIP compression in exr file");
+      return OPENDCP_FATAL;
+   }
    // ---- read offset table
 
    // ---- read file data
