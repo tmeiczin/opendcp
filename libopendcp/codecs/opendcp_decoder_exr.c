@@ -353,6 +353,87 @@ exr_chunk_data read_chunk_data( FILE *exr_fp, exr_attributes *attributes ) {
 
 
 #pragma mark ---- Compression
+/* unfilter buffer - from OpenEXR library */
+void unfilter_buffer( unsigned char *buffer, unsigned char *unfilteredBuffer, unsigned int length ) {
+
+   {
+      unsigned char *t = (unsigned char *)buffer + 1;           // bỏ byte đầu tiên
+      unsigned char *stop = (unsigned char *)buffer + length;   // cuối buffer
+      
+      while (t < stop) {
+         // ---- unfilter byte
+         int d = (int) (t[-1]) + (int)(t[0]) - 128;  // add difference byte before subtract 128
+         //      NSLog( @"ImfFilter: unfilter t[-1] %d + t[0] %d - 128 = d %d", t[-1], t[0], d);
+         // ---- save unfiltered byte
+         t[0] = d;
+         ++t;
+      }
+   }
+ 
+   // Data organization || 0; (length+1)/2 || 1; (length+1)/2 + 1 || 2; (length+1)/2 + 2 || etc.
+   char *t1 = (char *)buffer;          // begin buffer
+   char *t2 = (char *)buffer + (length + 1) / 2;  // half buffer
+   char *s = (char *)unfilteredBuffer;  // start of unfiltered buffer
+   char *stop = s + length;             // end unfiltered buffer
+   unsigned char finished = 0x0;
+   
+   while( !finished ) {
+      // ---- if not at unfilteredBuffer end
+      if (s < stop)
+         *(s++) = *(t1++);  // copy from buffer
+      else
+         finished = 0x1;
+      // ---- if not at unfilteredBuffer end
+      if (s < stop)
+         *(s++) = *(t2++);  // copy next from half buffer
+      else
+         finished = 0x1;
+   }
+}
+
+/* uncompress zip with zlib */
+void uncompress_zip( unsigned char *compressed_buffer, unsigned int compressed_buffer_length, unsigned char *uncompressed_buffer, unsigned int uncompressed_buffer_length ) {
+
+   int err;
+   z_stream d_stream; // decompression stream data struct
+   
+   d_stream.zalloc = Z_NULL;
+   d_stream.zfree = Z_NULL;
+   d_stream.opaque = Z_NULL;
+   d_stream.data_type = Z_BINARY;
+   
+   d_stream.next_in  = compressed_buffer;
+   d_stream.avail_in = compressed_buffer_length;
+
+   // ---- check if initialization has no error
+   err = inflateInit(&d_stream);
+
+   if( err != Z_OK ) {
+      OPENDCP_LOG(LOG_ERROR,"uncompress_zip: error inflateInit %d (%x) d_stream.avail_in %d", err, err, d_stream.avail_in );
+   }
+   
+   // ---- give data to decompress
+   d_stream.next_out = uncompressed_buffer;
+   d_stream.avail_out = uncompressed_buffer_length;
+   
+   err = inflate(&d_stream, Z_STREAM_END);
+ 
+   if( err != Z_STREAM_END ) {
+      if( err == Z_OK) {
+         OPENDCP_LOG(LOG_ERROR,"uncompress_zip: Z_OK d_stream.avail_out %d d_stream.total_out %lu",
+               d_stream.avail_out, d_stream.total_out );
+      }
+      else
+         OPENDCP_LOG(LOG_ERROR,"ImfCompressorZIP: uncompress: error inflate %d (%x) d_stream.avail_out %d d_stream.total_out %lu",
+            err, err, d_stream.avail_out, d_stream.total_out );
+      
+   }
+
+   err = inflateEnd( &d_stream );
+   if( err != Z_OK )
+      OPENDCP_LOG(LOG_ERROR,"ExrZIP: uncompress: error inflateEnd %d (%x) c_stream.avail_in %d", err, err, d_stream.avail_in );
+}
+
 /* compression no */
 void read_data_compression_no( FILE *exr_fp, exr_chunk_data *chunk_data, exr_attributes *attributes ) {
 
@@ -388,18 +469,51 @@ void read_data_compression_rle( FILE *exr_fp, exr_chunk_data *chunk_data, exr_at
 /* compression ZIPS an ZIP */
 void read_data_compression_zip( FILE *exr_fp, exr_chunk_data *chunk_data, exr_attributes *attributes ) {
 
+   unsigned int num_columns = (attributes->dataWindow.right - attributes->dataWindow.left) + 1;
+   unsigned char chunk_num_rows = 1;          // number row for each chunk
+   unsigned char *compressed_buffer = NULL;   // buffer for compressed data
+   unsigned char *uncompressed_buffer = NULL; // buffer for uncompressed data
+   unsigned char *unfiltered_buffer = NULL;   // buffer for unfiltered data
+  
+   unsigned short channel_data_width = attributes->channel_list.data_width;
+
+   unsigned int uncompressed_data_length = num_columns*channel_data_width;
+
+   // ---- check if use ZIP
+   if( attributes->compression == EXR_COMPRESSION_ZIP ) {
+       uncompressed_data_length <<= 4;  // multiply 16
+       chunk_num_rows = 16;
+   }
+
+   compressed_buffer = malloc( uncompressed_data_length << 1 );
+   uncompressed_buffer = malloc( uncompressed_data_length );
+   unfiltered_buffer = malloc( uncompressed_data_length ); 
+
    unsigned short chunk_number = 0;
    while( chunk_number < chunk_data->num_chunks ) {
       // ---- read line number
       unsigned int line_number = 0;
       fread( &line_number, 4, 1, exr_fp );
+
       // ---- read data length
       unsigned int data_length = 0; 
       fread( &data_length, 4, 1, exr_fp );
-      printf( "%d - %d  %d\n", chunk_number, line_number, data_length );
+
+      // ---- read compressed data
+      fread( compressed_buffer, 1, data_length, exr_fp );
+
+      // ---- uncompress zip
+      uncompress_zip( compressed_buffer, data_length, uncompressed_buffer, uncompressed_data_length );
+      
+      // ---- unfilter data
+      unfilter_buffer( uncompressed_buffer, unfiltered_buffer, uncompressed_data_length );
+
+      // ---- copy data from buffer
+
       chunk_number++;
    }
 }
+
 
 #pragma mark ---- Read EXR File
 /* decode exr file */
