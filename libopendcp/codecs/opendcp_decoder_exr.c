@@ -342,6 +342,55 @@ exr_chunk_data read_chunk_data( FILE *exr_fp, exr_attributes *attributes ) {
 }
 
 
+#pragma mark ---- Compression
+/* compression no */
+void read_data_compression_no( FILE *exr_fp, exr_chunk_data *chunk_data, exr_attributes *attributes ) {
+
+   unsigned short chunk_number = 0;
+   while( chunk_number < chunk_data->num_chunks ) {
+      // ---- read line number
+      unsigned int line_number = 0;
+      fread( &line_number, 4, 1, exr_fp );
+      // ---- read data length
+      unsigned int data_length = 0; 
+      fread( &data_length, 4, 1, exr_fp );
+      printf( "%d - %d  %d\n", chunk_number, line_number, data_length );
+      chunk_number++;
+   }
+}
+
+/* compression RLE */
+void read_data_compression_rle( FILE *exr_fp, exr_chunk_data *chunk_data, exr_attributes *attributes ) {
+
+   unsigned short chunk_number = 0;
+   while( chunk_number < chunk_data->num_chunks ) {
+      // ---- read line number
+      unsigned int line_number = 0;
+      fread( &line_number, 4, 1, exr_fp );
+      // ---- read data length
+      unsigned int data_length = 0; 
+      fread( &data_length, 4, 1, exr_fp );
+      printf( "%d - %d  %d\n", chunk_number, line_number, data_length );
+      chunk_number++;
+   }
+}
+
+/* compression ZIPS an ZIP */
+void read_data_compression_zip( FILE *exr_fp, exr_chunk_data *chunk_data, exr_attributes *attributes ) {
+
+   unsigned short chunk_number = 0;
+   while( chunk_number < chunk_data->num_chunks ) {
+      // ---- read line number
+      unsigned int line_number = 0;
+      fread( &line_number, 4, 1, exr_fp );
+      // ---- read data length
+      unsigned int data_length = 0; 
+      fread( &data_length, 4, 1, exr_fp );
+      printf( "%d - %d  %d\n", chunk_number, line_number, data_length );
+      chunk_number++;
+   }
+}
+
 #pragma mark ---- Read EXR File
 /* decode exr file */
 int opendcp_decode_exr(opendcp_image_t **image_ptr, const char *sfile) {
@@ -410,13 +459,12 @@ int opendcp_decode_exr(opendcp_image_t **image_ptr, const char *sfile) {
 
    // ---- read file data
    if( attributes.compression == EXR_COMPRESSION_NO )
-      read_data_compression_no( exr_fp, number_chunks, chunk_table );
+      read_data_compression_no( exr_fp, &chunk_data, &attributes );
    else if( attributes.compression == EXR_COMPRESSION_RLE )
-      read_data_compression_rle( exr_fp, number_chunks, chunk_table );
-   else if( attributes.compression == EXR_COMPRESSION_ZIPS )
-      read_data_compression_zip( exr_fp , 1, number_chunks, chunk_table );
-   else // f( attributes.compression == EXR_COMPRESSION_ZIP )
-      read_data_compression_zip( exr_fp, 16, number_chunks, chunk_table );
+      read_data_compression_rle( exr_fp, &chunk_data, &attributes );
+   else if( (attributes.compression == EXR_COMPRESSION_ZIPS) || (attributes.compression == EXR_COMPRESSION_ZIP) )
+      read_data_compression_zip( exr_fp , &chunk_data, &attributes );
+
    // ---- free memory
    free( chunk_table );
 }
