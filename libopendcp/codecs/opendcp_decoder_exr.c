@@ -44,11 +44,12 @@ typedef struct {
     unsigned short data_width;   /* channel data width for all channels, for uncompress buffer size */
 } exr_channel_list;
 
+/* exr window */
 typedef struct {
-    int left;
-    int right;
-    int bottom;
-    int top;
+    int left;          /* left column    */
+    int bottom;        /* bottom row     */
+    int right;         /* right column   */
+    int top;           /* top row        */
 } exr_window;
 
 /* exr attributes, only save data for create dip */
@@ -56,21 +57,21 @@ typedef struct {
     exr_channel_list channel_list;    /* channel list */
     unsigned char compression;        /* compression */
     exr_window dataWindow;            /* data window */
-    unsigned char lineOrder;          /* line order */
-//    unsigned int  width;              /* width of image - calculate */
-//    unsigned int  height;             /* height of image - calculate */
 } exr_attributes;
 
 /* exr chunk data */
 typedef struct {
-   unsigned int num_chunks;
-   unsigned long *chunk_table;
+   unsigned int num_chunks;        /* number chunks */
+   unsigned long *chunk_table;     /* chunk table - address for chunks in file (from begin file) */
 } exr_chunk_data;
 
+/* exr image data */
 typedef struct {
-   float *channel_b;
-   float *channel_g;
-   float *channel_r;
+   unsigned short width;    /* width      */
+   unsigned short height;   /* height     */
+   float *channel_b;        /* channel b  */ 
+   float *channel_g;        /* channel g  */
+   float *channel_r;        /* channel r  */
 } exr_image_data;
 
 #pragma mark ---- Half --> Float
@@ -308,9 +309,6 @@ exr_attributes readAttributes( FILE *exr_fp ) {
            fread( &(attributes.displayWindow.right), 4, 1, exr_fp );
            fread( &(attributes.displayWindow.top), 4, 1, exr_fp );
         }
-        else if( !strcmp( "lineOrder", attribute_name ) ) {
-           attributes.lineOrder = fgetc( exr_fp );
-        }
         else
          // ---- skip attribute
          fseek( exr_fp, ftell( exr_fp ) + attribute_length, SEEK_SET );
@@ -471,8 +469,47 @@ void uncompress_zip( unsigned char *compressed_buffer, unsigned int compressed_b
       OPENDCP_LOG(LOG_ERROR,"ExrZIP: uncompress: error inflateEnd %d (%x) c_stream.avail_in %d", err, err, d_stream.avail_in );
 }
 
+/* copy data from buffer - convert half to float when copy */
+void copyDataFromBuffer( unsigned char *buffer, exr_image_data *image_data, unsigned short num_rows, unsigned short start_row_number, exr_channel_list *channel_list ) {
+
+   // ---- calculate offset for channels
+   unsigned int buffer_offset_b = image_data->width*channel_list->channel[0].offset;
+   unsigned int buffer_offset_g = image_data->width*channel_list->channel[1].offset;
+   unsigned int buffer_offset_r = image_data->width*channel_list->channel[2].offset;
+
+   // ---- calculate offset for exr image data, same for all channels
+   unsigned int image_data_offset = image_data->width*start_row_number;
+
+   unsigned short row_index = 0;
+   while( row_index < image_data->height ) {
+       // ---- half data - convert to float
+       if( channel_list->channel[0].data_type = EXR_HALF )
+           ;
+       // ----- float - copy value
+       else  
+           ;
+       
+        // ---- half data - convert to float
+       if( channel_list->channel[1].data_type = EXR_HALF )
+           ;
+       // ----- float - copy value
+       else  
+           ;
+       
+       // ---- half data - convert to float
+       if( channel_list->channel[2].data_type = EXR_HALF )
+           ;
+       // ----- float - copy value
+       else  
+           ;
+      
+      row_index++;
+   }
+
+}
+
 /* compression no */
-void read_data_compression_no( FILE *exr_fp, exr_chunk_data *chunk_data, exr_attributes *attributes ) {
+void read_data_compression_no( FILE *exr_fp, exr_chunk_data *chunk_data, exr_attributes *attributes, exr_image_data *image_data ) {
 
    unsigned int num_columns = (attributes->dataWindow.right - attributes->dataWindow.left) + 1;
   
@@ -494,13 +531,15 @@ void read_data_compression_no( FILE *exr_fp, exr_chunk_data *chunk_data, exr_att
       fread( data_buffer, 1, data_length, exr_fp );
 
       // ---- copy data from buffer
+      copyDataFromBuffer( data_buffer, image_data, 1, row_number, &(attributes->channel_list) )
 
+      // ---- next chunk
       chunk_number++;
    }
 }
 
 /* compression RLE */
-void read_data_compression_rle( FILE *exr_fp, exr_chunk_data *chunk_data, exr_attributes *attributes ) {
+void read_data_compression_rle( FILE *exr_fp, exr_chunk_data *chunk_data, exr_attributes *attributes, exr_image_data *image_data ) {
 
    unsigned int num_columns = (attributes->dataWindow.right - attributes->dataWindow.left) + 1;
   
@@ -532,7 +571,9 @@ void read_data_compression_rle( FILE *exr_fp, exr_chunk_data *chunk_data, exr_at
       unfilter_buffer( uncompressed_buffer, unfiltered_buffer, uncompressed_data_length );
 
       // ---- copy data from buffer
+      copyDataFromBuffer( data_buffer, image_data, 1, row_number, &(attributes->channel_list) );
 
+      // ---- next chunk
       chunk_number++;
    }
     
@@ -543,7 +584,7 @@ void read_data_compression_rle( FILE *exr_fp, exr_chunk_data *chunk_data, exr_at
 }
 
 /* compression ZIPS an ZIP */
-void read_data_compression_zip( FILE *exr_fp, exr_chunk_data *chunk_data, exr_attributes *attributes ) {
+void read_data_compression_zip( FILE *exr_fp, exr_chunk_data *chunk_data, exr_attributes *attributes, exr_image_data *image_data ) {
 
    unsigned int num_columns = (attributes->dataWindow.right - attributes->dataWindow.left) + 1;
    unsigned char chunk_num_rows = 1;          // number row for each chunk
@@ -585,6 +626,7 @@ void read_data_compression_zip( FILE *exr_fp, exr_chunk_data *chunk_data, exr_at
       unfilter_buffer( uncompressed_buffer, unfiltered_buffer, uncompressed_data_length );
 
       // ---- copy data from buffer
+      copyDataFromBuffer( data_buffer, image_data, chunk_num_rows, row_number, &(attributes->channel_list) );
 
       chunk_number++;
    }
@@ -662,14 +704,29 @@ int opendcp_decode_exr(opendcp_image_t **image_ptr, const char *sfile) {
    // ---- read offset table
    exr_chunk_data chunk_data = read_chunk_data( exr_fp, &attributes );
 
+    // ---- for store image data
+   exr_image_data image_data;
+   image_data.width = attributes.dataWindow.right - attributes.dataWindow.left + 1;
+   image_data.height = attributes.dataWindow.top - attributes.dataWindow.bottom + 1;
+   // ---- create buffers for image data
+   image_data.channel_b = malloc( image_data.width*image_data.height * sizeof( float ) );
+   image_data.channel_g = malloc( image_data.width*image_data.height * sizeof( float ) );
+   image_data.channel_r = malloc( image_data.width*image_data.height * sizeof( float ) );
+ 
    // ---- read file data
    if( attributes.compression == EXR_COMPRESSION_NO )
-      read_data_compression_no( exr_fp, &chunk_data, &attributes );
+      read_data_compression_no( exr_fp, &chunk_data, &attributes, &image_data );
    else if( attributes.compression == EXR_COMPRESSION_RLE )
-      read_data_compression_rle( exr_fp, &chunk_data, &attributes );
+      read_data_compression_rle( exr_fp, &chunk_data, &attributes, &image_data );
    else if( (attributes.compression == EXR_COMPRESSION_ZIPS) || (attributes.compression == EXR_COMPRESSION_ZIP) )
-      read_data_compression_zip( exr_fp , &chunk_data, &attributes );
+      read_data_compression_zip( exr_fp , &chunk_data, &attributes, &image_data );
 
+   // ---- copy data from exr image data to opendcp image data
+   /* <---- need help for this ----> */
+    
    // ---- free memory
-   free( chunk_table );
+   free( chunk_data.chunk_table );
+   free( image_data.channel_b );
+   free( image_data.channel_g );
+   free( image_data.channel_r );
 }
