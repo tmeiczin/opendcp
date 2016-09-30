@@ -11,11 +11,6 @@
 #define MAGIC_NUMBER_EXR 0x762f3101
 
 typedef enum {
-    EXR_TOP         = 0,
-    EXR_BOTTOM      = 1,
-} line_order;
-
-typedef enum {
     EXR_COMPRESSION_NO       = 0,          /* no compression                  */
     EXR_COMPRESSION_RLE      = 1,          /* 8-bit run-length-encoded (not supported) */
     EXR_COMPRESSION_ZIPS     = 2,          /* zip single line (not supported) */
