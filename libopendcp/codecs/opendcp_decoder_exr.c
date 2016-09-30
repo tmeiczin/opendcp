@@ -469,30 +469,60 @@ void uncompress_zip( unsigned char *compressed_buffer, unsigned int compressed_b
       OPENDCP_LOG(LOG_ERROR,"ExrZIP: uncompress: error inflateEnd %d (%x) c_stream.avail_in %d", err, err, d_stream.avail_in );
 }
 
+/* copy half data */
 void copy_half_data( unsigned char *buffer, float *channel_data, unsigned short num_rows, unsigned short num_columns, unsigned short start_row_number, exr_channel *channel ) {
 
-   u_intfloat int_float;
-
-   // ---- calculate offset for channels
-   unsigned int buffer_offset = num_columns*channel->offset;
-
    // ---- calculate offset for channel data,
-   unsigned int image_data_offset = num_columns*start_row_number;
+   unsigned int channel_data_offset = num_columns*start_row_number;
 
+   unsigned short row_index = 0;
+   while( row_index < num_rows ) {
+      // ---- calculate offset for channels
+      unsigned int buffer_offset = num_columns*channel->offset*row_index;
 
+      unsigned short column_index = 0;
+      while( column_index < num_columns ) {
+         // ---- combine data for half number
+         unsigned short half = buffer[buffer_offset] | buffer[buffer_offset+1] << 8;
+
+         // ---- convert half and save float data in channel
+         channel_data[channel_data_offset] = half2float( half );
+
+         channel_data_offset++;
+         buffer_offset += 2;
+         num_columns++;
+      }
+      num_rows++;
+   }
 }
 
+/* copy float data */
 void copy_float_data( unsigned char *buffer, float *channel_data, unsigned short num_rows, unsigned short num_columns, unsigned short start_row_number, exr_channel *channel ) {
 
-   u_intfloat int_float;
-
-   // ---- calculate offset for channels
-   unsigned int buffer_offset = num_columns*channel->offset;
-
    // ---- calculate offset for channel data,
-   unsigned int image_data_offset = num_columns*start_row_number;
+   unsigned int channel_data_offset = num_columns*start_row_number;
 
+   u_intfloat int_fl;
 
+   unsigned short row_index = 0;
+   while( row_index < num_rows ) {
+      // ---- calculate offset for channels
+      unsigned int buffer_offset = num_columns*channel->offset*row_index;
+
+      unsigned short column_index = 0;
+      while( column_index < num_columns ) {
+         // ---- combine data for float number
+         int_fl.i = buffer[buffer_offset] | buffer[buffer_offset+1] << 8 | buffer[buffer_offset+2] << 16 | buffer[buffer_offset+3] << 24;
+
+         // ---- save float data in channel
+         channel_data[channel_data_offset] = int_fl.f;
+
+         channel_data_offset++;
+         buffer_offset += 4;
+         num_columns++;
+      }
+      num_rows++;
+   }
 }
 
 /* compression no */
