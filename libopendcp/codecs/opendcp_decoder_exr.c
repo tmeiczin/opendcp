@@ -540,6 +540,11 @@ void read_data_compression_rle( FILE *exr_fp, exr_chunk_data *chunk_data, exr_at
 
       chunk_number++;
    }
+    
+   // ---- free memory
+   free( compressed_buffer );
+   free( uncompressed_buffer );
+   free( unfiltered_buffer );
 }
 
 /* compression ZIPS an ZIP */
@@ -588,6 +593,11 @@ void read_data_compression_zip( FILE *exr_fp, exr_chunk_data *chunk_data, exr_at
 
       chunk_number++;
    }
+    
+   // ---- free memory
+   free( compressed_buffer );
+   free( uncompressed_buffer );
+   free( unfiltered_buffer );
 }
 
 
