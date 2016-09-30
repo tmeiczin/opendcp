@@ -519,8 +519,8 @@ void read_data_compression_no( FILE *exr_fp, exr_chunk_data *chunk_data, exr_att
 
    unsigned short chunk_number = 0;
    while( chunk_number < chunk_data->num_chunks ) {
-      // ---- read line number
-      unsigned int line_number = 0;
+      // ---- read row number
+      unsigned int row_number = 0;
       fread( &line_number, 4, 1, exr_fp );
 
       // ---- read data length
@@ -553,9 +553,9 @@ void read_data_compression_rle( FILE *exr_fp, exr_chunk_data *chunk_data, exr_at
 
    unsigned short chunk_number = 0;
    while( chunk_number < chunk_data->num_chunks ) {
-      // ---- read line number
-      unsigned int line_number = 0;
-      fread( &line_number, 4, 1, exr_fp );
+      // ---- read row number
+      unsigned int row_number = 0;
+      fread( &row_number, 4, 1, exr_fp );
 
       // ---- read data length
       unsigned int data_length = 0; 
@@ -608,9 +608,9 @@ void read_data_compression_zip( FILE *exr_fp, exr_chunk_data *chunk_data, exr_at
 
    unsigned short chunk_number = 0;
    while( chunk_number < chunk_data->num_chunks ) {
-      // ---- read line number
-      unsigned int line_number = 0;
-      fread( &line_number, 4, 1, exr_fp );
+      // ---- read row number
+      unsigned int row_number = 0;
+      fread( &row_number, 4, 1, exr_fp );
 
       // ---- read data length
       unsigned int data_length = 0; 
