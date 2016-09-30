@@ -391,6 +391,48 @@ void unfilter_buffer( unsigned char *buffer, unsigned char *unfilteredBuffer, un
    }
 }
 
+/* uncompress rle - from OpenEXR library */
+void uncompress_rle( unsigned char *compressed_buffer, unsigned int compressed_buffer_length, unsigned char *uncompressed_buffer, unsigned int uncompressed_buffer_length) {
+
+   unsigned char *outStart = compressed_buffer;
+   
+   // ---- while not finish all in buffer
+   while (compressed_buffer_length > 0) {
+      // ---- if signed byte value less than zero
+      if (*compressed_buffer > 127) {
+         // ---- count for not same byte value
+         int count = -((char)*compressed_buffer);
+         compressed_buffer++;
+         // ---- reduce amount count of bytes remaining for in buffer
+         compressed_buffer_length -= count + 1;
+         // ---- if count larger than out buffer length still available
+         if (0 > (uncompressed_buffer_length -= count)) {
+            printf( "uncompress_rle: Error buffer not length not enough\n" );
+            return;
+          }
+         // ---- copy not same byte and move to next byte
+         while (count-- > 0)
+            *uncompressed_buffer++ = *(compressed_buffer++);
+      }
+      else {
+         // ---- count number bytes same
+         int count = *compressed_buffer++;
+         // ---- reduce amount count of remaining bytes for in buffer
+         compressed_buffer_length -= 2;
+         // ---- if count larger than out buffer length still available
+         if (0 > (uncompressed_buffer_length -= count + 1)) {
+            printf( "uncompress_rle: Error buffer not length not enough\n" );
+            return;
+         }
+         // ---- copy same byte
+         while (count-- >= 0)
+            *uncompressed_buffer++ = *compressed_buffer;
+         // ---- move to next byte
+         compressed_buffer++;
+      }
+   }
+}
+
 /* uncompress zip with zlib */
 void uncompress_zip( unsigned char *compressed_buffer, unsigned int compressed_buffer_length, unsigned char *uncompressed_buffer, unsigned int uncompressed_buffer_length ) {
 
@@ -437,15 +479,27 @@ void uncompress_zip( unsigned char *compressed_buffer, unsigned int compressed_b
 /* compression no */
 void read_data_compression_no( FILE *exr_fp, exr_chunk_data *chunk_data, exr_attributes *attributes ) {
 
+   unsigned int num_columns = (attributes->dataWindow.right - attributes->dataWindow.left) + 1;
+  
+   unsigned short channel_data_width = attributes->channel_list.data_width;
+
+   unsigned char *data_buffer = malloc( num_columns*channel_data_width );
+
    unsigned short chunk_number = 0;
    while( chunk_number < chunk_data->num_chunks ) {
       // ---- read line number
       unsigned int line_number = 0;
       fread( &line_number, 4, 1, exr_fp );
+
       // ---- read data length
       unsigned int data_length = 0; 
       fread( &data_length, 4, 1, exr_fp );
-      printf( "%d - %d  %d\n", chunk_number, line_number, data_length );
+
+      // ---- read compressed data
+      fread( data_buffer, 1, data_length, exr_fp );
+
+      // ---- copy data from buffer
+
       chunk_number++;
    }
 }
@@ -453,15 +507,37 @@ void read_data_compression_no( FILE *exr_fp, exr_chunk_data *chunk_data, exr_att
 /* compression RLE */
 void read_data_compression_rle( FILE *exr_fp, exr_chunk_data *chunk_data, exr_attributes *attributes ) {
 
+   unsigned int num_columns = (attributes->dataWindow.right - attributes->dataWindow.left) + 1;
+  
+   unsigned short channel_data_width = attributes->channel_list.data_width;
+
+   unsigned int uncompressed_data_length = num_columns*channel_data_width;
+
+   unsigned char *compressed_buffer = malloc( uncompressed_data_length << 1 );
+   unsigned char *uncompressed_buffer = malloc( uncompressed_data_length );
+   unsigned char *unfiltered_buffer = malloc( uncompressed_data_length ); 
+
    unsigned short chunk_number = 0;
    while( chunk_number < chunk_data->num_chunks ) {
       // ---- read line number
       unsigned int line_number = 0;
       fread( &line_number, 4, 1, exr_fp );
+
       // ---- read data length
       unsigned int data_length = 0; 
       fread( &data_length, 4, 1, exr_fp );
-      printf( "%d - %d  %d\n", chunk_number, line_number, data_length );
+
+      // ---- read compressed data
+      fread( compressed_buffer, 1, data_length, exr_fp );
+
+      // ---- uncompress rle
+      uncompress_rle( compressed_buffer, data_length, uncompressed_buffer, uncompressed_data_length );
+      
+      // ---- unfilter data
+      unfilter_buffer( uncompressed_buffer, unfiltered_buffer, uncompressed_data_length );
+
+      // ---- copy data from buffer
+
       chunk_number++;
    }
 }
