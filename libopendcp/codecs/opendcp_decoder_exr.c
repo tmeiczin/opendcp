@@ -44,8 +44,9 @@ typedef struct {
 } exr_channel;
 
 typedef struct {
-    unsigned short num_channels; /* number channels       */
+    unsigned short num_channels; /* number channels                                   */
     exr_channel channel[3];      /* channel array, only read data for B, G, R channel */
+    unsigned short data_width;   /* channel data width for all channels, for uncompress buffer size */
 } exr_channel_list;
 
 typedef struct {
@@ -61,8 +62,8 @@ typedef struct {
     unsigned char compression;        /* compression */
     exr_window dataWindow;            /* data window */
     unsigned char lineOrder;          /* line order */
-    unsigned int  width;              /* width of image - calculate */
-    unsigned int  height;             /* height of image - calculate */
+//    unsigned int  width;              /* width of image - calculate */
+//    unsigned int  height;             /* height of image - calculate */
 } exr_attributes;
 
 /* exr chunk data */
@@ -191,8 +192,9 @@ exr_channel_list readChannelData( FILE *exr_fp) {
    exr_channel_list channel_list;
    unsigned char finish = 0x00;
    channel_list.num_channels = 0;
+   channel_list.data_width = 0;
    unsigned short channel_index = 0;
-      // ---- read channel name
+   unsigned short offset = 0;
       
    do {
       // ---- find channels 'B', 'G', 'R'
@@ -235,10 +237,14 @@ exr_channel_list readChannelData( FILE *exr_fp) {
             fgetc( exr_fp );
             // ---- offset
             channel.offset = offset;
-            if( channel.data_type == EXR_HALF)
+            if( channel.data_type == EXR_HALF) {
                offset += 2;
-            else
+               channel_list.data_width += 2;
+            }
+            else {
                offset += 4;
+               channel_list.data_width += 4;
+            }
             // ---- save channel
             channel_list.channel[channel_index] = channel;
             channel_list.num_channels++;
@@ -248,10 +254,14 @@ exr_channel_list readChannelData( FILE *exr_fp) {
          else {
             // ---- data offset
             unsigned char data_type = fgetc( exr_fp );
-            if( data_type == EXR_HALF)
+            if( data_type == EXR_HALF) {
                offset += 2;
-            else
-               offset += 4; 
+               channel_list.data_width += 2;
+            }
+            else {
+               offset += 4;
+               channel_list.data_width += 4;
+            }
             fseek( exr_fp, ftell( exr_fp ) + 15, SEEK_SET );
          }
    }
@@ -292,16 +302,16 @@ exr_attributes readAttributes( FILE *exr_fp ) {
          else if( !strcmp( "compression", attribute_name ) )
              attributes.compression = fgetc( exr_fp );
         else if( !strcmp( "dataWindow", attribute_name ) ) {
-           fread( &(attributes.dataWindow.bottom), 4, 1, exr_fp );
            fread( &(attributes.dataWindow.left), 4, 1, exr_fp );
-           fread( &(attributes.dataWindow.top), 4, 1, exr_fp );
+           fread( &(attributes.dataWindow.bottom), 4, 1, exr_fp );
            fread( &(attributes.dataWindow.right), 4, 1, exr_fp );
+           fread( &(attributes.dataWindow.top), 4, 1, exr_fp );
         }
         else if( !strcmp( "displayWindow", attribute_name ) ) {
-           fread( &(attributes.displayWindow.bottom), 4, 1, exr_fp );
            fread( &(attributes.displayWindow.left), 4, 1, exr_fp );
-           fread( &(attributes.displayWindow.top), 4, 1, exr_fp );
+           fread( &(attributes.displayWindow.bottom), 4, 1, exr_fp );
            fread( &(attributes.displayWindow.right), 4, 1, exr_fp );
+           fread( &(attributes.displayWindow.top), 4, 1, exr_fp );
         }
         else if( !strcmp( "lineOrder", attribute_name ) ) {
            attributes.lineOrder = fgetc( exr_fp );
