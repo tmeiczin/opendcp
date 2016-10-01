@@ -490,9 +490,9 @@ void copy_half_data( unsigned char *buffer, float *channel_data, unsigned short 
 
          channel_data_offset++;
          buffer_offset += 2;
-         num_columns++;
+         column_index++;
       }
-      num_rows++;
+      row_index++;
    }
 }
 
@@ -519,9 +519,9 @@ void copy_float_data( unsigned char *buffer, float *channel_data, unsigned short
 
          channel_data_offset++;
          buffer_offset += 4;
-         num_columns++;
+         column_index++;
       }
-      num_rows++;
+      row_index++;
    }
 }
 
