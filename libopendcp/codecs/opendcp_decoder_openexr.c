@@ -847,8 +847,10 @@ int opendcp_decode_exr(opendcp_image_t **image_ptr, const char *sfile) {
    // ---- close file
    fclose( exr_fp );
  
-   // ---- copy float data from exr image data to opendcp image data
-   /* <---- need help for this ----> */
+    /* create the image */
+   image = opendcp_image_create(3, image_data.width, mage_data.height);
+   // ---- need copy float data from exr image data to opendcp image data
+   // ---- should transform data to XYZ use float data
  
    // ---- free memory
    free( chunk_data.chunk_table );
