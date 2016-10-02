@@ -852,9 +852,15 @@ int opendcp_decode_exr(opendcp_image_t **image_ptr, const char *sfile) {
    // ---- need copy float data from exr image data to opendcp image data
    // ---- should transform data to XYZ use float data
  
-   // ---- free memory
+   // ---- free chunk table
    free( chunk_data.chunk_table );
+   // ---- free exr image data
    free( image_data.channel_b );
    free( image_data.channel_g );
    free( image_data.channel_r );
+
+   OPENDCP_LOG(LOG_DEBUG,"done reading exr image");
+   *image_ptr = image;
+
+   return OPENDCP_NO_ERROR;
 }
