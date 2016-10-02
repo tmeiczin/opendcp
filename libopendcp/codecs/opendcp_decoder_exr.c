@@ -1,5 +1,45 @@
 /* opendcp_decoder_exr.c */
 
+// 
+///////////////////////////////////////////////////////////////////////////
+//
+// Copyright (c) 2002, Industrial Light & Magic, a division of Lucas
+// Digital Ltd. LLC
+// 
+// All rights reserved.
+// 
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+// *       Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+// *       Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+// *       Neither the name of Industrial Light & Magic nor the names of
+// its contributors may be used to endorse or promote products derived
+// from this software without specific prior written permission. 
+// 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+///////////////////////////////////////////////////////////////////////////
+
+// Primary authors:
+//     Florian Kainz <kainz@ilm.com>
+//     Rod Bogart <rgb@ilm.com>
+
+
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -52,7 +92,7 @@ typedef struct {
     int top;           /* top row        */
 } exr_window;
 
-/* exr attributes, only save data for create dip */
+/* exr attributes, only save data for create dcp */
 typedef struct {
     exr_channel_list channel_list;    /* channel list */
     unsigned char compression;        /* compression */
@@ -172,7 +212,7 @@ float half2float( unsigned short half ) {
 
 
 #pragma mark ---- Read Attributes
-unsigned char readString255FromFile( FILE *fp, char *string ) {
+unsigned char read_string_255_from_file( FILE *fp, char *string ) {
 
    unsigned char index = 0;
    do {
@@ -183,7 +223,7 @@ unsigned char readString255FromFile( FILE *fp, char *string ) {
    return index-1;
 }
 
-exr_channel_list readChannelData( FILE *exr_fp) {
+exr_channel_list read_channel_data( FILE *exr_fp) {
    
    exr_channel_list channel_list;
    unsigned char finish = 0x00;
@@ -195,7 +235,7 @@ exr_channel_list readChannelData( FILE *exr_fp) {
    do {
       // ---- find channels 'B', 'G', 'R'
       exr_channel channel;
-      unsigned char stringLength = readString255FromFile( exr_fp, channel.name );
+      unsigned char stringLength = read_string_255_from_file( exr_fp, channel.name );
 
       if( stringLength ) {
          unsigned char find_channel = 0x00;
@@ -270,7 +310,7 @@ exr_channel_list readChannelData( FILE *exr_fp) {
 }
 
 
-exr_attributes readAttributes( FILE *exr_fp ) {
+exr_attributes read_attributes( FILE *exr_fp ) {
 
    exr_attributes attributes;
    unsigned char finish = 0;
@@ -279,12 +319,12 @@ exr_attributes readAttributes( FILE *exr_fp ) {
    do {
       // ---- read attribute name
       char attribute_name[255];
-      unsigned char string_length = readString255FromFile( exr_fp, attribute_name );
+      unsigned char string_length = read_string_255_from_file( exr_fp, attribute_name );
 
       if( string_length ) {
          // ---- read attribute data type
          char attribute_data_type[255];
-         readString255FromFile( exr_fp, attribute_data_type );
+         read_string_255_from_file( exr_fp, attribute_data_type );
 
          // ---- read attribute length
          unsigned int attribute_length = 0;
@@ -292,7 +332,7 @@ exr_attributes readAttributes( FILE *exr_fp ) {
 
          if( !strcmp( "channels", attribute_name ) ) {
             // ---- skip attribute, chưa làm hàm này
-            attributes.channel_list = readChannelData( exr_fp );
+            attributes.channel_list = read_channel_data( exr_fp );
  //           fseek( exr_fp, ftell( exr_fp ) + attribute_length, SEEK_SET );
          }
          else if( !strcmp( "compression", attribute_name ) )
@@ -325,14 +365,19 @@ exr_attributes readAttributes( FILE *exr_fp ) {
 exr_chunk_data read_chunk_data( FILE *exr_fp, exr_attributes *attributes ) {
 
    exr_chunk_data chunk_data;
-   chunk_data.num_chunks = (attributes->dataWindow.top - attributes->dataWindow.bottom) + 1;
-    
+   unsigned short num_rows = (attributes->dataWindow.top - attributes->dataWindow.bottom) + 1;
+
    // ---- if EXR_COMPRESSION_ZIP, 16 rows per chunk
-   if( attributes->compression == EXR_COMPRESSION_ZIP )  // 
-       chunk_data.num_chunks = ((attributes->dataWindow.top - attributes->dataWindow.bottom) >> 4) + 1;
+   if( attributes->compression == EXR_COMPRESSION_ZIP ) { //
+      chunk_data.num_chunks = num_rows >> 4;
+      if( num_rows & 0xf )
+         chunk_data.num_chunks++;
+   }
+   else
+      chunk_data.num_chunks = num_rows;
    
    // ---- get memory for chunk table
-   chunk_data.chunk_table = malloc( chunk_data.num_chunks << 3 );  // 8 bytes
+   chunk_data.chunk_table = malloc( chunk_data.num_chunks << 3 );  // 8 bytes for each table element
     
    // ----- read address for chunks
    unsigned int chunk_index = 0;
@@ -763,7 +808,7 @@ int opendcp_decode_exr(opendcp_image_t **image_ptr, const char *sfile) {
    fgetc(exr_fp);
 
    // ---- read EXR attritubes need for dcp
-   exr_attributes attritbute = readAttributes( exr_fp );
+   exr_attributes attritbute = read_attributes( exr_fp );
    
    // ---- check compression
    if( attributes.compression > EXR_COMPRESSION_ZIP ) {
