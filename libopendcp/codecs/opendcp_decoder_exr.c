@@ -1,6 +1,6 @@
 /* opendcp_decoder_exr.c */
 
-// 
+// FOR TWO FUNCTION: uncompress_rle() and unfilter_buffer() 
 ///////////////////////////////////////////////////////////////////////////
 //
 // Copyright (c) 2002, Industrial Light & Magic, a division of Lucas
@@ -38,6 +38,8 @@
 // Primary authors:
 //     Florian Kainz <kainz@ilm.com>
 //     Rod Bogart <rgb@ilm.com>
+
+// OTHER FUNCTIONS: Public domain
 
 
 #include <math.h>
