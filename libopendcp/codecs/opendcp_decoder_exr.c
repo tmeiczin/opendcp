@@ -536,6 +536,9 @@ void read_data_compression_no( FILE *exr_fp, exr_chunk_data *chunk_data, exr_att
 
    unsigned short chunk_number = 0;
    while( chunk_number < chunk_data->num_chunks ) {
+      // ---- begin chunk
+      fseek( exr_fp, chunk_data->chunk_table[chunk_number], SEEK_SET );
+
       // ---- read row number
       unsigned int row_number = 0;
       fread( &row_number, 4, 1, exr_fp );
@@ -583,6 +586,9 @@ void read_data_compression_rle( FILE *exr_fp, exr_chunk_data *chunk_data, exr_at
 
    unsigned short chunk_number = 0;
    while( chunk_number < chunk_data->num_chunks ) {
+      // ---- begin chunk
+      fseek( exr_fp, chunk_data->chunk_table[chunk_number], SEEK_SET );
+
       // ---- read row number
       unsigned int row_number = 0;
       fread( &row_number, 4, 1, exr_fp );
@@ -602,19 +608,19 @@ void read_data_compression_rle( FILE *exr_fp, exr_chunk_data *chunk_data, exr_at
 
       // ---- copy data from buffer
       if( attributes->channel_list.channel[0].data_type == EXR_HALF )
-         copy_half_data( uncompressed_buffer, image_data->channel_b, 1, num_columns, row_number, &(attributes->channel_list.channel[0]) );
+         copy_half_data( unfiltered_buffer, image_data->channel_b, 1, num_columns, row_number, &(attributes->channel_list.channel[0]) );
       else
-         copy_float_data( uncompressed_buffer, image_data->channel_b, 1, num_columns, row_number, &(attributes->channel_list.channel[0]) );
+         copy_float_data( unfiltered_buffer, image_data->channel_b, 1, num_columns, row_number, &(attributes->channel_list.channel[0]) );
 
       if( attributes->channel_list.channel[1].data_type == EXR_HALF )
-         copy_half_data( uncompressed_buffer, image_data->channel_g, 1, num_columns, row_number, &(attributes->channel_list.channel[1]) );
+         copy_half_data( unfiltered_buffer, image_data->channel_g, 1, num_columns, row_number, &(attributes->channel_list.channel[1]) );
       else
-         copy_float_data( uncompressed_buffer, image_data->channel_g, 1, num_columns, row_number, &(attributes->channel_list.channel[1]) );
+         copy_float_data( unfiltered_buffer, image_data->channel_g, 1, num_columns, row_number, &(attributes->channel_list.channel[1]) );
 
       if( attributes->channel_list.channel[2].data_type == EXR_HALF )
-         copy_half_data( uncompressed_buffer, image_data->channel_r, 1, num_columns, row_number, &(attributes->channel_list.channel[2]) );
+         copy_half_data( unfiltered_buffer, image_data->channel_r, 1, num_columns, row_number, &(attributes->channel_list.channel[2]) );
       else
-         copy_float_data( uncompressed_buffer, image_data->channel_r, 1, num_columns, row_number, &(attributes->channel_list.channel[2]) );
+         copy_float_data( unfiltered_buffer, image_data->channel_r, 1, num_columns, row_number, &(attributes->channel_list.channel[2]) );
 
       // ---- next chunk
       chunk_number++;
@@ -651,6 +657,9 @@ void read_data_compression_zip( FILE *exr_fp, exr_chunk_data *chunk_data, exr_at
 
    unsigned short chunk_number = 0;
    while( chunk_number < chunk_data->num_chunks ) {
+      // ---- begin chunk
+      fseek( exr_fp, chunk_data->chunk_table[chunk_number], SEEK_SET );
+
       // ---- read row number
       unsigned int row_number = 0;
       fread( &row_number, 4, 1, exr_fp );
@@ -658,6 +667,16 @@ void read_data_compression_zip( FILE *exr_fp, exr_chunk_data *chunk_data, exr_at
       // ---- read data length
       unsigned int data_length = 0; 
       fread( &data_length, 4, 1, exr_fp );
+
+      // ---- check if use ZIP and number row remain, only for last chunk
+      if( attributes->compression == EXR_COMPRESSION_ZIP ) {
+         // ---- calculate number row reamin in image, check if have 16 rows for this chunk
+         unsigned short num_rows_remain = image_data->height - row_number;
+         if( num_rows_remain < 16 ) {
+            uncompressed_data_length = (uncompressed_data_length >> 4)*num_rows_remain;
+            num_rows = num_rows_remain;
+         }
+      }
 
       // ---- read compressed data
       fread( compressed_buffer, 1, data_length, exr_fp );
@@ -670,19 +689,19 @@ void read_data_compression_zip( FILE *exr_fp, exr_chunk_data *chunk_data, exr_at
 
       // ---- copy data from buffer
       if( attributes->channel_list.channel[0].data_type == EXR_HALF )
-         copy_half_data( uncompressed_buffer, image_data->channel_b, num_rows, num_columns, row_number, &(attributes->channel_list.channel[0]) );
+         copy_half_data( unfiltered_buffer, image_data->channel_b, num_rows, num_columns, row_number, &(attributes->channel_list.channel[0]) );
       else
-         copy_float_data( uncompressed_buffer, image_data->channel_b, num_rows, num_columns, row_number, &(attributes->channel_list.channel[0]) );
+         copy_float_data( unfiltered_buffer, image_data->channel_b, num_rows, num_columns, row_number, &(attributes->channel_list.channel[0]) );
 
       if( attributes->channel_list.channel[1].data_type == EXR_HALF )
-         copy_half_data( uncompressed_buffer, image_data->channel_g, num_rows, num_columns, row_number, &(attributes->channel_list.channel[1]) );
+         copy_half_data( unfiltered_buffer, image_data->channel_g, num_rows, num_columns, row_number, &(attributes->channel_list.channel[1]) );
       else
-         copy_float_data( uncompressed_buffer, image_data->channel_g, num_rows, num_columns, row_number, &(attributes->channel_list.channel[1]) );
+         copy_float_data( unfiltered_buffer, image_data->channel_g, num_rows, num_columns, row_number, &(attributes->channel_list.channel[1]) );
 
       if( attributes->channel_list.channel[2].data_type == EXR_HALF )
-         copy_half_data( uncompressed_buffer, image_data->channel_r, num_rows, num_columns, row_number, &(attributes->channel_list.channel[2]) );
+         copy_half_data( unfiltered_buffer, image_data->channel_r, num_rows, num_columns, row_number, &(attributes->channel_list.channel[2]) );
       else
-         copy_float_data( uncompressed_buffer, image_data->channel_r, num_rows, num_columns, row_number, &(attributes->channel_list.channel[2]) );
+         copy_float_data( unfiltered_buffer, image_data->channel_r, num_rows, num_columns, row_number, &(attributes->channel_list.channel[2]) );
 
       // ---- next chunk
       chunk_number++;
@@ -701,7 +720,7 @@ int opendcp_decode_exr(opendcp_image_t **image_ptr, const char *sfile) {
 
    FILE *exr_fp;
     
-      /* open exr using filename or file descriptor */
+   /* open exr using filename or file descriptor */
    OPENDCP_LOG(LOG_DEBUG,"%-15.15s: opening exr file %s","read_exr",sfile);
 
    exr_fp = fopen(sfile, "rb");
@@ -778,9 +797,12 @@ int opendcp_decode_exr(opendcp_image_t **image_ptr, const char *sfile) {
    else if( (attributes.compression == EXR_COMPRESSION_ZIPS) || (attributes.compression == EXR_COMPRESSION_ZIP) )
       read_data_compression_zip( exr_fp , &chunk_data, &attributes, &image_data );
 
-   // ---- copy data from exr image data to opendcp image data
+   // ---- close file
+   fclose( exr_fp );
+ 
+   // ---- copy float data from exr image data to opendcp image data
    /* <---- need help for this ----> */
-    
+ 
    // ---- free memory
    free( chunk_data.chunk_table );
    free( image_data.channel_b );
