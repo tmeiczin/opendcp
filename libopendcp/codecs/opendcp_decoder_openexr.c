@@ -847,17 +847,16 @@ int opendcp_decode_exr(opendcp_image_t **image_ptr, const char *sfile) {
    // ---- close file
    fclose( exr_fp );
  
-    /* create the image */
-   image = opendcp_image_create(3, image_data.width, mage_data.height);
+    /* create the image (float data) */
+   image = opendcp_image_create_float(3, image_data.width, mage_data.height);
   
    unsigned int image_size = image_data.width * mage_data.height;
    for (index = 0; index < image_size; index++) {
     // ---- need copy float data from exr image data to float opendcp image data
-   // ---- transform float data to XYZ float data then convert to 12 bit integer
       // ----- correct channel order?
-      image->component[0].data[index] = (image_data.channel_b[index] * 0xffff) >> 4;
-      image->component[1].data[index] = (image_data.channel_g[index] * 0xffff) >> 4;
-      image->component[2].data[index] = (image_data.channel_r[index] * 0xffff) >> 4;
+      image->component[0].float_data[index] = image_data.channel_b[index];
+      image->component[1].float_data[index] = image_data.channel_g[index];
+      image->component[2].float_data[index] = image_data.channel_r[index];
    }
  
    // ---- free chunk table
