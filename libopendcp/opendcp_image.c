@@ -63,7 +63,7 @@ opendcp_image_t *opendcp_image_create(int n_components, int w, int h) {
         }
     }
 
-    /* set default image parameters 12-bit RGB */
+    /* set default image parameters 12-bit RGB integer */
     image->bpp          = 12;
     image->precision    = 12;
     image->n_components = 3;
@@ -76,6 +76,7 @@ opendcp_image_t *opendcp_image_create(int n_components, int w, int h) {
     image->y0           = 0;
     image->x1 = !image->x0 ? (w - 1) * image->dx + 1 : image->x0 + (w - 1) * image->dx + 1;
     image->y1 = !image->y0 ? (h - 1) * image->dy + 1 : image->y0 + (h - 1) * image->dy + 1;
+    image->float_data   = 0;   // default use integer data
 
     return image;
 }
@@ -207,12 +208,24 @@ int check_image_compliance(int profile, opendcp_image_t *image, char *file) {
     return OPENDCP_NO_ERROR;
 }
 
+/* integer function */
 rgb_pixel_float_t yuv444toRGB888(int y, int cb, int cr) {
     rgb_pixel_float_t p;
 
     p.r = CLIP(y + 1.402 * (cr - 128), 255);
     p.g = CLIP(y - 0.344 * (cb - 128) - 0.714 * (cr - 128), 255);
     p.b = CLIP(y + 1.772 * (cb - 128), 255);
+
+    return(p);
+}
+
+/* float function */
+rgb_pixel_float_t yuv444toRGB888_float(float y, float cb, float cr) {
+    rgb_pixel_float_t p;
+
+    p.r = CLIP(y + 1.402f * (cr - 0.5f), 1.0f);
+    p.g = CLIP(y - 0.344f * (cb - 0.5f) - 0.714 * (cr - 0.5f), 1.0f);
+    p.b = CLIP(y + 1.772f * (cb - 0.5f), 1.0f);
 
     return(p);
 }
@@ -272,8 +285,14 @@ int rgb_to_xyz(opendcp_image_t *image, int index, int method) {
     int result;
 
     if (method) {
-        OPENDCP_LOG(LOG_DEBUG, "rgb_to_xyz_calculate, index: %d", index);
-        result = rgb_to_xyz_calculate(image, index);
+        if( image->float_data ) {
+           OPENDCP_LOG(LOG_DEBUG, "rgb_to_xyz_calculate_float, index: %d", index);
+           result = rgb_to_xyz_calculate_float(image, index);
+        }
+        else {
+           OPENDCP_LOG(LOG_DEBUG, "rgb_to_xyz_calculate, index: %d", index);
+           result = rgb_to_xyz_calculate(image, index);
+        }
     }
     else {
         OPENDCP_LOG(LOG_DEBUG, "rgb_to_xyz_lut, index: %d", index);
@@ -317,8 +336,35 @@ int rgb_to_xyz_lut(opendcp_image_t *image, int index) {
     return OPENDCP_NO_ERROR;
 }
 
-/* rgb to xyz color conversion hard calculations */
+/* rgb to xyz color conversion hard calculations integer */
 int rgb_to_xyz_calculate(opendcp_image_t *image, int index) {
+    int i;
+    int size;
+    rgb_pixel_float_t s;
+    xyz_pixel_float_t d;
+
+    size = image->w * image->h;
+    OPENDCP_LOG(LOG_DEBUG, "gamma: %f", GAMMA[index]);
+
+    for (i = 0; i < size; i++) {
+        s.r = complex_gamma(image->component[0].data[i], GAMMA[index], index);
+        s.g = complex_gamma(image->component[1].data[i], GAMMA[index], index);
+        s.b = complex_gamma(image->component[2].data[i], GAMMA[index], index);
+
+        d.x = ((s.r * color_matrix[index][0][0]) + (s.g * color_matrix[index][0][1]) + (s.b * color_matrix[index][0][2]));
+        d.y = ((s.r * color_matrix[index][1][0]) + (s.g * color_matrix[index][1][1]) + (s.b * color_matrix[index][1][2]));
+        d.z = ((s.r * color_matrix[index][2][0]) + (s.g * color_matrix[index][2][1]) + (s.b * color_matrix[index][2][2]));
+
+        image->component[0].data[i] = dci_transfer(d.x);
+        image->component[1].data[i] = dci_transfer(d.y);
+        image->component[2].data[i] = dci_transfer(d.z);
+    }
+
+    return OPENDCP_NO_ERROR;
+}
+
+/* rgb to xyz color conversion hard calculations integer */
+int rgb_to_xyz_calculate_float(opendcp_image_t *image, int index) {
     int i;
     int size;
     rgb_pixel_float_t s;
