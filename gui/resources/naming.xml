@@ -306,12 +306,11 @@ Y7    YELLOW CIRCLE 7
 </rating>
 
 <audio>
-NS    No Sound
+MOS   No Audio (Silent)
 51    5.1
-61    6.1
 71    7.1
-10    Center Channel Mono
-20    LtRt Stereo
+10    1.0 (Center Channel Mono)
+20    2.0 (LoRo Stereo)
 </audio>
 
 <resolution>
