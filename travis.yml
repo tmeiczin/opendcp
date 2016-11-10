@@ -1,0 +1,31 @@
+language: c
+
+os:
+  - linux
+  - osx
+
+compiler:
+  - gcc
+  - clang
+
+addons:
+  apt:
+    packages:
+      - graphviz
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
+
+script:
+  - mkdir build 
+  - cd build
+  - cmake ../
+  - make 
+
+matrix:
+  include:
+    - os: linux
+      dist: fedora 
+      sudo: required
+    - os: osx
+      osx_image: xcode7.2
