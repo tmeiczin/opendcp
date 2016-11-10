@@ -261,8 +261,7 @@ int main (int argc, char **argv) {
                          long_options, &option_index);
 
         /* Detect the end of the options. */
-        if (c == -1)
-        {
+        if (c == -1) {
             break;
         }
 
@@ -503,7 +502,7 @@ int main (int argc, char **argv) {
 
     /* get file list */
     OPENDCP_LOG(LOG_DEBUG, "searching path %s", in_path);
-    
+
     char *extensions = opendcp_decoder_extensions();
 
     filelist = get_filelist(in_path, extensions);

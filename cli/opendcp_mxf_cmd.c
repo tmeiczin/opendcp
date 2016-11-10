@@ -212,21 +212,24 @@ int main (int argc, char **argv) {
                          long_options, &option_index);
 
         /* Detect the end of the options. */
-        if (c == -1)
-        { break; }
+        if (c == -1) {
+            break;
+        }
 
         switch (c)
         {
             case 0:
 
                 /* If this option set a flag, do nothing else now. */
-                if (long_options[option_index].flag != 0)
-                { break; }
+                if (long_options[option_index].flag != 0) {
+                    break;
+                }
 
                 printf ("option %s", long_options[option_index].name);
 
-                if (optarg)
-                { printf (" with arg %s", optarg); }
+                if (optarg) {
+                    printf (" with arg %s", optarg);
+                }
 
                 printf ("\n");
                 break;
@@ -313,11 +316,11 @@ int main (int argc, char **argv) {
 
             case 'k':
                 if (!is_key(optarg)) {
-                   dcp_fatal(opendcp, "Invalid encryption key format");
+                    dcp_fatal(opendcp, "Invalid encryption key format");
                 }
 
                 if (hex2bin(optarg, opendcp->mxf.key_value, 16)) {
-                   dcp_fatal(opendcp, "Invalid encryption key format");
+                    dcp_fatal(opendcp, "Invalid encryption key format");
                 }
 
                 opendcp->mxf.key_flag = 1;
@@ -326,13 +329,13 @@ int main (int argc, char **argv) {
 
             case 'u':
                 if (!is_uuid(optarg)) {
-                   dcp_fatal(opendcp, "Invalid encryption key id format");
+                    dcp_fatal(opendcp, "Invalid encryption key id format");
                 }
 
                 strnchrdel(optarg, key_id, sizeof(key_id), '-');
 
                 if (hex2bin(key_id, opendcp->mxf.key_id, 16)) {
-                   dcp_fatal(opendcp, "Invalid encryption key format");
+                    dcp_fatal(opendcp, "Invalid encryption key format");
                 }
 
                 key_id_flag = 1;
@@ -447,7 +450,9 @@ int main (int argc, char **argv) {
 
     int class = get_file_essence_class(filelist->files[0], 1);
 
-    if (opendcp->log_level > 0 && opendcp->log_level < 3) { progress_bar(); }
+    if (opendcp->log_level > 0 && opendcp->log_level < 3) {
+        progress_bar();
+    }
 
     if (class == ACT_SOUND) {
         total = get_wav_duration(filelist->files[0], opendcp->frame_rate);

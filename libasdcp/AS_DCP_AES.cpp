@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_AES.h
-    \version $Id: AS_DCP_AES.cpp,v 1.13.2.1 2014/04/04 00:02:51 jhurst Exp $       
+    \version $Id: AS_DCP_AES.cpp,v 1.14 2014/03/14 21:53:38 jhurst Exp $       
     \brief   AS-DCP library, AES wrapper
 */
 
@@ -39,10 +39,9 @@ using Kumu::DefaultLogSink;
 using namespace ASDCP;
 const int KEY_SIZE_BITS = 128;
 
-#include <openssl/aes.h>
-#include <openssl/sha.h>
-#include <openssl/bn.h>
-#include <openssl/err.h>
+#include <libcrypto/aes.h>
+#include <libcrypto/err.h>
+#include <libcrypto/sha1.h>
 
 
 void
@@ -177,7 +176,7 @@ ASDCP::AESDecContext::InitKey(const byte_t* key)
   KM_TEST_NULL_L(key);
 
   if ( m_Context )
-    return  RESULT_INIT;
+    return RESULT_INIT;
 
   m_Context = new h__AESContext;
   m_Context->m_KeyBuf.Set(key);

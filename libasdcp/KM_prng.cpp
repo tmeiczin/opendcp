@@ -34,9 +34,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <KM_mutex.h>
 #include <string.h>
 #include <assert.h>
-#include <openssl/aes.h>
-#include <openssl/sha.h>
-#include <openssl/bn.h>
+
+#include <sha1.h>
+#include <ttmath/ttmath.h>
 
 using namespace Kumu;
 
@@ -202,8 +202,6 @@ Kumu::Gen_FIPS_186_Value(const byte_t* key, ui32_t key_size, byte_t* out_buf, ui
   byte_t sha_buf[SHA_DIGEST_LENGTH];
   ui32_t const xkey_len = 64; // 512/8
   byte_t xkey[xkey_len];
-  BN_CTX* ctx1 = BN_CTX_new(); // used by BN_* functions
-  assert(ctx1);
 
   if ( key_size > xkey_len )
     DefaultLogSink().Warn("Key too large for FIPS 186 seed, truncating to 64 bytes.\n");
@@ -216,26 +214,29 @@ Kumu::Gen_FIPS_186_Value(const byte_t* key, ui32_t key_size, byte_t* out_buf, ui
     key_size = SHA_DIGEST_LENGTH; // pad short key ( b < 160 )
 
   // create the 2^b constant
-  BIGNUM c_2powb, c_2, c_b;
-  BN_init(&c_2powb);  BN_init(&c_2);  BN_init(&c_b);
-  BN_set_word(&c_2, 2);
-  BN_set_word(&c_b, key_size * 8);
-  BN_exp(&c_2powb, &c_2, &c_b, ctx1);
+  ttmath::UInt<32> c_2powb, c_2, c_b;
+  c_2 = 2;
+  c_b = 8 * key_size;
+  c_2.Pow(c_b);
+  c_2powb = c_2;
 
   for (;;)
     {
       SHA_CTX SHA;
+      ui32_t hex_len = xkey_len;
+      char hex_s[hex_len];
 
       // step c -- x = G(t,xkey)
       SHA1_Init(&SHA); // set t
       SHA1_Update(&SHA, xkey, xkey_len);
 
-      ui32_t* buf_p = (ui32_t*)sha_buf;
-      *buf_p++ = KM_i32_BE(SHA.h0);
-      *buf_p++ = KM_i32_BE(SHA.h1);
-      *buf_p++ = KM_i32_BE(SHA.h2);
-      *buf_p++ = KM_i32_BE(SHA.h3);
-      *buf_p++ = KM_i32_BE(SHA.h4);
+      ui32_t *buf_p  = (ui32_t *)sha_buf;
+      ui32_t *data_p = (ui32_t *)SHA.data;
+      for (int i = 0; i < 5; i++)
+        {
+          *buf_p++ = KM_i32_BE(*data_p++);
+        }
+
       memcpy(out_buf, sha_buf, xmin<ui32_t>(out_buf_len, SHA_DIGEST_LENGTH));
 
       if ( out_buf_len <= SHA_DIGEST_LENGTH )
@@ -245,22 +246,26 @@ Kumu::Gen_FIPS_186_Value(const byte_t* key, ui32_t key_size, byte_t* out_buf, ui
       out_buf += SHA_DIGEST_LENGTH;
 
       // step d -- XKEY = (1 + XKEY + x) mod 2^b
-      BIGNUM bn_tmp, bn_xkey, bn_x_n;
-      BN_init(&bn_tmp);  BN_init(&bn_xkey);    BN_init(&bn_x_n);
+      ttmath::UInt<4> tt_x_n, tt_xkey, tt_tmp;
 
-      BN_bin2bn(xkey, key_size, &bn_xkey);
-      BN_bin2bn(sha_buf, SHA_DIGEST_LENGTH, &bn_x_n);
-      BN_add_word(&bn_xkey, 1);            // xkey += 1
-      BN_add(&bn_tmp, &bn_xkey, &bn_x_n);       // xkey += x
-      BN_mod(&bn_xkey, &bn_tmp, &c_2powb, ctx1);  // xkey = xkey mod (2^b)
+      memset(hex_s, 0, hex_len);
+      bin2hex(xkey, key_size, hex_s, hex_len);
+      tt_xkey.FromString(hex_s, 16);
+
+      memset(hex_s, 0, hex_len);
+      bin2hex(sha_buf, SHA_DIGEST_LENGTH, hex_s, hex_len);
+      tt_x_n.FromString(hex_s, 16);
+
+      tt_xkey += 1;                    // xkey += 1
+      tt_tmp = tt_xkey + tt_x_n;       // xkey += x
+      tt_xkey = tt_tmp % c_2powb;      // xkey = xkey mod (2^b)
 
       memset(xkey, 0, xkey_len);
-      ui32_t bn_buf_len = BN_num_bytes(&bn_xkey);
-      ui32_t idx = ( bn_buf_len < key_size ) ? key_size - bn_buf_len : 0;
-      BN_bn2bin(&bn_xkey, &xkey[idx]);
+      ui32_t x_len = strlen(tt_xkey.ToString(16).c_str());
+      ui32_t idx = ( x_len < key_size ) ? key_size - x_len : 0;
+      ui32_t length;
+      hex2bin(tt_xkey.ToString(16).c_str(), xkey+idx,  xkey_len, &length);
     }
-
-  BN_CTX_free(ctx1);
 }
 
 //

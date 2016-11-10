@@ -39,50 +39,32 @@ IF(COMPILE_LIBXML2)
     ENDIF()
     EXTERNALPROJECT_ADD(
         02_XML2
-        URL ${URL}/libxml2-2.7.8.tar.gz
+        URL ${URL}/libxml2-2.9.3.tar.gz
         BUILD_IN_SOURCE 1
         CONFIGURE_COMMAND ${CONFIGURE} ${PREFIX_ARG} ${AUTO_CFLAGS} ${AUTO_CXXFLAGS} ${AUTO_LDFLAGS}
                           --disable-dependency-tracking --enable-static=yes --enable-shared=no
                           --with-iconv=no
-                          --with-threads=off
+                          --with-threads=no
+                          --with-python=no
         BUILD_COMMAND ${MAKE} -f <SOURCE_DIR>/Makefile
         INSTALL_COMMAND ${INSTALL} -f <SOURCE_DIR>/Makefile install ${INSTALL_DIR}
     )
 ENDIF(COMPILE_LIBXML2)
 
 IF(ENABLE_XMLSEC AND COMPILE_XMLSEC)
-    IF(COMPILE_LIBXSLT)
-        IF(DOWNLOAD)
-           SET(URL ftp://xmlsoft.org/libxml2/)
-        ENDIF()
-        EXTERNALPROJECT_ADD(
-            03_XSLT
-            URL ${URL}/libxslt-1.1.26.tar.gz
-            BUILD_IN_SOURCE 1
-            PATCH_COMMAND patch -d <SOURCE_DIR> -p0 -t -N < ${PROJECT_SOURCE_DIR}/contrib/libxslt-1.1.26.patch
-            CONFIGURE_COMMAND ${CONFIGURE} ${PREFIX_ARG} ${AUTO_CFLAGS} ${AUTO_CXXFLAGS} ${AUTO_LDFLAGS}
-                             --disable-dependency-tracking --enable-static=yes --enable-shared=no
-                             --with-libxml-prefix=${PREFIX}
-                             --with-libxml-include-prefix=${PREFIX}/include/libxml2
-                             --with-libxml-libs-prefix=${PREFIX}/lib
-            BUILD_COMMAND ${MAKE} -f <SOURCE_DIR>/Makefile
-            INSTALL_COMMAND ${INSTALL}
-    )
-    ENDIF(COMPILE_LIBXSLT)
-
     IF(DOWNLOAD)
         SET(URL http://www.aleksey.com/xmlsec/download)
     ENDIF()
     IF(WIN32)
-        SET(XURL ${URL}/xmlsec1-1.2.18.tar.gz)
+        SET(URL ${URL}/xmlsec1-1.2.18.tar.gz)
     ELSE()
-        SET(XURL ${URL}/xmlsec1-1.2.19.tar.gz)
+        SET(URL ${URL}/xmlsec1-1.2.20.tar.gz)
     ENDIF()
     EXTERNALPROJECT_ADD(
         06_XMLSEC1
-        URL ${XURL}
+        URL ${URL}
         BUILD_IN_SOURCE 1
-        PATCH_COMMAND patch -d <SOURCE_DIR> -p0 -t -N < ${PROJECT_SOURCE_DIR}/contrib/xmlsec1-1.1.29.patch
+        PATCH_COMMAND patch -d <SOURCE_DIR> -p0 -t -N < ${PROJECT_SOURCE_DIR}/contrib/xmlsec1-1.2.20.patch
         CONFIGURE_COMMAND ${CONFIGURE} ${PREFIX_ARG} ${AUTO_CFLAGS} ${AUTO_CXXFLAGS} ${AUTO_LDFLAGS}
                           --enable-pkgconfig=no
                           --disable-dependency-tracking --enable-static=yes --enable-shared=no
@@ -90,7 +72,7 @@ IF(ENABLE_XMLSEC AND COMPILE_XMLSEC)
                           --enable-apps-crypto-dl=no
                           --enable-static-linking=yes
                           --with-libxml=${PREFIX}
-                          --with-libxslt=${PREFIX}
+                          --with-libxslt=no
                           --with-openssl=${PREFIX}
                           --with-default-crypto=openssl
         BUILD_COMMAND ${MAKE} -f <SOURCE_DIR>/Makefile
@@ -199,12 +181,12 @@ IF(COMPILE_OPENJPEG)
     SET(INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR})
     EXTERNALPROJECT_ADD(
         09_OpenJPEG
-        GIT_REPOSITORY "git://github.com/uclouvain/openjpeg.git"
-        GIT_TAG "tags/version.2.1" 
+        GIT_REPOSITORY "https://github.com/uclouvain/openjpeg.git"
+        GIT_TAG "tags/version.2.1"
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
         CONFIGURE_COMMAND ${CMAKE} ../09_OpenJPEG -DBUILD_CODEC=OFF -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DBUILD_SHARED_LIBS=OFF -DOPENJPEG_INSTALL_INCLUDE_DIR=${INSTALL_PREFIX}/include -DCMAKE_BUILD_TYPE=RELEASE
         BUILD_COMMAND ${MAKE}
-        INSTALL_COMMAND ${INSTALL} install 
+        INSTALL_COMMAND ${INSTALL} install
         UPDATE_COMMAND ""
     )
 ENDIF(COMPILE_OPENJPEG)

@@ -10,4 +10,4 @@ opendcp:            GUI version of the tool
 
 Refer to COMPILE.txt for compiling. Help is available using the -h or --help arguments.
 
-If you have any issues, please create a bug or enhancement at http://code.google.com/p/opendcp/issues/list.
+If you have any issues, please create a bug or enhancement at https://github.com/tmeiczin/opendcp

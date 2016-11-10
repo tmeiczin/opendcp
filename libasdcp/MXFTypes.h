@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2012, John Hurst
+Copyright (c) 2005-2015, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MXFTypes.h
-    \version $Id: MXFTypes.h,v 1.30 2012/03/15 17:54:15 jhurst Exp $
+    \version $Id: MXFTypes.h,v 1.38 2015/10/12 15:30:46 jhurst Exp $
     \brief   MXF objects
 */
 
@@ -35,6 +35,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "KLV.h"
 #include <list>
 #include <vector>
+#include <set>
 #include <map>
 #include <wchar.h>
 
@@ -43,6 +44,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // these are used below to manufacture arguments
 #define OBJ_READ_ARGS(s,l) m_Dict->Type(MDD_##s##_##l), &l
 #define OBJ_WRITE_ARGS(s,l) m_Dict->Type(MDD_##s##_##l), &l
+#define OBJ_READ_ARGS_OPT(s,l) m_Dict->Type(MDD_##s##_##l), &l.get()
+#define OBJ_WRITE_ARGS_OPT(s,l) m_Dict->Type(MDD_##s##_##l), &l.get()
 #define OBJ_TYPE_ARGS(t) m_Dict->Type(MDD_##t).ul
 
 
@@ -94,97 +97,117 @@ namespace ASDCP
 	};
 
       //
-      template <class T>
-	class Batch : public std::vector<T>, public Kumu::IArchive
+      template <class ContainerType>
+	class FixedSizeItemCollection : public ContainerType, public Kumu::IArchive
 	{
 	public:
-	  Batch() {}
-	  virtual ~Batch() {}
+	  FixedSizeItemCollection() {}
+	  virtual ~FixedSizeItemCollection() {}
 
-	  //
-	  virtual bool Unarchive(Kumu::MemIOReader* Reader) {
-	    ui32_t ItemCount, ItemSize;
-	    if ( ! Reader->ReadUi32BE(&ItemCount) ) return false;
-	    if ( ! Reader->ReadUi32BE(&ItemSize) ) return false;
+	  ui32_t ItemSize() const {
+	    typename ContainerType::value_type tmp_item;
+	    return tmp_item.ArchiveLength();
+	  }
 
-	    if ( ( ItemCount > 65536 ) || ( ItemSize > 1024 ) )
-	      return false;
+	  bool HasValue() const { return ! this->empty(); }
 
+	  ui32_t ArchiveLength() const {
+	    return ( sizeof(ui32_t) * 2 ) +  ( this->size() * this->ItemSize() );
+	  }
+
+	  bool Archive(Kumu::MemIOWriter* Writer) const {
+	    if ( ! Writer->WriteUi32BE(this->size()) ) return false;
+	    if ( ! Writer->WriteUi32BE(this->ItemSize()) ) return false;
+	    if ( this->empty() ) return true;
+	    
+	    typename ContainerType::const_iterator i;
 	    bool result = true;
-	    for ( ui32_t i = 0; i < ItemCount && result; i++ )
+	    for ( i = this->begin(); i != this->end() && result; ++i )
 	      {
-		T Tmp;
-		result = Tmp.Unarchive(Reader);
-
-		if ( result )
-		  this->push_back(Tmp);
+		result = i->Archive(Writer);
 	      }
 
 	    return result;
 	  }
 
-	  inline virtual bool HasValue() const { return ! this->empty(); }
-
-	  virtual ui32_t ArchiveLength() const {
-	    ui32_t arch_size = sizeof(ui32_t)*2;
-
-	    typename std::vector<T>::const_iterator l_i = this->begin();
-	    assert(l_i != this->end());
-
-	    for ( ; l_i != this->end(); l_i++ )
-	      arch_size += l_i->ArchiveLength();
-	    
-	    return arch_size;
-	  }
-
 	  //
-	  virtual bool Archive(Kumu::MemIOWriter* Writer) const {
-	    if ( ! Writer->WriteUi32BE(this->size()) ) return false;
-	    byte_t* p = Writer->CurrentData();
+	  bool Unarchive(Kumu::MemIOReader* Reader) {
+	    ui32_t item_count, item_size;
+	    if ( ! Reader->ReadUi32BE(&item_count) ) return false;
+	    if ( ! Reader->ReadUi32BE(&item_size) ) return false;
 
-	    if ( ! Writer->WriteUi32BE(0) ) return false;
-	    if ( this->empty() ) return true;
-	    
-	    typename std::vector<T>::const_iterator l_i = this->begin();
-	    assert(l_i != this->end());
-
-	    ui32_t ItemSize = Writer->Remainder();
-	    if ( ! (*l_i).Archive(Writer) ) return false;
-	    ItemSize -= Writer->Remainder();
-	    Kumu::i2p<ui32_t>(KM_i32_BE(ItemSize), p);
-	    l_i++;
+	    if ( item_count > 0 )
+	      {
+		if ( this->ItemSize() != item_size ) return false;
+	      }
 
 	    bool result = true;
-	    for ( ; l_i != this->end() && result; l_i++ )
-	      result = (*l_i).Archive(Writer);
+	    for ( ui32_t i = 0; i < item_count && result; ++i )
+	      {
+		typename ContainerType::value_type tmp_item;
+		result = tmp_item.Unarchive(Reader);
+
+		if ( result )
+		  {
+		    this->push_back(tmp_item);
+		  }
+	      }
 
 	    return result;
 	  }
 
-	  //
-	  void Dump(FILE* stream = 0, ui32_t depth = 0)
-	    {
-	      char identbuf[IdentBufferLen];
+	  void Dump(FILE* stream = 0, ui32_t depth = 0) {
+	    char identbuf[IdentBufferLen];
 
-	      if ( stream == 0 )
+	    if ( stream == 0 )
+	      {
 		stream = stderr;
-
-	      typename std::vector<T>::iterator i = this->begin();
-	      for ( ; i != this->end(); i++ )
+	      }
+	    
+	    typename ContainerType::const_iterator i;
+	    for ( i = this->begin(); i != this->end(); ++i )
+	      {
 		fprintf(stream, "  %s\n", (*i).EncodeString(identbuf, IdentBufferLen));
-	    }
+	      }
+	  }
 	};
+
+
+      template <class item_type>
+	class PushSet : public std::set<item_type>
+      {
+      public:
+	PushSet() {}
+	virtual ~PushSet() {}
+	void push_back(const item_type& item) { this->insert(item); }
+      };
+
+      template <class ItemType>
+	class Batch : public FixedSizeItemCollection<PushSet<ItemType> >
+      {
+      public:
+	Batch() {}
+	virtual ~Batch() {}
+      };
+
+      template <class ItemType>
+	class Array : public FixedSizeItemCollection<std::vector<ItemType> >
+      {
+      public:
+	Array() {}
+	virtual ~Array() {}
+      };
 
       //
       template <class T>
-	class Array : public std::list<T>, public Kumu::IArchive
+	class SimpleArray : public std::list<T>, public Kumu::IArchive
 	{
 	public:
-	  Array() {}
-	  virtual ~Array() {}
+	  SimpleArray() {}
+	  virtual ~SimpleArray() {}
 
 	  //
-	  virtual bool Unarchive(Kumu::MemIOReader* Reader)
+	  bool Unarchive(Kumu::MemIOReader* Reader)
 	    {
 	      bool result = true;
 
@@ -192,15 +215,19 @@ namespace ASDCP
 		{
 		  T Tmp;
 		  result = Tmp.Unarchive(Reader);
-		  this->push_back(Tmp);
+
+		  if ( result )
+		    {
+		      this->push_back(Tmp);
+		    }
 		}
 
 	      return result;
 	    }
 
-	  inline virtual bool HasValue() const { return ! this->empty(); }
+	  inline bool HasValue() const { return ! this->empty(); }
 
-	  virtual ui32_t ArchiveLength() const {
+	  ui32_t ArchiveLength() const {
 	    ui32_t arch_size = 0;
 
 	    typename std::list<T>::const_iterator l_i = this->begin();
@@ -212,7 +239,7 @@ namespace ASDCP
 	  }
 
 	  //
-	  virtual bool Archive(Kumu::MemIOWriter* Writer) const {
+	  bool Archive(Kumu::MemIOWriter* Writer) const {
 	    bool result = true;
 	    typename std::list<T>::const_iterator l_i = this->begin();
 
@@ -241,6 +268,8 @@ namespace ASDCP
 	{
 	public:
 	  ISO8String() {}
+	  ISO8String(const char*);
+	  ISO8String(const std::string&);
 	  ~ISO8String() {}
 
 	  const ISO8String& operator=(const char*);
@@ -258,6 +287,8 @@ namespace ASDCP
 	{
 	public:
 	  UTF16String() {}
+	  UTF16String(const char*);
+	  UTF16String(const std::string&);
 	  ~UTF16String() {}
 
 	  const UTF16String& operator=(const char*);
@@ -325,7 +356,7 @@ namespace ASDCP
       class VersionType : public Kumu::IArchive
 	{
 	public:
-	  enum Release_t { RL_UNKNOWN, RL_RELEASE, RL_DEVELOPMENT, RL_PATCHED, RL_BETA, RL_PRIVATE };
+	  enum Release_t { RL_UNKNOWN, RL_RELEASE, RL_DEVELOPMENT, RL_PATCHED, RL_BETA, RL_PRIVATE, RL_MAX };
 	  ui16_t Major;
 	  ui16_t Minor;
 	  ui16_t Patch;
@@ -348,7 +379,7 @@ namespace ASDCP
 	  void Dump(FILE* = 0);
 
 	  const char* EncodeString(char* str_buf, ui32_t buf_len) const {
-	    snprintf(str_buf, buf_len, "%hu.%hu.%hu.%hur%hu", Major, Minor, Patch, Build, Release);
+	    snprintf(str_buf, buf_len, "%hu.%hu.%hu.%hur%hu", Major, Minor, Patch, Build, ui16_t(Release));
 	    return str_buf;
 	  }
 
@@ -375,6 +406,114 @@ namespace ASDCP
 	    return true;
 	  }
 	};
+
+      /*
+	The RGBALayout type shall be a fixed-size 8 element sequence with a total length
+	of 16 bytes, where each element shall consist of the RGBAComponent type with the
+	following fields:
+
+	Code (UInt8): Enumerated value specifying component (i.e., component identifier).
+	"0" is the layout terminator.
+
+	Depth (UInt8): Integer specifying the number of bits occupied (see also G.2.26) 
+	  1->32 indicates integer depth
+	  253 = HALF (floating point 16-bit value)
+	  254 = IEEE floating point 32-bit value
+	  255 = IEEE floating point 64-bit value
+	  0 = RGBALayout terminator
+
+	A Fill component indicates unused bits. After the components have been specified,
+	the remaining Code and Size fields shall be set to zero (0).
+
+	For each component in the Pixel, one of the following Codes or the terminator
+	shall be specified (explained below):
+
+	Code	ASCII
+
+      */
+      struct RGBALayoutTableEntry
+      {
+	byte_t code;
+	char symbol;
+	const char* label;
+      };
+
+      struct RGBALayoutTableEntry const RGBALayoutTable[] = {
+	{ 0x52, 'R', "Red component" },
+	{ 0x47, 'G', "Green component" },
+	{ 0x42, 'B', "Blue component" },
+	{ 0x41, 'A', "Alpha component" },
+	{ 0x72, 'r', "Red component (LSBs)" },
+	{ 0x67, 'g', "Green component (LSBs)" },
+	{ 0x62, 'b', "Blue component (LSBs)" },
+	{ 0x61, 'a', "Alpha component (LSBs)" },
+	{ 0x46, 'F', "Fill component" },
+	{ 0x50, 'P', "Palette code" },
+	{ 0x55, 'U', "Color Difference Sample (e.g. U, Cb, I etc.)" },
+	{ 0x56, 'V', "Color Difference Sample (e.g. V, Cr, Q etc.)" },
+	{ 0x57, 'W', "Composite Video" },
+	{ 0x58, 'X', "Non co-sited luma component" },
+	{ 0x59, 'Y', "Luma component" },
+	{ 0x5a, 'Z', "Depth component (SMPTE ST 268 compatible)" },
+	{ 0x75, 'u', "Color Difference Sample (e.g. U, Cb, I etc.) (LSBs)" },
+	{ 0x76, 'v', "Color Difference Sample (e.g. V, Cr, Q etc.) (LSBs)" },
+	{ 0x77, 'w', "Composite Video (LSBs)" },
+	{ 0x78, 'x', "Non co-sited luma component (LSBs)" },
+	{ 0x79, 'y', "Luma component (LSBs)" },
+	{ 0x7a, 'z', "Depth component (LSBs) (SMPTE ST 268 compatible)" },
+	{ 0xd8, 'X', "The DCDM X color component (see SMPTE ST 428-1 X')" },
+	{ 0xd9, 'Y', "The DCDM Y color component (see SMPTE ST 428-1 Y')" },
+	{ 0xda, 'Z', "The DCDM Z color component (see SMPTE ST 428-1 Z')" },
+	{ 0x00, '_', "Terminator" }
+      };
+
+
+      size_t const RGBAValueLength = 16;
+
+      byte_t const RGBAValue_RGB_10[RGBAValueLength] = { 'R', 10, 'G', 10, 'B', 10, 0, 0 };
+      byte_t const RGBAValue_RGB_8[RGBAValueLength]  = { 'R', 8,  'G', 8,  'B', 8,  0, 0 };
+      byte_t const RGBAValue_YUV_10[RGBAValueLength] = { 'Y', 10, 'U', 10, 'V', 10, 0, 0 };
+      byte_t const RGBAValue_YUV_8[RGBAValueLength]  = { 'Y', 8,  'U', 8,  'V', 8,  0, 0 };
+      byte_t const RGBAValue_DCDM[RGBAValueLength] = { 0xd8, 10, 0xd9, 10, 0xda, 10, 0, 0 };
+
+
+      class RGBALayout : public Kumu::IArchive
+	{
+	  byte_t m_value[RGBAValueLength];
+
+	public:
+	  RGBALayout();
+	  RGBALayout(const byte_t* value);
+	  ~RGBALayout();
+
+	  RGBALayout(const RGBALayout& rhs) { Set(rhs.m_value); }
+	  const RGBALayout& operator=(const RGBALayout& rhs) { Set(rhs.m_value); return *this; }
+	  
+	  void Set(const byte_t* value) {
+	    memcpy(m_value, value, RGBAValueLength);
+	  }
+
+	  const char* EncodeString(char* buf, ui32_t buf_len) const;
+
+	  bool HasValue() const { return true; }
+	  ui32_t ArchiveLength() const { return RGBAValueLength; }
+
+	  bool Archive(Kumu::MemIOWriter* Writer) const {
+	    return Writer->WriteRaw(m_value, RGBAValueLength);
+	  }
+
+	  bool Unarchive(Kumu::MemIOReader* Reader) {
+	    if ( Reader->Remainder() < RGBAValueLength )
+	      {
+		return false;
+	      }
+
+	    memcpy(m_value, Reader->CurrentData(), RGBAValueLength);
+	    Reader->SkipOffset(RGBAValueLength);
+	    return true;
+	  }
+	};
+
 
       //
       class Raw : public Kumu::ByteString

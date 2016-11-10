@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AtmosSyncChannel_Mixer.h
-    \version $Id: DCData_ByteStream_Parser.cpp,v 1.1 2013/04/12 23:39:30 mikey Exp $
+    \version $Id: DCData_ByteStream_Parser.cpp,v 1.2 2014/01/02 23:29:22 jhurst Exp $
     \brief   AS-DCP library, Digital Cinema Data bytestream essence reader
 */
 
@@ -52,9 +52,8 @@ public:
 
   ~h__BytestreamParser() {}
 
-  Result_t OpenReadFrame(const char* filename, FrameBuffer& FB)
+  Result_t OpenReadFrame(const std::string& filename, FrameBuffer& FB)
   {
-    ASDCP_TEST_NULL_STR(filename);
     m_File.Close();
     Result_t result = m_File.OpenRead(filename);
 
@@ -95,7 +94,7 @@ ASDCP::DCData::BytestreamParser::~BytestreamParser()
 // Opens the stream for reading, parses enough data to provide a complete
 // set of stream metadata for the MXFWriter below.
 ASDCP::Result_t
-ASDCP::DCData::BytestreamParser::OpenReadFrame(const char* filename, FrameBuffer& FB) const
+ASDCP::DCData::BytestreamParser::OpenReadFrame(const std::string& filename, FrameBuffer& FB) const
 {
   const_cast<ASDCP::DCData::BytestreamParser*>(this)->m_Parser = new h__BytestreamParser;
   return m_Parser->OpenReadFrame(filename, FB);

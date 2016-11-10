@@ -167,8 +167,9 @@ int find_seq_offset(char str1[], char str2[]) {
     unsigned int offset = 0;
 
     for (i = 0; (i < strlen(str1)) && (offset == 0); i++) {
-        if(str1[i] != str2[i])
-        { offset = i; }
+        if(str1[i] != str2[i]) {
+            offset = i;
+        }
     }
 
     return offset;
@@ -178,8 +179,9 @@ int find_ext_offset(char str[]) {
     int i = strlen(str);
 
     while(i) {
-        if(str[i] == '.')
-        { return i; }
+        if(str[i] == '.') {
+            return i;
+        }
 
         i--;
     }

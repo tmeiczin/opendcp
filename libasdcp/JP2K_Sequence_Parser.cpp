@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    JP2K_Sequence_Parser.cpp
-    \version $Id: JP2K_Sequence_Parser.cpp,v 1.8 2011/05/13 01:50:19 jhurst Exp $
+    \version $Id: JP2K_Sequence_Parser.cpp,v 1.9 2014/01/02 23:29:22 jhurst Exp $
     \brief   AS-DCP library, JPEG 2000 codestream essence reader implementation
 */
 
@@ -59,7 +59,7 @@ public:
   }
 
   //
-  Result_t InitFromDirectory(const char* path)
+  Result_t InitFromDirectory(const std::string& path)
   {
     char next_file[Kumu::MaxFilePath];
     Kumu::DirScanner Scanner;
@@ -119,7 +119,7 @@ public:
     Close();
   }
 
-  Result_t OpenRead(const char* filename, bool pedantic);
+  Result_t OpenRead(const std::string& filename, bool pedantic);
   Result_t OpenRead(const std::list<std::string>& file_list, bool pedantic);
   void     Close() {}
 
@@ -168,9 +168,8 @@ ASDCP::JP2K::SequenceParser::h__SequenceParser::OpenRead()
 
 //
 ASDCP::Result_t
-ASDCP::JP2K::SequenceParser::h__SequenceParser::OpenRead(const char* filename, bool pedantic)
+ASDCP::JP2K::SequenceParser::h__SequenceParser::OpenRead(const std::string& filename, bool pedantic)
 {
-  ASDCP_TEST_NULL_STR(filename);
   m_Pedantic = pedantic;
 
   Result_t result = m_FileList.InitFromDirectory(filename);
@@ -327,7 +326,7 @@ ASDCP::JP2K::SequenceParser::~SequenceParser()
 // Opens the stream for reading, parses enough data to provide a complete
 // set of stream metadata for the MXFWriter below.
 ASDCP::Result_t
-ASDCP::JP2K::SequenceParser::OpenRead(const char* filename, bool pedantic) const
+ASDCP::JP2K::SequenceParser::OpenRead(const std::string& filename, bool pedantic) const
 {
   const_cast<ASDCP::JP2K::SequenceParser*>(this)->m_Parser = new h__SequenceParser;
 

@@ -74,6 +74,7 @@ extern "C" {
         OPENDCP_ERROR_MSG(OPENDCP_SPECIFICATION_MISMATCH,  "DCP contains MXF Interop and SMPTE track") \
         OPENDCP_ERROR_MSG(OPENDCP_TRACK_NO_DURATION,       "Track has no duration") \
         OPENDCP_ERROR_MSG(OPENDCP_J2K_ERROR,               "JPEG2000 error") \
+        OPENDCP_ERROR_MSG(OPENDCP_EXR_COMPRESS_ERROR,      "Can only open EXR file use ZIP compression") \
         OPENDCP_ERROR_MSG(OPENDCP_CALC_DIGEST,             "Could not calculate MXF digest") \
         OPENDCP_ERROR_MSG(OPENDCP_DETECT_TRACK_TYPE,       "Could not determine MXF track type") \
         OPENDCP_ERROR_MSG(OPENDCP_INVALID_TRACK_TYPE,      "Invalid MXF track type") \
@@ -82,9 +83,11 @@ extern "C" {
         OPENDCP_ERROR_MSG(OPENDCP_INVALID_WAV_CHANNELS,    "WAV has an incorrect number of channels") \
         OPENDCP_ERROR_MSG(OPENDCP_FILEOPEN_MPEG2,          "Could not open MPEG2 file") \
         OPENDCP_ERROR_MSG(OPENDCP_FILEOPEN_J2K,            "Could not open JPEG200 file") \
+        OPENDCP_ERROR_MSG(OPENDCP_FILEOPEN_EXR,            "Could not open EXR file") \
         OPENDCP_ERROR_MSG(OPENDCP_FILEOPEN_WAV,            "Could not open wav file") \
         OPENDCP_ERROR_MSG(OPENDCP_FILEOPEN_TT,             "Could not open subtitle file") \
         OPENDCP_ERROR_MSG(OPENDCP_FILEWRITE_MXF,           "Could not write MXF file") \
+        OPENDCP_ERROR_MSG(OPENDCP_FILEREAD_MXF,            "Could not read MXF file") \
         OPENDCP_ERROR_MSG(OPENDCP_FINALIZE_MXF,            "Could not finalize MXF file") \
         OPENDCP_ERROR_MSG(OPENDCP_PARSER_RESET,            "Could not reset MXF parser") \
         OPENDCP_ERROR_MSG(OPENDCP_STRING_LENGTH,           "Input files have differing file lengths") \
@@ -401,6 +404,7 @@ int         hex2bin(const char* str, byte_t* buf, unsigned int buf_len);
 int         is_key(const char *s);
 int         is_uuid(const char *s);
 int         is_key_value_set(byte_t *key, int len);
+int         is_filename_ascii(const char *s);
 
 /* opendcp context */
 opendcp_t *opendcp_create();
@@ -433,28 +437,6 @@ int convert_to_j2k(opendcp_t *opendcp, char *in_file, char *out_file);
 
 /* retrieve error string */
 char *error_string(int error_code);
-
-/* checksum */
-typedef struct {
-    uint32_t buf[4];
-    uint32_t bits[2];
-    unsigned char in[64];
-} md5_t;
-
-typedef struct {
-    uint32_t state[5];
-    uint32_t count[2];
-    unsigned char buffer[64];
-} sha1_t;
-
-void md5_init(md5_t *ctx);
-void md5_update(md5_t *ctx, unsigned char const *buf, unsigned len);
-void md5_final(unsigned char digest[16], md5_t *ctx);
-void sha1_init(sha1_t *context);
-void sha1_update(sha1_t *context, const unsigned char *data, uint32_t len);
-void sha1_final(unsigned char digest[20], sha1_t *context);
-void base64_encode(const unsigned char *src, int src_len, char *dst);
-int  is_filename_ascii(const char *s);
 
 #ifdef __cplusplus
 }
