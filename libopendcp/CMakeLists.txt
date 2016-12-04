@@ -25,7 +25,7 @@ SET(OPENDCP_CODEC_SRC
      codecs/opendcp_decoder_tif.c
      codecs/opendcp_decoder_bmp.c
      codecs/opendcp_decoder_dpx.c
-     codecs/opendcp_decoder_exr.c
+     codecs/opendcp_decoder_openexr.c
      codecs/opendcp_decoder_openjpeg.c
      codecs/opendcp_encoder.c
      codecs/opendcp_encoder_kakadu.c
