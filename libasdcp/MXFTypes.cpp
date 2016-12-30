@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2015, John Hurst
+Copyright (c) 2005-2016, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MXFTypes.cpp
-    \version $Id: MXFTypes.cpp,v 1.33 2015/10/12 15:30:46 jhurst Exp $
+    \version $Id: MXFTypes.cpp,v 1.36 2016/12/02 17:23:14 jhurst Exp $
     \brief   MXF objects
 */
 
@@ -93,7 +93,7 @@ ASDCP::UL::MatchIgnoreStream(const UL& rhs) const
 
 //
 bool
-ASDCP::UL::ExactMatch(const UL& rhs) const
+ASDCP::UL::MatchExact(const UL& rhs) const
 {
   if ( m_Value[0] == rhs.m_Value[0] &&
        m_Value[1] == rhs.m_Value[1] &&
@@ -561,7 +561,7 @@ ASDCP::MXF::TLVWriter::WriteTag(const MDDEntry& Entry)
 {
   if ( m_Lookup == 0 )
     {
-      DefaultLogSink().Error("No Primer object available\n");
+      DefaultLogSink().Error("No Primer object available.\n");
       return RESULT_FAIL;
     }
 

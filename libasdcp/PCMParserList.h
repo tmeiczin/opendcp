@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2004-2013, John Hurst
+Copyright (c) 2004-2016, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    PCMParserList.h
-    \version $Id: PCMParserList.h,v 1.5 2014/01/02 23:29:22 jhurst Exp $
+    \version $Id: PCMParserList.h,v 1.6 2016/03/09 20:05:26 jhurst Exp $
     \brief   Read WAV file(s), multiplex multiple PCM frame buffers into one
 */
 
@@ -78,6 +78,7 @@ namespace ASDCP
       Result_t FillAudioDescriptor(PCM::AudioDescriptor& ADesc) const;
       Result_t Reset();
       Result_t ReadFrame(PCM::FrameBuffer& OutFB);
+      Result_t Seek(ui32_t frame_number);
     };
 }
 

@@ -80,11 +80,7 @@ namespace ASDCP
 
       Result_t OpenRead(ui32_t argc, const char** argv, const Rational& PictureRate);
       Result_t OpenRead(const Kumu::PathList_t& argv, const Rational& PictureRate);
-<<<<<<< HEAD
-      Result_t AppendSilenceChannels(const ui32_t& channelCount);
-=======
       Result_t AppendSilenceChannels(const ui32_t& channel_count);
->>>>>>> 080a14bc87e096fe181fb9f1d21e0d94bf71e7d0
       Result_t FillAudioDescriptor(PCM::AudioDescriptor& ADesc) const;
       Result_t Reset();
       Result_t ReadFrame(PCM::FrameBuffer& OutFB);

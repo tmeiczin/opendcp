@@ -44,7 +44,7 @@ The libtai source code is in the public domain.
 */
 
   /*! \file    KM_tai.cpp
-    \version $Id: KM_tai.cpp,v 1.5 2012/03/07 17:30:52 mikey Exp $
+    \version $Id: KM_tai.cpp,v 1.6 2016/03/02 18:57:41 jhurst Exp $
     \brief   portable time functions
   */
 
@@ -190,6 +190,7 @@ Kumu::TAI::tai::now()
   ct.hour = st.wHour;
   ct.minute = st.wMinute;
   ct.second = st.wSecond;
+  ct.offset = 0;
   caltime_tai(&ct, this);
 #else
   struct timeval now;

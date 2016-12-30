@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2004-2013, John Hurst
+Copyright (c) 2004-2016, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_MXF.cpp
-    \version $Id: AS_DCP_MXF.cpp,v 1.39 2015/04/21 03:55:31 jhurst Exp $
+    \version $Id: AS_DCP_MXF.cpp,v 1.43 2016/12/01 20:12:37 jhurst Exp $
     \brief   AS-DCP library, misc classes and subroutines
 */
 
@@ -213,7 +213,8 @@ ASDCP::EssenceType(const std::string& filename, EssenceType_t& type)
 	    {
 	      type = ESS_TIMED_TEXT;
 	    }
-	  else if ( ASDCP_SUCCESS(TestHeader.GetMDObjectByType(OBJ_TYPE_ARGS(DCDataDescriptor))) )
+	  else if ( ASDCP_SUCCESS(TestHeader.GetMDObjectByType(OBJ_TYPE_ARGS(DCDataDescriptor)))
+		    || ASDCP_SUCCESS(TestHeader.GetMDObjectByType(OBJ_TYPE_ARGS(PrivateDCDataDescriptor))) )
 	    {
 	      if ( ASDCP_SUCCESS(TestHeader.GetMDObjectByType(OBJ_TYPE_ARGS(DolbyAtmosSubDescriptor))) )
 		{
@@ -247,6 +248,10 @@ ASDCP::EssenceType(const std::string& filename, EssenceType_t& type)
 	    {
 	      type = ESS_AS02_TIMED_TEXT;
 	    }
+	  else if ( ASDCP_SUCCESS(TestHeader.GetMDObjectByType(OBJ_TYPE_ARGS(PIMFDynamicMetadataDescriptor))) )
+	    {
+	      type = ESS_DCDATA_UNKNOWN;
+	    }
 	}
       else
 	{
@@ -262,11 +267,11 @@ ASDCP::EssenceType(const std::string& filename, EssenceType_t& type)
 static bool
 string_is_xml(const ASDCP::FrameBuffer& buffer)
 {
-  std::string ns_prefix, type_name, namespace_name;
-  Kumu::AttributeList doc_attr_list;
-  return GetXMLDocType(buffer.RoData(), buffer.Size(),
-		       ns_prefix, type_name, namespace_name, doc_attr_list);
-}
+  return (strncmp((const char *)buffer.RoData(),             "<?xml", 5) == 0 ||
+          strncmp((const char *)buffer.RoData(), "\xEF\xBB\xBF<?xml", 8) == 0); // Allow BOM
+ }
+ 
+ //
 
 //
 ASDCP::Result_t

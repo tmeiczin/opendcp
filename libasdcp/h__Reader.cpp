@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    h__Reader.cpp
-    \version $Id: h__Reader.cpp,v 1.39 2015/10/09 23:41:11 jhurst Exp $
+    \version $Id: h__Reader.cpp,v 1.40 2016/05/16 21:56:54 jhurst Exp $
     \brief   MXF file reader base class
 */
 
@@ -84,18 +84,18 @@ ASDCP::h__ASDCPReader::OpenMXFRead(const std::string& filename)
 
       m_Info.LabelSetType = LS_MXF_UNKNOWN;
 
-      if ( m_HeaderPart.OperationalPattern.ExactMatch(MXFInterop_OPAtom_Entry().ul) )
+      if ( m_HeaderPart.OperationalPattern.MatchExact(MXFInterop_OPAtom_Entry().ul) )
 	{
 	  m_Info.LabelSetType = LS_MXF_INTEROP;
 	}
-      else if ( m_HeaderPart.OperationalPattern.ExactMatch(SMPTE_390_OPAtom_Entry().ul) )
+      else if ( m_HeaderPart.OperationalPattern.MatchExact(SMPTE_390_OPAtom_Entry().ul) )
 	{
 	  m_Info.LabelSetType = LS_MXF_SMPTE;
 	}
       else
 	{
 	  char strbuf[IdentBufferLen];
-	  const MDDEntry* Entry = m_Dict->FindUL(m_HeaderPart.OperationalPattern.Value());
+	  const MDDEntry* Entry = m_Dict->FindULExact(m_HeaderPart.OperationalPattern.Value());
 
 	  if ( Entry == 0 )
 	    {
@@ -312,7 +312,7 @@ ASDCP::Read_EKLV_Packet(Kumu::FileReader& File, const ASDCP::Dictionary& Dict,
       if ( ! UL(ess_p).MatchIgnoreStream(EssenceUL) ) // ignore the stream number
 	{
 	  char strbuf[IntBufferLen];
-	  const MDDEntry* Entry = Dict.FindUL(Key.Value());
+	  const MDDEntry* Entry = Dict.FindULAnyVersion(Key.Value());
 
 	  if ( Entry == 0 )
 	    {
@@ -431,7 +431,7 @@ ASDCP::Read_EKLV_Packet(Kumu::FileReader& File, const ASDCP::Dictionary& Dict,
   else
     {
       char strbuf[IntBufferLen];
-      const MDDEntry* Entry = Dict.FindUL(Key.Value());
+      const MDDEntry* Entry = Dict.FindULAnyVersion(Key.Value());
 
       if ( Entry == 0 )
 	{

@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_util.h
-    \version $Id: KM_util.h,v 1.39 2015/10/12 15:30:46 jhurst Exp $
+    \version $Id: KM_util.h,v 1.40 2016/12/07 18:11:32 jhurst Exp $
     \brief   Utility functions
   */
 
@@ -542,6 +542,27 @@ namespace Kumu
   // entire string will be returned as a single-item list.  Empty items will be recorded for
   // adjacent instances of the separator. E.g., "/foo//bar/" will return ["", "foo", "", "bar", ""].
   std::list<std::string> km_token_split(const std::string& str, const std::string& separator);
+
+  // Join the tokens in the given list using delimiter. If prefix is defined then each token
+  // will be concatenated with the prefix before being added to the composite string.
+  template <class T>
+    std::string
+    km_join(const T& list, const std::string& delimiter, const std::string& prefix = "")
+    {
+      std::string result;
+
+      for ( typename T::const_iterator i = list.begin(); i != list.end(); ++i )
+	{
+	  if ( i != list.begin() )
+	    {
+	      result += delimiter;
+	    }
+      
+	  result += prefix + *i;
+	}
+
+      return result;
+    }
 
 } // namespace Kumu
 

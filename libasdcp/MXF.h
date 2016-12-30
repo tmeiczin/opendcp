@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MXF.h
-    \version $Id: MXF.h,v 1.57 2015/10/10 20:26:29 jhurst Exp $
+    \version $Id: MXF.h,v 1.58 2016/03/09 20:05:26 jhurst Exp $
     \brief   MXF objects
 */
 
@@ -185,7 +185,17 @@ namespace ASDCP
 	    LocalTagEntry(const TagValue& tag, ASDCP::UL& ul) : Tag(tag), UL(ul) {}
 
 	      bool operator<(const LocalTagEntry& rhs) const {
-		return ( ( Tag.a < rhs.Tag.a ) || ( Tag.b < rhs.Tag.b ) );
+		if ( Tag.a < rhs.Tag.a )
+		  {
+		    return true;
+		  }
+		
+		if ( Tag.a == rhs.Tag.a && Tag.b < rhs.Tag.b )
+		  {
+		    return true;
+		  }
+
+		return false;
 	      }
 
 	      inline const char* EncodeString(char* str_buf, ui32_t buf_len) const {
@@ -499,26 +509,11 @@ namespace ASDCP
 	}
       };
 
-<<<<<<< HEAD
-      //
-      struct label_traits
-      {
-	const std::string tag_name;
-	const bool requires_prefix;
-	const UL ul;
-
-      label_traits(const std::string& tag_name, const bool requires_prefix, const UL ul) : 
-	tag_name(tag_name), requires_prefix(requires_prefix), ul(ul) { }
-      };
-
-      typedef std::map<const std::string, const label_traits, ci_comp> mca_label_map_t;
-=======
       struct label_traits
       {
         const std::string tag_name;
 	const bool requires_prefix;
 	const UL ul;
->>>>>>> 080a14bc87e096fe181fb9f1d21e0d94bf71e7d0
 
       label_traits(const std::string& tag_name, const bool requires_prefix, const UL ul) : 
 	tag_name(tag_name), requires_prefix(requires_prefix), ul(ul) { }
@@ -531,25 +526,6 @@ namespace ASDCP
 
       //
       class ASDCP_MCAConfigParser : public InterchangeObject_list_t
-<<<<<<< HEAD
-      {
-        KM_NO_COPY_CONSTRUCT(ASDCP_MCAConfigParser);
-        ASDCP_MCAConfigParser();
-
-      protected:
-        mca_label_map_t m_LabelMap;
-        ui32_t m_ChannelCount;
-        const Dictionary*& m_Dict;
-
-        
-      public:
-        ASDCP_MCAConfigParser(const Dictionary*&);
-        bool DecodeString(const std::string& s, const std::string& language = "en-US");
-	
-        // Valid only after a successful call to DecodeString
-        ui32_t ChannelCount() const;
-      };
-=======
 	{
 	  KM_NO_COPY_CONSTRUCT(ASDCP_MCAConfigParser);
 	  ASDCP_MCAConfigParser();
@@ -577,7 +553,6 @@ namespace ASDCP
 	public:
 	  AS02_MCAConfigParser(const Dictionary*&);
 	};
->>>>>>> 080a14bc87e096fe181fb9f1d21e0d94bf71e7d0
 
     } // namespace MXF
 } // namespace ASDCP

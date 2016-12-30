@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2006-2009, John Hurst
+Copyright (c) 2006-2016, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    Dict.cpp
-  \version $Id: Dict.cpp,v 1.16 2013/06/07 00:41:00 jhurst Exp $
+  \version $Id: Dict.cpp,v 1.17 2016/05/16 21:56:53 jhurst Exp $
   \brief   MXF dictionary
 */
 
@@ -195,6 +195,7 @@ ASDCP::Dictionary::AddEntry(const MDDEntry& Entry, ui32_t index)
 
   UL TmpUL(Entry.ul);
 
+#define MDD_AUTHORING_MODE
 #ifdef MDD_AUTHORING_MODE
   char buf[64];
   std::map<ASDCP::UL, ui32_t>::iterator ii = m_md_lookup.find(TmpUL);
@@ -253,26 +254,57 @@ ASDCP::Dictionary::Type(MDD_t type_id) const
 
 //
 const ASDCP::MDDEntry*
-ASDCP::Dictionary::FindUL(const byte_t* ul_buf) const
+ASDCP::Dictionary::FindULAnyVersion(const byte_t* ul_buf) const
+{
+  assert(m_MDD_Table[0].name[0]);
+  byte_t search_ul[SMPTE_UL_LENGTH];
+  memcpy(search_ul, ul_buf, SMPTE_UL_LENGTH);
+  memset(search_ul+7, 0, SMPTE_UL_LENGTH-7);
+
+  UL target(ul_buf);
+  const ASDCP::MDDEntry *found_entry = 0;
+
+  std::map<UL, ui32_t>::const_iterator lower = m_md_lookup.lower_bound(UL(search_ul));
+
+  for ( ; lower != m_md_lookup.end(); ++lower )
+    {
+      if ( lower->first.MatchExact(target) )
+	{
+	  found_entry = &m_MDD_Table[lower->second];
+	  break;
+	}
+      else if ( found_entry == 0 && lower->first.MatchIgnoreStream(target) )
+	{
+	  found_entry = &m_MDD_Table[lower->second];
+	}
+      else if ( found_entry != 0 && ! lower->first.MatchIgnoreStream(target) )
+	{
+	  break;
+	}
+    }
+
+  if ( found_entry == 0 )
+    {
+      char buf[64];
+      Kumu::DefaultLogSink().Warn("UL Dictionary: unknown UL: %s\n", target.EncodeString(buf, 64));
+    }
+
+  return found_entry;
+}
+
+//
+const ASDCP::MDDEntry*
+ASDCP::Dictionary::FindULExact(const byte_t* ul_buf) const
 {
   assert(m_MDD_Table[0].name[0]);
   std::map<UL, ui32_t>::const_iterator i = m_md_lookup.find(UL(ul_buf));
   
   if ( i == m_md_lookup.end() )
     {
-      byte_t tmp_ul[SMPTE_UL_LENGTH];
-      memcpy(tmp_ul, ul_buf, SMPTE_UL_LENGTH);
-      tmp_ul[SMPTE_UL_LENGTH-1] = 0;
-
-      i = m_md_lookup.find(UL(tmp_ul));
-
-      if ( i == m_md_lookup.end() )
-	{
-	  char buf[64];
-	  UL TmpUL(ul_buf);
-	  Kumu::DefaultLogSink().Warn("UL Dictionary: unknown UL: %s\n", TmpUL.EncodeString(buf, 64));
-	  return 0;
-	}
+      char buf[64];
+      UL tmp_ul(ul_buf);
+      Kumu::DefaultLogSink().Warn("UL Dictionary: unknown UL: %s\n", tmp_ul.EncodeString(buf, 64));
+      return 0;
     }
 
   return &m_MDD_Table[i->second];

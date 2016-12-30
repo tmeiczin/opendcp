@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2015, John Hurst
+Copyright (c) 2005-2016, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MXFTypes.h
-    \version $Id: MXFTypes.h,v 1.38 2015/10/12 15:30:46 jhurst Exp $
+    \version $Id: MXFTypes.h,v 1.42 2016/12/10 19:57:45 jhurst Exp $
     \brief   MXF objects
 */
 
@@ -65,10 +65,10 @@ namespace ASDCP
 
 	  TLVReader();
 	  ASDCP_NO_COPY_CONSTRUCT(TLVReader);
-	  bool FindTL(const MDDEntry&);
 
 	public:
 	  TLVReader(const byte_t* p, ui32_t c, IPrimerLookup* = 0);
+	  bool FindTL(const MDDEntry&);
 	  Result_t ReadObject(const MDDEntry&, Kumu::IArchive*);
 	  Result_t ReadUi8(const MDDEntry&, ui8_t*);
 	  Result_t ReadUi16(const MDDEntry&, ui16_t*);
@@ -348,6 +348,157 @@ namespace ASDCP
 	  inline virtual bool Archive(Kumu::MemIOWriter* Writer) const {
 	    if ( ! Writer->WriteUi32BE((ui32_t)Numerator) ) return false;
 	    if ( ! Writer->WriteUi32BE((ui32_t)Denominator) ) return false;
+	    return true;
+	  }
+	};
+
+      //
+      class LineMapPair : public Kumu::IArchive
+	{
+	public:
+	  ui32_t First;
+	  ui32_t Second;
+
+	  LineMapPair() {}
+	  ~LineMapPair() {}
+
+	LineMapPair(const ui32_t& first, const ui32_t& second) : IArchive() {
+	    First = first;
+	    Second = second;
+	  }
+
+	  LineMapPair(const LineMapPair& rhs) : IArchive() {
+	    First = rhs.First;
+	    Second = rhs.Second;
+	  }
+
+	  const LineMapPair& operator=(const LineMapPair& rhs) {
+	    First = rhs.First;
+	    Second = rhs.Second;
+	    return *this;
+	  }
+
+	  //
+	  inline const char* EncodeString(char* str_buf, ui32_t buf_len) const {
+	    snprintf(str_buf, buf_len, "%d,%d", First, Second);
+	    return str_buf;
+	  }
+
+	  inline virtual bool Unarchive(Kumu::MemIOReader* Reader) {
+	    ui32_t n;
+	    if ( ! Reader->ReadUi32BE(&n) ) return false;
+	    if ( n != 2 ) return false;
+	    if ( ! Reader->ReadUi32BE(&n) ) return false;
+	    if ( n != 4 ) return false;
+	    if ( ! Reader->ReadUi32BE((ui32_t*)&First) ) return false;
+	    if ( ! Reader->ReadUi32BE((ui32_t*)&Second) ) return false;
+	    return true;
+	  }
+
+	  inline virtual bool HasValue() const { return true; }
+	  inline virtual ui32_t ArchiveLength() const { return sizeof(ui32_t)*4; }
+
+	  inline virtual bool Archive(Kumu::MemIOWriter* Writer) const {
+	    if ( ! Writer->WriteUi32BE(2UL) ) return false;
+	    if ( ! Writer->WriteUi32BE(4UL) ) return false;
+	    if ( ! Writer->WriteUi32BE((ui32_t)First) ) return false;
+	    if ( ! Writer->WriteUi32BE((ui32_t)Second) ) return false;
+	    return true;
+	  }
+	};
+
+      //
+      class ColorPrimary : public Kumu::IArchive
+	{
+	public:
+	  ui16_t X;
+	  ui16_t Y;
+
+	ColorPrimary() : X(0), Y(0) {}
+	  ~ColorPrimary() {}
+
+	  ColorPrimary(const ui16_t& x, const ui16_t& y) : X(x), Y(y) {}
+
+	  ColorPrimary(const ColorPrimary& rhs) { Copy(rhs); }
+	  const ColorPrimary& operator=(const ColorPrimary& rhs) { Copy(rhs); return *this; }
+	  
+	  void Copy(const ColorPrimary& rhs) {
+	    X = rhs.X;
+	    Y = rhs.Y;
+	  }
+
+	  //
+	  inline const char* EncodeString(char* str_buf, ui32_t buf_len) const {
+	    snprintf(str_buf, buf_len, "%d,%d", X, Y);
+	    return str_buf;
+	  }
+
+	  inline virtual bool Unarchive(Kumu::MemIOReader* Reader) {
+	    if ( ! Reader->ReadUi16BE((ui16_t*)&X) ) return false;
+	    if ( ! Reader->ReadUi16BE((ui16_t*)&Y) ) return false;
+	    return true;
+	  }
+
+	  inline virtual bool HasValue() const { return X || Y; }
+	  inline virtual ui32_t ArchiveLength() const { return sizeof(ui16_t)*2; }
+
+	  inline virtual bool Archive(Kumu::MemIOWriter* Writer) const {
+	    if ( ! Writer->WriteUi16BE((ui16_t)X) ) return false;
+	    if ( ! Writer->WriteUi16BE((ui16_t)Y) ) return false;
+	    return true;
+	  }
+	};
+
+      //
+      class ThreeColorPrimaries : public Kumu::IArchive
+	{
+	public:
+	  ColorPrimary First;
+	  ColorPrimary Second;
+	  ColorPrimary Third;
+
+	  ThreeColorPrimaries() {}
+	  ~ThreeColorPrimaries() {}
+
+	  ThreeColorPrimaries(const ColorPrimary& first, const ColorPrimary& second, const ColorPrimary& third) :
+	    First(first), Second(second), Third(third) {}
+
+	  ThreeColorPrimaries(const ThreeColorPrimaries& rhs) { Copy(rhs); }
+	  const ThreeColorPrimaries& operator=(const ThreeColorPrimaries& rhs) { Copy(rhs); return *this; }
+	  
+	  void Copy(const ThreeColorPrimaries& rhs) {
+	    First = rhs.First;
+	    Second = rhs.Second;
+	    Third = rhs.Third;
+	  }
+
+	  //
+	  inline const char* EncodeString(char* str_buf, ui32_t buf_len) const {
+	    snprintf(str_buf, buf_len, "%d,%d;%d,%d;%d,%d", First.X, First.Y, Second.X, Second.Y, Third.X, Third.Y);
+	    return str_buf;
+	  }
+
+	  inline virtual bool Unarchive(Kumu::MemIOReader* Reader) {
+	    First.Unarchive(Reader);
+	    Second.Unarchive(Reader);
+	    Third.Unarchive(Reader);
+	    return true;
+	  }
+
+	  inline virtual bool HasValue() const {
+	    return First.HasValue() || Second.HasValue() || Third.HasValue();
+	  }
+
+	  inline virtual ui32_t ArchiveLength() const {
+	    return First.ArchiveLength()
+	      + Second.ArchiveLength()
+	      + Third.ArchiveLength();
+	  }
+
+	  inline virtual bool Archive(Kumu::MemIOWriter* Writer) const {
+	    First.Archive(Writer);
+	    Second.Archive(Writer);
+	    Third.Archive(Writer);
 	    return true;
 	  }
 	};

@@ -255,46 +255,6 @@ ASDCP::AtmosSyncChannelMixer::MixInAtmosSyncChannel()
   return result;
 }
 
-
-//
-Result_t
-ASDCP::AtmosSyncChannelMixer::AppendSilenceChannels(const ui32_t& channelCount)
-{
-  if ( m_ADesc.QuantizationBits == 0 )
-    {
-      DefaultLogSink().Error("Mixer object contains no channels, call OpenRead() first.\n");
-      return RESULT_PARAM;
-    }
-
-  Result_t result = RESULT_OK;
-  PCM::AudioDescriptor tmpDesc;
-
-  if ( channelCount > 0 )
-    {
-      Kumu::mem_ptr<SilenceDataProvider> I =
-	new SilenceDataProvider(channelCount,
-				m_ADesc.QuantizationBits,
-				m_ADesc.AudioSamplingRate.Numerator,
-				m_ADesc.EditRate);
-
-      result = I->FillAudioDescriptor(tmpDesc);
-
-      if ( ASDCP_SUCCESS(result) )
-	{
-	  m_ADesc.BlockAlign += tmpDesc.BlockAlign;
-	  m_ChannelCount += tmpDesc.ChannelCount;
-	  m_ADesc.ChannelCount = m_ChannelCount;
-	  m_ADesc.AvgBps = (ui32_t)(ceil(m_ADesc.AudioSamplingRate.Quotient()) * m_ADesc.BlockAlign);
-
-	  m_outputs.push_back(std::make_pair(channelCount, I.get()));
-	  m_inputs.push_back(I);
-	  I.release();
-	}
-    }
-
-  return result;
-}
-
 //
 Result_t
 ASDCP::AtmosSyncChannelMixer::AppendSilenceChannels(const ui32_t& channel_count)

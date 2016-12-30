@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    KM_xml.h
-    \version $Id: KM_xml.h,v 1.11 2015/02/19 19:06:57 jhurst Exp $
+    \version $Id: KM_xml.h,v 1.12 2016/12/07 18:11:32 jhurst Exp $
     \brief   XML writer
 */
 
@@ -35,6 +35,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <KM_util.h>
 #include <list>
+#include <set>
 #include <string>
 
 namespace Kumu
@@ -143,6 +144,77 @@ namespace Kumu
       void        DeleteChild(const XMLElement* element);
       void        ForgetChild(const XMLElement* element);
     };
+
+  //
+  template <class VisitorType>
+    bool
+    apply_visitor(const XMLElement& element, VisitorType& visitor)
+    {
+      const ElementList& l = element.GetChildren();
+      ElementList::const_iterator i;
+      
+      for ( i = l.begin(); i != l.end(); ++i )
+	{
+	  if ( ! visitor.Element(**i) )
+	    {
+	      return false;
+	    }
+
+	  if ( ! apply_visitor(**i, visitor) )
+	    {
+	      return false;
+	    }
+	}
+
+      return true;
+    }
+
+  //
+  class AttributeVisitor
+  {
+    std::string attr_name;
+
+  public:
+  AttributeVisitor(const std::string& n) : attr_name(n) {}
+    std::set<std::string> value_list;
+
+    bool Element(const XMLElement& e)
+    {
+      const AttributeList& l = e.GetAttributes();
+      AttributeList::const_iterator i;
+ 
+      for ( i = l.begin(); i != l.end(); ++i )
+	{
+	  if ( i->name == attr_name )
+	    {
+	      value_list.insert(i->value);
+	    }
+	}
+
+      return true;
+    }
+  };
+
+  //
+  class ElementVisitor
+  {
+    std::string element_name;
+
+  public:
+  ElementVisitor(const std::string& n) : element_name(n) {}
+    std::set<std::string> value_list;
+
+    bool Element(const XMLElement& e)
+    {
+      if ( e.GetBody() == element_name )
+	{
+	  value_list.insert(e.GetBody());
+	}
+
+      return true;
+    }
+  };
+
 } // namespace Kumu
 
 #endif // _KM_XML_H_

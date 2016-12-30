@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    WavFileWriter.h
-    \version $Id: WavFileWriter.h,v 1.8 2013/06/17 17:55:54 jhurst Exp $
+    \version $Id: WavFileWriter.h,v 1.9 2016/05/17 16:46:05 jhurst Exp $
     \brief   demux and write PCM data to WAV file(s)
 */
 
@@ -154,7 +154,7 @@ class WavFileWriter
       {
           for ( ui32_t i = 0; i < file_count && ASDCP_SUCCESS(result); i++ )
           {
-              snprintf(filename, Kumu::MaxFilePath, "%s_%u.wav", file_root, (i + 1));
+              snprintf(filename, Kumu::MaxFilePath, "%s_%02u.wav", file_root, (i + 1));
               m_OutFile.push_back(new WavFileElement(element_size));
               result = m_OutFile.back()->OpenWrite(filename);
 

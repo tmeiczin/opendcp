@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2004-2013, John Hurst
+Copyright (c) 2004-2016, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,23 +25,22 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_DCData.cpp
-    \version $Id: AS_DCP_DCData.cpp,v 1.5 2014/01/02 23:29:22 jhurst Exp $
+    \version $Id: AS_DCP_DCData.cpp,v 1.9 2016/11/22 17:58:18 jhurst Exp $
     \brief   AS-DCP library, Dcinema generic data essence reader and writer implementation
 */
 
 #include <iostream>
 
 #include "AS_DCP.h"
-#include "AS_DCP_DCData_internal.h"
 #include "AS_DCP_internal.h"
 
 namespace ASDCP
 {
-namespace DCData
-{
-  static std::string DC_DATA_PACKAGE_LABEL = "File Package: SMPTE-GC frame wrapping of D-Cinema Generic data";
-  static std::string DC_DATA_DEF_LABEL = "D-Cinema Generic Data Track";
-} // namespace DCData
+  namespace DCData
+  {
+    static std::string DC_DATA_PACKAGE_LABEL = "File Package: SMPTE-GC frame wrapping of D-Cinema Generic data";
+    static std::string DC_DATA_DEF_LABEL = "D-Cinema Generic Data Track";
+  } // namespace DCData
 } // namespace ASDCP
 
 //
@@ -75,58 +74,101 @@ ASDCP::DCData::DCDataDescriptorDump(const DCDataDescriptor& DDesc, FILE* stream)
 
 //------------------------------------------------------------------------------------------
 
+typedef std::list<MXF::InterchangeObject*> SubDescriptorList_t;
 
-ASDCP::Result_t
-ASDCP::DCData::h__Reader::MD_to_DCData_DDesc(DCData::DCDataDescriptor& DDesc)
+class ASDCP::DCData::MXFReader::h__Reader : public ASDCP::h__ASDCPReader
 {
-  ASDCP_TEST_NULL(m_EssenceDescriptor);
-  MXF::DCDataDescriptor* DDescObj = m_EssenceDescriptor;
-  DDesc.EditRate = DDescObj->SampleRate;
-  assert(DDescObj->ContainerDuration <= 0xFFFFFFFFL);
-  DDesc.ContainerDuration = static_cast<ui32_t>(DDescObj->ContainerDuration);
-  memcpy(DDesc.DataEssenceCoding, DDescObj->DataEssenceCoding.Value(), SMPTE_UL_LENGTH);
+  bool m_PrivateLabelCompatibilityMode;
+  ASDCP_NO_COPY_CONSTRUCT(h__Reader);
+  h__Reader();
+
+ public:
+  DCDataDescriptor m_DDesc;
+
+  h__Reader(const Dictionary& d) : ASDCP::h__ASDCPReader(d), m_PrivateLabelCompatibilityMode(false), m_DDesc() {}
+  ~h__Reader() {}
+  Result_t    OpenRead(const std::string&);
+  Result_t    ReadFrame(ui32_t, FrameBuffer&, AESDecContext*, HMACContext*);
+  Result_t    MD_to_DCData_DDesc(const MXF::DCDataDescriptor& descriptor_object, DCData::DCDataDescriptor& DDesc);
+  Result_t    MD_to_DCData_DDesc(const MXF::PrivateDCDataDescriptor& descriptor_object, DCData::DCDataDescriptor& DDesc);
+};
+
+//
+ASDCP::Result_t
+ASDCP::DCData::MXFReader::h__Reader::MD_to_DCData_DDesc(const MXF::DCDataDescriptor& descriptor_object,
+							DCData::DCDataDescriptor& DDesc)
+{
+  DDesc.EditRate = descriptor_object.SampleRate;
+  assert(descriptor_object.ContainerDuration.const_get() <= 0xFFFFFFFFL);
+  DDesc.ContainerDuration = static_cast<ui32_t>(descriptor_object.ContainerDuration.const_get());
+  memcpy(DDesc.DataEssenceCoding, descriptor_object.DataEssenceCoding.Value(), SMPTE_UL_LENGTH);
+  return RESULT_OK;
+}
+
+//
+ASDCP::Result_t
+ASDCP::DCData::MXFReader::h__Reader::MD_to_DCData_DDesc(const MXF::PrivateDCDataDescriptor& descriptor_object,
+							DCData::DCDataDescriptor& DDesc)
+{
+  DDesc.EditRate = descriptor_object.SampleRate;
+  assert(descriptor_object.ContainerDuration.const_get() <= 0xFFFFFFFFL);
+  DDesc.ContainerDuration = static_cast<ui32_t>(descriptor_object.ContainerDuration.const_get());
+  memcpy(DDesc.DataEssenceCoding, descriptor_object.DataEssenceCoding.Value(), SMPTE_UL_LENGTH);
   return RESULT_OK;
 }
 
 //
 //
 ASDCP::Result_t
-ASDCP::DCData::h__Reader::OpenRead(const std::string& filename)
+ASDCP::DCData::MXFReader::h__Reader::OpenRead(const std::string& filename)
 {
   Result_t result = OpenMXFRead(filename);
 
-  if( ASDCP_SUCCESS(result) )
+  if( KM_SUCCESS(result) )
     {
-      if (NULL == m_EssenceDescriptor)
-	{
-	  InterchangeObject* iObj = NULL;
-	  result = m_HeaderPart.GetMDObjectByType(OBJ_TYPE_ARGS(DCDataDescriptor), &iObj);
-	  m_EssenceDescriptor = static_cast<MXF::DCDataDescriptor*>(iObj);
+      InterchangeObject* iObj = 0;
+      result = m_HeaderPart.GetMDObjectByType(OBJ_TYPE_ARGS(DCDataDescriptor), &iObj);
 
-	  if ( m_EssenceDescriptor == 0 )
+      if ( KM_SUCCESS(result) )
+	{
+	  const MXF::DCDataDescriptor* p = dynamic_cast<const MXF::DCDataDescriptor*>(iObj);
+	  assert(p);
+	  result = MD_to_DCData_DDesc(*p, m_DDesc);
+	}
+      else
+	{
+	  result = m_HeaderPart.GetMDObjectByType(OBJ_TYPE_ARGS(PrivateDCDataDescriptor), &iObj);
+	  
+	  if ( KM_SUCCESS(result) )
 	    {
-	      DefaultLogSink().Error("DCDataDescriptor object not found.\n");
-	      return RESULT_FORMAT;
+	      m_PrivateLabelCompatibilityMode = true;
+	      const MXF::PrivateDCDataDescriptor* p = dynamic_cast<const MXF::PrivateDCDataDescriptor*>(iObj);
+	      assert(p);
+	      result = MD_to_DCData_DDesc(*p, m_DDesc);
 	    }
 	}
 
-      if ( ASDCP_SUCCESS(result) )
+      if ( KM_FAILURE(result) )
 	{
-	  result = MD_to_DCData_DDesc(m_DDesc);
+	  DefaultLogSink().Error("DCDataDescriptor object not found in ST 429-14 file.\n");
+	  result = RESULT_FORMAT;
 	}
     }
 
   // check for sample/frame rate sanity
   if ( ASDCP_SUCCESS(result)
-                && m_DDesc.EditRate != EditRate_24
-                && m_DDesc.EditRate != EditRate_25
-                && m_DDesc.EditRate != EditRate_30
-                && m_DDesc.EditRate != EditRate_48
-                && m_DDesc.EditRate != EditRate_50
-                && m_DDesc.EditRate != EditRate_60
-                && m_DDesc.EditRate != EditRate_96
-                && m_DDesc.EditRate != EditRate_100
-       && m_DDesc.EditRate != EditRate_120 )
+       && m_DDesc.EditRate != EditRate_24
+       && m_DDesc.EditRate != EditRate_25
+       && m_DDesc.EditRate != EditRate_30
+       && m_DDesc.EditRate != EditRate_48
+       && m_DDesc.EditRate != EditRate_50
+       && m_DDesc.EditRate != EditRate_60
+       && m_DDesc.EditRate != EditRate_96
+       && m_DDesc.EditRate != EditRate_100
+       && m_DDesc.EditRate != EditRate_120
+       && m_DDesc.EditRate != EditRate_192
+       && m_DDesc.EditRate != EditRate_200
+       && m_DDesc.EditRate != EditRate_240 )
   {
     DefaultLogSink().Error("DC Data file EditRate is not a supported value: %d/%d\n", // lu
                            m_DDesc.EditRate.Numerator, m_DDesc.EditRate.Denominator);
@@ -140,29 +182,21 @@ ASDCP::DCData::h__Reader::OpenRead(const std::string& filename)
 //
 //
 ASDCP::Result_t
-ASDCP::DCData::h__Reader::ReadFrame(ui32_t FrameNum, FrameBuffer& FrameBuf,
+ASDCP::DCData::MXFReader::h__Reader::ReadFrame(ui32_t FrameNum, FrameBuffer& FrameBuf,
 		      AESDecContext* Ctx, HMACContext* HMAC)
 {
   if ( ! m_File.IsOpen() )
     return RESULT_INIT;
 
   assert(m_Dict);
+  if ( m_PrivateLabelCompatibilityMode )
+    {
+      return ReadEKLVFrame(FrameNum, FrameBuf, m_Dict->ul(MDD_PrivateDCDataEssence), Ctx, HMAC);
+    }
+
   return ReadEKLVFrame(FrameNum, FrameBuf, m_Dict->ul(MDD_DCDataEssence), Ctx, HMAC);
 }
 
-
-//
-//------------------------------------------------------------------------------------------
-
-class ASDCP::DCData::MXFReader::h__Reader : public DCData::h__Reader
-{
-  ASDCP_NO_COPY_CONSTRUCT(h__Reader);
-  h__Reader();
-
-  public:
-    h__Reader(const Dictionary& d) : DCData::h__Reader(d) {}
-  virtual ~h__Reader() {}
-};
 
 
 //------------------------------------------------------------------------------------------
@@ -330,9 +364,32 @@ ASDCP::DCData::MXFReader::Close() const
 //------------------------------------------------------------------------------------------
 
 
+class ASDCP::DCData::MXFWriter::h__Writer : public ASDCP::h__ASDCPWriter
+{
+  ASDCP_NO_COPY_CONSTRUCT(h__Writer);
+  h__Writer();
+
+public:
+  DCDataDescriptor m_DDesc;
+  byte_t           m_EssenceUL[SMPTE_UL_LENGTH];
+
+  h__Writer(const Dictionary& d) : ASDCP::h__ASDCPWriter(d) {
+    memset(m_EssenceUL, 0, SMPTE_UL_LENGTH);
+  }
+
+  ~h__Writer(){}
+
+  Result_t OpenWrite(const std::string&, ui32_t HeaderSize, const SubDescriptorList_t& subDescriptors);
+  Result_t SetSourceStream(const DCDataDescriptor&, const byte_t*, const std::string&, const std::string&);
+  Result_t WriteFrame(const FrameBuffer&, AESEncContext* = 0, HMACContext* = 0);
+  Result_t Finalize();
+  Result_t DCData_DDesc_to_MD(DCData::DCDataDescriptor& DDesc);
+};
+
+
 //
 ASDCP::Result_t
-ASDCP::DCData::h__Writer::DCData_DDesc_to_MD(DCData::DCDataDescriptor& DDesc)
+ASDCP::DCData::MXFWriter::h__Writer::DCData_DDesc_to_MD(DCData::DCDataDescriptor& DDesc)
 {
   ASDCP_TEST_NULL(m_EssenceDescriptor);
   MXF::DCDataDescriptor* DDescObj = static_cast<MXF::DCDataDescriptor *>(m_EssenceDescriptor);
@@ -346,7 +403,7 @@ ASDCP::DCData::h__Writer::DCData_DDesc_to_MD(DCData::DCDataDescriptor& DDesc)
 
 //
 ASDCP::Result_t
-ASDCP::DCData::h__Writer::OpenWrite(const std::string& filename, ui32_t HeaderSize,
+ASDCP::DCData::MXFWriter::h__Writer::OpenWrite(const std::string& filename, ui32_t HeaderSize,
                                     const SubDescriptorList_t& subDescriptors)
 {
   if ( ! m_State.Test_BEGIN() )
@@ -374,7 +431,7 @@ ASDCP::DCData::h__Writer::OpenWrite(const std::string& filename, ui32_t HeaderSi
 
 //
 ASDCP::Result_t
-ASDCP::DCData::h__Writer::SetSourceStream(DCDataDescriptor const& DDesc,
+ASDCP::DCData::MXFWriter::h__Writer::SetSourceStream(DCDataDescriptor const& DDesc,
                                           const byte_t * essenceCoding,
                                           const std::string& packageLabel,
                                           const std::string& defLabel)
@@ -390,7 +447,10 @@ ASDCP::DCData::h__Writer::SetSourceStream(DCDataDescriptor const& DDesc,
        && DDesc.EditRate != EditRate_60
        && DDesc.EditRate != EditRate_96
        && DDesc.EditRate != EditRate_100
-       && DDesc.EditRate != EditRate_120 )
+       && DDesc.EditRate != EditRate_120
+       && DDesc.EditRate != EditRate_192
+       && DDesc.EditRate != EditRate_200
+       && DDesc.EditRate != EditRate_240 )
   {
     DefaultLogSink().Error("DCDataDescriptor.EditRate is not a supported value: %d/%d\n",
                            DDesc.EditRate.Numerator, DDesc.EditRate.Denominator);
@@ -424,7 +484,7 @@ ASDCP::DCData::h__Writer::SetSourceStream(DCDataDescriptor const& DDesc,
 
 //
 ASDCP::Result_t
-ASDCP::DCData::h__Writer::WriteFrame(const FrameBuffer& FrameBuf,
+ASDCP::DCData::MXFWriter::h__Writer::WriteFrame(const FrameBuffer& FrameBuf,
                                                 ASDCP::AESEncContext* Ctx, ASDCP::HMACContext* HMAC)
 {
   Result_t result = RESULT_OK;
@@ -450,7 +510,7 @@ ASDCP::DCData::h__Writer::WriteFrame(const FrameBuffer& FrameBuf,
 // Closes the MXF file, writing the index and other closing information.
 //
 ASDCP::Result_t
-ASDCP::DCData::h__Writer::Finalize()
+ASDCP::DCData::MXFWriter::h__Writer::Finalize()
 {
   if ( ! m_State.Test_RUNNING() )
     return RESULT_STATE;
@@ -460,20 +520,6 @@ ASDCP::DCData::h__Writer::Finalize()
   return WriteASDCPFooter();
 }
 
-
-//
-//------------------------------------------------------------------------------------------
-
-
-class ASDCP::DCData::MXFWriter::h__Writer : public DCData::h__Writer
-{
-  ASDCP_NO_COPY_CONSTRUCT(h__Writer);
-  h__Writer();
-
-  public:
-    h__Writer(const Dictionary& d) : DCData::h__Writer(d) {}
-  virtual ~h__Writer() {}
-};
 
 
 //------------------------------------------------------------------------------------------

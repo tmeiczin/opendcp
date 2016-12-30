@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MXF.cpp
-    \version $Id: MXF.cpp,v 1.79 2015/10/12 15:30:46 jhurst Exp $
+    \version $Id: MXF.cpp,v 1.81 2016/06/28 22:00:06 jhurst Exp $
     \brief   MXF objects
 */
 
@@ -575,7 +575,7 @@ ASDCP::MXF::Primer::Dump(FILE* stream)
   Batch<LocalTagEntry>::iterator i = LocalTagEntryBatch.begin();
   for ( ; i != LocalTagEntryBatch.end(); i++ )
     {
-      const MDDEntry* Entry = m_Dict->FindUL((*i).UL.Value());
+      const MDDEntry* Entry = m_Dict->FindULAnyVersion((*i).UL.Value());
       fprintf(stream, "  %s %s\n", (*i).EncodeString(identbuf, IdentBufferLen), (Entry ? Entry->name : "Unknown"));
     }
 }
@@ -702,11 +702,11 @@ ASDCP::MXF::OP1aHeader::InitFromFile(const Kumu::FileReader& Reader)
   if ( m_Dict == &DefaultCompositeDict() )
     {
       // select more explicit dictionary if one is available
-      if ( OperationalPattern.ExactMatch(MXFInterop_OPAtom_Entry().ul) )
+      if ( OperationalPattern.MatchExact(MXFInterop_OPAtom_Entry().ul) )
 	{
 	  m_Dict = &DefaultInteropDict();
 	}
-      else if ( OperationalPattern.ExactMatch(SMPTE_390_OPAtom_Entry().ul) )
+      else if ( OperationalPattern.MatchExact(SMPTE_390_OPAtom_Entry().ul) )
 	{
 	  m_Dict = &DefaultSMPTEDict();
 	}
@@ -1216,8 +1216,16 @@ ASDCP::MXF::OPAtomIndexFooter::Lookup(ui32_t frame_num, IndexTableSegment::Index
 	    {
 	      ui64_t tmp = frame_num - start_pos;
 	      assert(tmp <= 0xFFFFFFFFL);
-	      Entry = segment->IndexEntryArray[(ui32_t) tmp];
-	      return RESULT_OK;
+
+	      if ( tmp < segment->IndexEntryArray.size() )
+		{
+		  Entry = segment->IndexEntryArray[(ui32_t) tmp];
+		  return RESULT_OK;
+		}
+	      else
+		{
+		  DefaultLogSink().Error("Malformed index table segment, IndexDuration does not match entries.\n");
+		}
 	    }
 	}
     }
@@ -1515,10 +1523,7 @@ ASDCP::MXF::decode_mca_string(const std::string& s, const mca_label_map_t& label
 
 	  current_soundfield = new ASDCP::MXF::SoundfieldGroupLabelSubDescriptor(dict);
 	  GenRandomValue(current_soundfield->MCALinkID);
-<<<<<<< HEAD
-=======
 
->>>>>>> 080a14bc87e096fe181fb9f1d21e0d94bf71e7d0
 	  current_soundfield->MCATagSymbol = (i->second.requires_prefix ? "sg" : "") + i->first;
 	  current_soundfield->MCATagName = i->second.tag_name;
 	  current_soundfield->RFC5646SpokenLanguage = language;
@@ -1554,12 +1559,6 @@ ASDCP::MXF::decode_mca_string(const std::string& s, const mca_label_map_t& label
 	    new ASDCP::MXF::AudioChannelLabelSubDescriptor(dict);
 	  GenRandomValue(channel_descr->MCALinkID);
 
-<<<<<<< HEAD
-	  GenRandomValue(channel_descr->InstanceUID);
-	  GenRandomValue(channel_descr->MCALinkID);
-	  assert(current_soundfield);
-=======
->>>>>>> 080a14bc87e096fe181fb9f1d21e0d94bf71e7d0
 	  channel_descr->SoundfieldGroupLinkID = current_soundfield->MCALinkID;
 	  channel_descr->MCAChannelID = channel_count++ + 1;
 	  channel_descr->MCATagSymbol = (i->second.requires_prefix ? "ch" : "") + i->first;
@@ -1638,11 +1637,6 @@ ASDCP::MXF::decode_mca_string(const std::string& s, const mca_label_map_t& label
 
       ASDCP::MXF::AudioChannelLabelSubDescriptor *channel_descr =
 	new ASDCP::MXF::AudioChannelLabelSubDescriptor(dict);
-<<<<<<< HEAD
-
-      GenRandomValue(channel_descr->InstanceUID);
-=======
->>>>>>> 080a14bc87e096fe181fb9f1d21e0d94bf71e7d0
       GenRandomValue(channel_descr->MCALinkID);
 
       if ( current_soundfield != 0 )

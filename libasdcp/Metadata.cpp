@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2015, John Hurst
+Copyright (c) 2005-2017, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    Metadata.cpp
-    \version $Id: Metadata.cpp,v 1.40 2015/10/10 20:26:29 jhurst Exp $       
+    \version $Id: Metadata.cpp,v 1.45 2016/12/10 19:57:45 jhurst Exp $       
     \brief   AS-DCP library, MXF Metadata Sets implementation
 */
 
@@ -75,8 +75,10 @@ static InterchangeObject* AudioChannelLabelSubDescriptor_Factory(const Dictionar
 static InterchangeObject* SoundfieldGroupLabelSubDescriptor_Factory(const Dictionary*& Dict) { return new SoundfieldGroupLabelSubDescriptor(Dict); }
 static InterchangeObject* GroupOfSoundfieldGroupsLabelSubDescriptor_Factory(const Dictionary*& Dict) { return new GroupOfSoundfieldGroupsLabelSubDescriptor(Dict); }
 static InterchangeObject* DCDataDescriptor_Factory(const Dictionary*& Dict) { return new DCDataDescriptor(Dict); }
+static InterchangeObject* PrivateDCDataDescriptor_Factory(const Dictionary*& Dict) { return new PrivateDCDataDescriptor(Dict); }
 static InterchangeObject* DolbyAtmosSubDescriptor_Factory(const Dictionary*& Dict) { return new DolbyAtmosSubDescriptor(Dict); }
 static InterchangeObject* PHDRMetadataTrackSubDescriptor_Factory(const Dictionary*& Dict) { return new PHDRMetadataTrackSubDescriptor(Dict); }
+static InterchangeObject* PIMFDynamicMetadataDescriptor_Factory(const Dictionary*& Dict) { return new PIMFDynamicMetadataDescriptor(Dict); }
 
 
 void
@@ -118,8 +120,10 @@ ASDCP::MXF::Metadata_InitTypes(const Dictionary*& Dict)
   SetObjectFactory(Dict->ul(MDD_SoundfieldGroupLabelSubDescriptor), SoundfieldGroupLabelSubDescriptor_Factory);
   SetObjectFactory(Dict->ul(MDD_GroupOfSoundfieldGroupsLabelSubDescriptor), GroupOfSoundfieldGroupsLabelSubDescriptor_Factory);
   SetObjectFactory(Dict->ul(MDD_DCDataDescriptor), DCDataDescriptor_Factory);
+  SetObjectFactory(Dict->ul(MDD_PrivateDCDataDescriptor), PrivateDCDataDescriptor_Factory);
   SetObjectFactory(Dict->ul(MDD_DolbyAtmosSubDescriptor), DolbyAtmosSubDescriptor_Factory);
   SetObjectFactory(Dict->ul(MDD_PHDRMetadataTrackSubDescriptor), PHDRMetadataTrackSubDescriptor_Factory);
+  SetObjectFactory(Dict->ul(MDD_PIMFDynamicMetadataDescriptor), PIMFDynamicMetadataDescriptor_Factory);
 }
 
 //------------------------------------------------------------------------------------------
@@ -325,7 +329,7 @@ ContentStorage::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
 
 //
 
-EssenceContainerData::EssenceContainerData(const Dictionary*& d) : InterchangeObject(d), m_Dict(d), IndexSID(0)
+EssenceContainerData::EssenceContainerData(const Dictionary*& d) : InterchangeObject(d), m_Dict(d), BodySID(0)
 {
   assert(m_Dict);
   m_UL = m_Dict->ul(MDD_EssenceContainerData);
@@ -871,7 +875,7 @@ Track::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
 // StructuralComponent
 
 //
-StructuralComponent::StructuralComponent(const Dictionary*& d) : InterchangeObject(d), m_Dict(d), Duration(0) {}
+StructuralComponent::StructuralComponent(const Dictionary*& d) : InterchangeObject(d), m_Dict(d) {}
 
 StructuralComponent::StructuralComponent(const StructuralComponent& rhs) : InterchangeObject(rhs.m_Dict), m_Dict(rhs.m_Dict)
 {
@@ -1239,7 +1243,7 @@ GenericDescriptor::Dump(FILE* stream)
 
 //
 
-FileDescriptor::FileDescriptor(const Dictionary*& d) : GenericDescriptor(d), m_Dict(d), LinkedTrackID(0)
+FileDescriptor::FileDescriptor(const Dictionary*& d) : GenericDescriptor(d), m_Dict(d)
 {
   assert(m_Dict);
   m_UL = m_Dict->ul(MDD_FileDescriptor);
@@ -1345,7 +1349,7 @@ FileDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
 
 //
 
-GenericSoundEssenceDescriptor::GenericSoundEssenceDescriptor(const Dictionary*& d) : FileDescriptor(d), m_Dict(d), Locked(0), AudioRefLevel(0), ChannelCount(0), QuantizationBits(0), DialNorm(0)
+GenericSoundEssenceDescriptor::GenericSoundEssenceDescriptor(const Dictionary*& d) : FileDescriptor(d), m_Dict(d), Locked(0), ChannelCount(0), QuantizationBits(0)
 {
   assert(m_Dict);
   m_UL = m_Dict->ul(MDD_GenericSoundEssenceDescriptor);
@@ -1463,7 +1467,7 @@ GenericSoundEssenceDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
 
 //
 
-WaveAudioDescriptor::WaveAudioDescriptor(const Dictionary*& d) : GenericSoundEssenceDescriptor(d), m_Dict(d), BlockAlign(0), SequenceOffset(0)
+WaveAudioDescriptor::WaveAudioDescriptor(const Dictionary*& d) : GenericSoundEssenceDescriptor(d), m_Dict(d), BlockAlign(0), AvgBps(0)
 {
   assert(m_Dict);
   m_UL = m_Dict->ul(MDD_WaveAudioDescriptor);
@@ -1578,7 +1582,7 @@ WaveAudioDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
 
 //
 
-GenericPictureEssenceDescriptor::GenericPictureEssenceDescriptor(const Dictionary*& d) : FileDescriptor(d), m_Dict(d), SignalStandard(0), SampledWidth(0), SampledXOffset(0), DisplayHeight(0), DisplayXOffset(0), DisplayF2Offset(0), AlphaTransparency(0), ImageAlignmentOffset(0), ImageEndOffset(0), ActiveHeight(0), ActiveYOffset(0)
+GenericPictureEssenceDescriptor::GenericPictureEssenceDescriptor(const Dictionary*& d) : FileDescriptor(d), m_Dict(d), FrameLayout(0), StoredWidth(0), StoredHeight(0)
 {
   assert(m_Dict);
   m_UL = m_Dict->ul(MDD_GenericPictureEssenceDescriptor);
@@ -1702,6 +1706,26 @@ GenericPictureEssenceDescriptor::InitFromTLVSet(TLVReader& TLVSet)
     result = TLVSet.ReadUi32(OBJ_READ_ARGS_OPT(GenericPictureEssenceDescriptor, ActiveYOffset));
     ActiveYOffset.set_has_value( result == RESULT_OK );
   }
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(GenericPictureEssenceDescriptor, VideoLineMap));
+    VideoLineMap.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(GenericPictureEssenceDescriptor, MasteringDisplayPrimaries));
+    MasteringDisplayPrimaries.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(GenericPictureEssenceDescriptor, MasteringDisplayWhitePointChromaticity));
+    MasteringDisplayWhitePointChromaticity.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) { 
+    result = TLVSet.ReadUi32(OBJ_READ_ARGS_OPT(GenericPictureEssenceDescriptor, MasteringDisplayMaximumLuminance));
+    MasteringDisplayMaximumLuminance.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) { 
+    result = TLVSet.ReadUi32(OBJ_READ_ARGS_OPT(GenericPictureEssenceDescriptor, MasteringDisplayMinimumLuminance));
+    MasteringDisplayMinimumLuminance.set_has_value( result == RESULT_OK );
+  }
   return result;
 }
 
@@ -1741,6 +1765,11 @@ GenericPictureEssenceDescriptor::WriteToTLVSet(TLVWriter& TLVSet)
   if ( ASDCP_SUCCESS(result)  && ! ActiveHeight.empty() ) result = TLVSet.WriteUi32(OBJ_WRITE_ARGS_OPT(GenericPictureEssenceDescriptor, ActiveHeight));
   if ( ASDCP_SUCCESS(result)  && ! ActiveXOffset.empty() ) result = TLVSet.WriteUi32(OBJ_WRITE_ARGS_OPT(GenericPictureEssenceDescriptor, ActiveXOffset));
   if ( ASDCP_SUCCESS(result)  && ! ActiveYOffset.empty() ) result = TLVSet.WriteUi32(OBJ_WRITE_ARGS_OPT(GenericPictureEssenceDescriptor, ActiveYOffset));
+  if ( ASDCP_SUCCESS(result)  && ! VideoLineMap.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(GenericPictureEssenceDescriptor, VideoLineMap));
+  if ( ASDCP_SUCCESS(result)  && ! MasteringDisplayPrimaries.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(GenericPictureEssenceDescriptor, MasteringDisplayPrimaries));
+  if ( ASDCP_SUCCESS(result)  && ! MasteringDisplayWhitePointChromaticity.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(GenericPictureEssenceDescriptor, MasteringDisplayWhitePointChromaticity));
+  if ( ASDCP_SUCCESS(result)  && ! MasteringDisplayMaximumLuminance.empty() ) result = TLVSet.WriteUi32(OBJ_WRITE_ARGS_OPT(GenericPictureEssenceDescriptor, MasteringDisplayMaximumLuminance));
+  if ( ASDCP_SUCCESS(result)  && ! MasteringDisplayMinimumLuminance.empty() ) result = TLVSet.WriteUi32(OBJ_WRITE_ARGS_OPT(GenericPictureEssenceDescriptor, MasteringDisplayMinimumLuminance));
   return result;
 }
 
@@ -1779,6 +1808,11 @@ GenericPictureEssenceDescriptor::Copy(const GenericPictureEssenceDescriptor& rhs
   ActiveHeight = rhs.ActiveHeight;
   ActiveXOffset = rhs.ActiveXOffset;
   ActiveYOffset = rhs.ActiveYOffset;
+  VideoLineMap = rhs.VideoLineMap;
+  MasteringDisplayPrimaries = rhs.MasteringDisplayPrimaries;
+  MasteringDisplayWhitePointChromaticity = rhs.MasteringDisplayWhitePointChromaticity;
+  MasteringDisplayMaximumLuminance = rhs.MasteringDisplayMaximumLuminance;
+  MasteringDisplayMinimumLuminance = rhs.MasteringDisplayMinimumLuminance;
 }
 
 //
@@ -1873,6 +1907,21 @@ GenericPictureEssenceDescriptor::Dump(FILE* stream)
   if ( ! ActiveYOffset.empty() ) {
     fprintf(stream, "  %22s = %d\n",  "ActiveYOffset", ActiveYOffset.get());
   }
+  if ( ! VideoLineMap.empty() ) {
+    fprintf(stream, "  %22s = %s\n",  "VideoLineMap", VideoLineMap.get().EncodeString(identbuf, IdentBufferLen));
+  }
+  if ( ! MasteringDisplayPrimaries.empty() ) {
+    fprintf(stream, "  %22s = %s\n",  "MasteringDisplayPrimaries", MasteringDisplayPrimaries.get().EncodeString(identbuf, IdentBufferLen));
+  }
+  if ( ! MasteringDisplayWhitePointChromaticity.empty() ) {
+    fprintf(stream, "  %22s = %s\n",  "MasteringDisplayWhitePointChromaticity", MasteringDisplayWhitePointChromaticity.get().EncodeString(identbuf, IdentBufferLen));
+  }
+  if ( ! MasteringDisplayMaximumLuminance.empty() ) {
+    fprintf(stream, "  %22s = %d\n",  "MasteringDisplayMaximumLuminance", MasteringDisplayMaximumLuminance.get());
+  }
+  if ( ! MasteringDisplayMinimumLuminance.empty() ) {
+    fprintf(stream, "  %22s = %d\n",  "MasteringDisplayMinimumLuminance", MasteringDisplayMinimumLuminance.get());
+  }
 }
 
 //
@@ -1894,7 +1943,7 @@ GenericPictureEssenceDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
 
 //
 
-RGBAEssenceDescriptor::RGBAEssenceDescriptor(const Dictionary*& d) : GenericPictureEssenceDescriptor(d), m_Dict(d), ComponentMaxRef(0), AlphaMinRef(0), ScanningDirection(0)
+RGBAEssenceDescriptor::RGBAEssenceDescriptor(const Dictionary*& d) : GenericPictureEssenceDescriptor(d), m_Dict(d)
 {
   assert(m_Dict);
   m_UL = m_Dict->ul(MDD_RGBAEssenceDescriptor);
@@ -1934,6 +1983,7 @@ RGBAEssenceDescriptor::InitFromTLVSet(TLVReader& TLVSet)
     result = TLVSet.ReadUi8(OBJ_READ_ARGS_OPT(RGBAEssenceDescriptor, ScanningDirection));
     ScanningDirection.set_has_value( result == RESULT_OK );
   }
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.ReadObject(OBJ_READ_ARGS(RGBAEssenceDescriptor, PixelLayout));
   return result;
 }
 
@@ -1948,6 +1998,7 @@ RGBAEssenceDescriptor::WriteToTLVSet(TLVWriter& TLVSet)
   if ( ASDCP_SUCCESS(result)  && ! AlphaMinRef.empty() ) result = TLVSet.WriteUi32(OBJ_WRITE_ARGS_OPT(RGBAEssenceDescriptor, AlphaMinRef));
   if ( ASDCP_SUCCESS(result)  && ! AlphaMaxRef.empty() ) result = TLVSet.WriteUi32(OBJ_WRITE_ARGS_OPT(RGBAEssenceDescriptor, AlphaMaxRef));
   if ( ASDCP_SUCCESS(result)  && ! ScanningDirection.empty() ) result = TLVSet.WriteUi8(OBJ_WRITE_ARGS_OPT(RGBAEssenceDescriptor, ScanningDirection));
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS(RGBAEssenceDescriptor, PixelLayout));
   return result;
 }
 
@@ -1961,6 +2012,7 @@ RGBAEssenceDescriptor::Copy(const RGBAEssenceDescriptor& rhs)
   AlphaMinRef = rhs.AlphaMinRef;
   AlphaMaxRef = rhs.AlphaMaxRef;
   ScanningDirection = rhs.ScanningDirection;
+  PixelLayout = rhs.PixelLayout;
 }
 
 //
@@ -1989,6 +2041,7 @@ RGBAEssenceDescriptor::Dump(FILE* stream)
   if ( ! ScanningDirection.empty() ) {
     fprintf(stream, "  %22s = %d\n",  "ScanningDirection", ScanningDirection.get());
   }
+  fprintf(stream, "  %22s = %s\n",  "PixelLayout", PixelLayout.EncodeString(identbuf, IdentBufferLen));
 }
 
 //
@@ -2157,7 +2210,7 @@ JPEG2000PictureSubDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
 
 //
 
-CDCIEssenceDescriptor::CDCIEssenceDescriptor(const Dictionary*& d) : GenericPictureEssenceDescriptor(d), m_Dict(d), ComponentDepth(0), HorizontalSubsampling(0), VerticalSubsampling(0), ReversedByteOrder(0), AlphaSampleDepth(0), WhiteReflevel(0)
+CDCIEssenceDescriptor::CDCIEssenceDescriptor(const Dictionary*& d) : GenericPictureEssenceDescriptor(d), m_Dict(d), ComponentDepth(0), HorizontalSubsampling(0)
 {
   assert(m_Dict);
   m_UL = m_Dict->ul(MDD_CDCIEssenceDescriptor);
@@ -2308,7 +2361,7 @@ CDCIEssenceDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
 
 //
 
-MPEG2VideoDescriptor::MPEG2VideoDescriptor(const Dictionary*& d) : CDCIEssenceDescriptor(d), m_Dict(d), SingleSequence(0), CodedContentType(0), ClosedGOP(0), MaxGOP(0), BitRate(0)
+MPEG2VideoDescriptor::MPEG2VideoDescriptor(const Dictionary*& d) : CDCIEssenceDescriptor(d), m_Dict(d)
 {
   assert(m_Dict);
   m_UL = m_Dict->ul(MDD_MPEG2VideoDescriptor);
@@ -3228,6 +3281,38 @@ MCALabelSubDescriptor::InitFromTLVSet(TLVReader& TLVSet)
     result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(MCALabelSubDescriptor, RFC5646SpokenLanguage));
     RFC5646SpokenLanguage.set_has_value( result == RESULT_OK );
   }
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(MCALabelSubDescriptor, MCATitle));
+    MCATitle.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(MCALabelSubDescriptor, MCATitleVersion));
+    MCATitleVersion.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(MCALabelSubDescriptor, MCATitleSubVersion));
+    MCATitleSubVersion.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(MCALabelSubDescriptor, MCAEpisode));
+    MCAEpisode.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(MCALabelSubDescriptor, MCAPartitionKind));
+    MCAPartitionKind.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(MCALabelSubDescriptor, MCAPartitionNumber));
+    MCAPartitionNumber.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(MCALabelSubDescriptor, MCAAudioContentKind));
+    MCAAudioContentKind.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(MCALabelSubDescriptor, MCAAudioElementKind));
+    MCAAudioElementKind.set_has_value( result == RESULT_OK );
+  }
   return result;
 }
 
@@ -3243,6 +3328,14 @@ MCALabelSubDescriptor::WriteToTLVSet(TLVWriter& TLVSet)
   if ( ASDCP_SUCCESS(result)  && ! MCATagName.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, MCATagName));
   if ( ASDCP_SUCCESS(result)  && ! MCAChannelID.empty() ) result = TLVSet.WriteUi32(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, MCAChannelID));
   if ( ASDCP_SUCCESS(result)  && ! RFC5646SpokenLanguage.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, RFC5646SpokenLanguage));
+  if ( ASDCP_SUCCESS(result)  && ! MCATitle.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, MCATitle));
+  if ( ASDCP_SUCCESS(result)  && ! MCATitleVersion.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, MCATitleVersion));
+  if ( ASDCP_SUCCESS(result)  && ! MCATitleSubVersion.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, MCATitleSubVersion));
+  if ( ASDCP_SUCCESS(result)  && ! MCAEpisode.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, MCAEpisode));
+  if ( ASDCP_SUCCESS(result)  && ! MCAPartitionKind.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, MCAPartitionKind));
+  if ( ASDCP_SUCCESS(result)  && ! MCAPartitionNumber.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, MCAPartitionNumber));
+  if ( ASDCP_SUCCESS(result)  && ! MCAAudioContentKind.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, MCAAudioContentKind));
+  if ( ASDCP_SUCCESS(result)  && ! MCAAudioElementKind.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, MCAAudioElementKind));
   return result;
 }
 
@@ -3257,6 +3350,14 @@ MCALabelSubDescriptor::Copy(const MCALabelSubDescriptor& rhs)
   MCATagName = rhs.MCATagName;
   MCAChannelID = rhs.MCAChannelID;
   RFC5646SpokenLanguage = rhs.RFC5646SpokenLanguage;
+  MCATitle = rhs.MCATitle;
+  MCATitleVersion = rhs.MCATitleVersion;
+  MCATitleSubVersion = rhs.MCATitleSubVersion;
+  MCAEpisode = rhs.MCAEpisode;
+  MCAPartitionKind = rhs.MCAPartitionKind;
+  MCAPartitionNumber = rhs.MCAPartitionNumber;
+  MCAAudioContentKind = rhs.MCAAudioContentKind;
+  MCAAudioElementKind = rhs.MCAAudioElementKind;
 }
 
 //
@@ -3281,6 +3382,30 @@ MCALabelSubDescriptor::Dump(FILE* stream)
   }
   if ( ! RFC5646SpokenLanguage.empty() ) {
     fprintf(stream, "  %22s = %s\n",  "RFC5646SpokenLanguage", RFC5646SpokenLanguage.get().EncodeString(identbuf, IdentBufferLen));
+  }
+  if ( ! MCATitle.empty() ) {
+    fprintf(stream, "  %22s = %s\n",  "MCATitle", MCATitle.get().EncodeString(identbuf, IdentBufferLen));
+  }
+  if ( ! MCATitleVersion.empty() ) {
+    fprintf(stream, "  %22s = %s\n",  "MCATitleVersion", MCATitleVersion.get().EncodeString(identbuf, IdentBufferLen));
+  }
+  if ( ! MCATitleSubVersion.empty() ) {
+    fprintf(stream, "  %22s = %s\n",  "MCATitleSubVersion", MCATitleSubVersion.get().EncodeString(identbuf, IdentBufferLen));
+  }
+  if ( ! MCAEpisode.empty() ) {
+    fprintf(stream, "  %22s = %s\n",  "MCAEpisode", MCAEpisode.get().EncodeString(identbuf, IdentBufferLen));
+  }
+  if ( ! MCAPartitionKind.empty() ) {
+    fprintf(stream, "  %22s = %s\n",  "MCAPartitionKind", MCAPartitionKind.get().EncodeString(identbuf, IdentBufferLen));
+  }
+  if ( ! MCAPartitionNumber.empty() ) {
+    fprintf(stream, "  %22s = %s\n",  "MCAPartitionNumber", MCAPartitionNumber.get().EncodeString(identbuf, IdentBufferLen));
+  }
+  if ( ! MCAAudioContentKind.empty() ) {
+    fprintf(stream, "  %22s = %s\n",  "MCAAudioContentKind", MCAAudioContentKind.get().EncodeString(identbuf, IdentBufferLen));
+  }
+  if ( ! MCAAudioElementKind.empty() ) {
+    fprintf(stream, "  %22s = %s\n",  "MCAAudioElementKind", MCAAudioElementKind.get().EncodeString(identbuf, IdentBufferLen));
   }
 }
 
@@ -3601,6 +3726,77 @@ DCDataDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
 }
 
 //------------------------------------------------------------------------------------------
+// PrivateDCDataDescriptor
+
+//
+
+PrivateDCDataDescriptor::PrivateDCDataDescriptor(const Dictionary*& d) : GenericDataEssenceDescriptor(d), m_Dict(d)
+{
+  assert(m_Dict);
+  m_UL = m_Dict->ul(MDD_PrivateDCDataDescriptor);
+}
+
+PrivateDCDataDescriptor::PrivateDCDataDescriptor(const PrivateDCDataDescriptor& rhs) : GenericDataEssenceDescriptor(rhs.m_Dict), m_Dict(rhs.m_Dict)
+{
+  assert(m_Dict);
+  m_UL = m_Dict->ul(MDD_PrivateDCDataDescriptor);
+  Copy(rhs);
+}
+
+
+//
+ASDCP::Result_t
+PrivateDCDataDescriptor::InitFromTLVSet(TLVReader& TLVSet)
+{
+  assert(m_Dict);
+  Result_t result = GenericDataEssenceDescriptor::InitFromTLVSet(TLVSet);
+  return result;
+}
+
+//
+ASDCP::Result_t
+PrivateDCDataDescriptor::WriteToTLVSet(TLVWriter& TLVSet)
+{
+  assert(m_Dict);
+  Result_t result = GenericDataEssenceDescriptor::WriteToTLVSet(TLVSet);
+  return result;
+}
+
+//
+void
+PrivateDCDataDescriptor::Copy(const PrivateDCDataDescriptor& rhs)
+{
+  GenericDataEssenceDescriptor::Copy(rhs);
+}
+
+//
+void
+PrivateDCDataDescriptor::Dump(FILE* stream)
+{
+  char identbuf[IdentBufferLen];
+  *identbuf = 0;
+
+  if ( stream == 0 )
+    stream = stderr;
+
+  GenericDataEssenceDescriptor::Dump(stream);
+}
+
+//
+ASDCP::Result_t
+PrivateDCDataDescriptor::InitFromBuffer(const byte_t* p, ui32_t l)
+{
+  return InterchangeObject::InitFromBuffer(p, l);
+}
+
+//
+ASDCP::Result_t
+PrivateDCDataDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
+{
+  return InterchangeObject::WriteToBuffer(Buffer);
+}
+
+//------------------------------------------------------------------------------------------
 // DolbyAtmosSubDescriptor
 
 //
@@ -3770,6 +3966,81 @@ PHDRMetadataTrackSubDescriptor::InitFromBuffer(const byte_t* p, ui32_t l)
 //
 ASDCP::Result_t
 PHDRMetadataTrackSubDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
+{
+  return InterchangeObject::WriteToBuffer(Buffer);
+}
+
+//------------------------------------------------------------------------------------------
+// PIMFDynamicMetadataDescriptor
+
+//
+
+PIMFDynamicMetadataDescriptor::PIMFDynamicMetadataDescriptor(const Dictionary*& d) : GenericDataEssenceDescriptor(d), m_Dict(d), GlobalPayloadSID(0)
+{
+  assert(m_Dict);
+  m_UL = m_Dict->ul(MDD_PIMFDynamicMetadataDescriptor);
+}
+
+PIMFDynamicMetadataDescriptor::PIMFDynamicMetadataDescriptor(const PIMFDynamicMetadataDescriptor& rhs) : GenericDataEssenceDescriptor(rhs.m_Dict), m_Dict(rhs.m_Dict)
+{
+  assert(m_Dict);
+  m_UL = m_Dict->ul(MDD_PIMFDynamicMetadataDescriptor);
+  Copy(rhs);
+}
+
+
+//
+ASDCP::Result_t
+PIMFDynamicMetadataDescriptor::InitFromTLVSet(TLVReader& TLVSet)
+{
+  assert(m_Dict);
+  Result_t result = GenericDataEssenceDescriptor::InitFromTLVSet(TLVSet);
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.ReadUi32(OBJ_READ_ARGS(PIMFDynamicMetadataDescriptor, GlobalPayloadSID));
+  return result;
+}
+
+//
+ASDCP::Result_t
+PIMFDynamicMetadataDescriptor::WriteToTLVSet(TLVWriter& TLVSet)
+{
+  assert(m_Dict);
+  Result_t result = GenericDataEssenceDescriptor::WriteToTLVSet(TLVSet);
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteUi32(OBJ_WRITE_ARGS(PIMFDynamicMetadataDescriptor, GlobalPayloadSID));
+  return result;
+}
+
+//
+void
+PIMFDynamicMetadataDescriptor::Copy(const PIMFDynamicMetadataDescriptor& rhs)
+{
+  GenericDataEssenceDescriptor::Copy(rhs);
+  GlobalPayloadSID = rhs.GlobalPayloadSID;
+}
+
+//
+void
+PIMFDynamicMetadataDescriptor::Dump(FILE* stream)
+{
+  char identbuf[IdentBufferLen];
+  *identbuf = 0;
+
+  if ( stream == 0 )
+    stream = stderr;
+
+  GenericDataEssenceDescriptor::Dump(stream);
+  fprintf(stream, "  %22s = %d\n",  "GlobalPayloadSID", GlobalPayloadSID);
+}
+
+//
+ASDCP::Result_t
+PIMFDynamicMetadataDescriptor::InitFromBuffer(const byte_t* p, ui32_t l)
+{
+  return InterchangeObject::InitFromBuffer(p, l);
+}
+
+//
+ASDCP::Result_t
+PIMFDynamicMetadataDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
 {
   return InterchangeObject::WriteToBuffer(Buffer);
 }

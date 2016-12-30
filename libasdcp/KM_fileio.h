@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2004-2014, John Hurst
+Copyright (c) 2004-2016, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_fileio.h
-    \version $Id: KM_fileio.h,v 1.22 2015/10/07 16:41:23 jhurst Exp $
+    \version $Id: KM_fileio.h,v 1.23 2016/12/02 18:45:14 jhurst Exp $
     \brief   portable file i/o
   */
 
@@ -37,6 +37,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef KM_WIN32
 # include <io.h>
+# include "dirent_win.h"
 #else
 # include <dirent.h>
 # include <unistd.h>
@@ -55,12 +56,7 @@ namespace Kumu
   class DirScanner
     {
     public:
-#ifdef KM_WIN32
-      __int64               m_Handle;
-      struct _finddatai64_t m_FileInfo;
-#else
       DIR*       m_Handle;
-#endif
 
       DirScanner(void);
       ~DirScanner() { Close(); }
@@ -83,12 +79,7 @@ namespace Kumu
   class DirScannerEx
   {
     std::string m_Dirname;
-#ifdef KM_WIN32
-    __int64               m_Handle;
-    struct _finddatai64_t m_FileInfo;
-#else
     DIR*       m_Handle;
-#endif
 
     KM_NO_COPY_CONSTRUCT(DirScannerEx);
 

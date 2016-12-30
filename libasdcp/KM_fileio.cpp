@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2004-2014, John Hurst
+Copyright (c) 2004-2016, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
   /*! \file    KM_fileio.cpp
-    \version $Id: KM_fileio.cpp,v 1.40 2015/10/07 16:58:03 jhurst Exp $
+    \version $Id: KM_fileio.cpp,v 1.47 2016/12/03 21:26:24 jhurst Exp $
     \brief   portable file i/o
   */
 
@@ -46,6 +46,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // only needed by GetExecutablePath()
 #if defined(KM_MACOSX)
 #include <mach-o/dyld.h>
+#endif
+
+#if defined(__OpenBSD__)
+#include <sys/sysctl.h>
 #endif
 
 using namespace Kumu;
@@ -75,6 +79,9 @@ struct iovec {
 typedef struct stat     fstat_t;
 #endif
 
+#if defined(__sun) && defined(__SVR4)
+#include <sys/statfs.h>
+#endif
 
 //
 static Kumu::Result_t
@@ -655,18 +662,29 @@ Kumu::GetExecutablePath(const std::string& default_path)
   size_t size = X_BUFSIZE;
   ssize_t rc = readlink("/proc/self/exe", path, size);
   success = ( rc != -1 );
-#elif defined(__OpenBSD__) || defined(__FreeBSD__)
-  size_t size = X_BUFSIZE;
-  ssize_t rc = readlink("/proc/curproc/file", path, size);
-  success = ( rc != -1 );
+#elif defined(__OpenBSD__)
+  // This fails if the CWD changes after the program has started but before the
+  // call to GetExecutablePath(). For least surprise, call GetExecutablePath()
+  // immediately in main() and save the value for later use.
+  const,  char* p = getenv("_");
+  if ( p )
+    {
+      return Kumu::PathMakeAbsolute(p);
+    }
 #elif defined(__FreeBSD__)
+  // requires procfs
   size_t size = X_BUFSIZE;
   ssize_t rc = readlink("/proc/curproc/file", path, size);
   success = ( rc != -1 );
 #elif defined(__NetBSD__)
   size_t size = X_BUFSIZE;
-  ssize_t rc = readlink("/proc/curproc/file", path, size);
+  ssize_t rc = readlink("/proc/curproc/exe", path, size);
   success = ( rc != -1 );
+#elif defined(__sun) && defined(__SVR4)
+  size_t size = X_BUFSIZE;
+  char program[MAXPATHLEN];
+  snprintf(program, MAXPATHLEN, "/proc/%d/path/a.out", getpid());
+  ssize_t rc = readlink(program, path, size);
 #else
 #error GetExecutablePath --> Create a method for obtaining the executable name
 #endif
@@ -1052,7 +1070,7 @@ Kumu::Result_t
 Kumu::FileWriter::OpenWrite(const std::string& filename)
 {
   m_Filename = filename;
-  m_Handle = open(filename.c_str(), O_RDWR|O_CREAT|O_TRUNC, 0664);
+  m_Handle = open(filename.c_str(), O_RDWR|O_CREAT|O_TRUNC, 0666);
 
   if ( m_Handle == -1L )
     {
@@ -1069,7 +1087,7 @@ Kumu::Result_t
 Kumu::FileWriter::OpenModify(const std::string& filename)
 {
   m_Filename = filename;
-  m_Handle = open(filename.c_str(), O_RDWR|O_CREAT, 0664);
+  m_Handle = open(filename.c_str(), O_RDWR|O_CREAT, 0666);
 
   if ( m_Handle == -1L )
     {
@@ -1206,7 +1224,7 @@ Kumu::ReadFileIntoObject(const std::string& Filename, Kumu::IArchive& Object, ui
   if ( KM_SUCCESS(result) )
     {
       ui32_t read_count = 0;
-      FileWriter Reader;
+      FileReader Reader;
 
       result = Reader.OpenRead(Filename);
 
@@ -1266,7 +1284,7 @@ Kumu::ReadFileIntoBuffer(const std::string& Filename, Kumu::ByteString& Buffer, 
   if ( KM_SUCCESS(result) )
     {
       ui32_t read_count = 0;
-      FileWriter Reader;
+      FileReader Reader;
 
       result = Reader.OpenRead(Filename);
 
@@ -1306,96 +1324,6 @@ Kumu::WriteBufferIntoFile(const Kumu::ByteString& Buffer, const std::string& Fil
 //------------------------------------------------------------------------------------------
 //
 
-
-// Win32 directory scanner
-//
-#ifdef KM_WIN32
-
-//
-Kumu::DirScanner::DirScanner(void) : m_Handle(-1) {}
-
-//
-//
-Result_t
-Kumu::DirScanner::Open(const std::string& filename)
-{
-  // we need to append a '*' to read the entire directory
-  ui32_t fn_len = filename.size(); 
-  char* tmp_file = (char*)malloc(fn_len + 8);
-
-  if ( tmp_file == 0 )
-    return RESULT_ALLOC;
-
-  strcpy(tmp_file, filename.c_str());
-  char* p = &tmp_file[fn_len] - 1;
-
-  if ( *p != '/' && *p != '\\' )
-    {
-      p++;
-      *p++ = '/';
-    }
-
-  *p++ = '*';
-  *p = 0;
-  // whew...
-
-  m_Handle = _findfirsti64(tmp_file, &m_FileInfo);
-  Result_t result = RESULT_OK;
-
-  if ( m_Handle == -1 )
-    result = RESULT_NOT_FOUND;
-
-  return result;
-}
-
-
-//
-//
-Result_t
-Kumu::DirScanner::Close()
-{
-  if ( m_Handle == -1 )
-    return RESULT_FILEOPEN;
-
-  if ( _findclose((long)m_Handle) == -1 )
-    return RESULT_FAIL;
-
-  m_Handle = -1;
-  return RESULT_OK;
-}
-
-
-// This sets filename param to the same per-instance buffer every time, so
-// the value will change on the next call
-Result_t
-Kumu::DirScanner::GetNext(char* filename)
-{
-  KM_TEST_NULL_L(filename);
-
-  if ( m_Handle == -1 )
-    return RESULT_FILEOPEN;
-
-  if ( m_FileInfo.name[0] == '\0' )
-    return RESULT_ENDOFFILE;
-
-  strncpy(filename, m_FileInfo.name, MaxFilePath);
-  Result_t result = RESULT_OK;
-
-  if ( _findnexti64((long)m_Handle, &m_FileInfo) == -1 )
-    {
-      m_FileInfo.name[0] = '\0';
-	  
-      if ( errno != ENOENT )
-	result = RESULT_FAIL;
-    }
-
-  return result;
-}
-
-
-#else // KM_WIN32
-
-// POSIX directory scanner
 
 //
 Kumu::DirScanner::DirScanner(void) : m_Handle(NULL) {}
@@ -1478,6 +1406,7 @@ Kumu::DirScanner::GetNext(char* filename)
   return RESULT_OK;
 }
 
+//------------------------------------------------------------------------------------------
 
 //
 Kumu::DirScannerEx::DirScannerEx() : m_Handle(0) {}
@@ -1549,6 +1478,9 @@ Kumu::DirScannerEx::GetNext(std::string& next_item_name, DirectoryEntryType_t& n
   if ( m_Handle == 0 )
     return RESULT_FILEOPEN;
 
+#if defined(__sun) && defined(__SVR4)
+  struct stat s;
+#endif
   struct dirent* entry;
 
   for (;;)
@@ -1561,6 +1493,28 @@ Kumu::DirScannerEx::GetNext(std::string& next_item_name, DirectoryEntryType_t& n
 
   next_item_name.assign(entry->d_name, strlen(entry->d_name));
 
+#if defined(__sun) && defined(__SVR4)
+
+  stat(entry->d_name, &s);
+
+  switch ( s.st_mode )
+    {
+    case S_IFDIR:
+      next_item_type = DET_DIR;
+      break;
+
+    case S_IFREG:
+      next_item_type = DET_FILE;
+      break;
+
+    case S_IFLNK:
+      next_item_type = DET_LINK;
+      break;
+
+    default:
+      next_item_type = DET_DEV;
+    }
+#else // __sun 
   switch ( entry->d_type )
     {
     case DT_DIR:
@@ -1578,12 +1532,9 @@ Kumu::DirScannerEx::GetNext(std::string& next_item_name, DirectoryEntryType_t& n
     default:
       next_item_type = DET_DEV;
     }
-
+#endif // __sun
   return RESULT_OK;
 }
-
-
-#endif // KM_WIN32
 
 
 //------------------------------------------------------------------------------------------
@@ -1614,7 +1565,7 @@ Kumu::CreateDirectoriesInPath(const std::string& Path)
 #ifdef KM_WIN32
 	  if ( _mkdir(tmp_path.c_str()) != 0 )
 #else // KM_WIN32
-	  if ( mkdir(tmp_path.c_str(), 0775) != 0 )
+	  if ( mkdir(tmp_path.c_str(), 0777) != 0 )
 #endif // KM_WIN32
 	    {
 	      DefaultLogSink().Error("CreateDirectoriesInPath mkdir %s: %s\n",
@@ -1772,6 +1723,20 @@ Kumu::FreeSpaceForPath(const std::string& path, Kumu::fsize_t& free_space, Kumu:
 #else // KM_WIN32
   struct statfs s;
 
+#if defined(__sun) && defined(__SVR4)
+  if ( statfs(path.c_str(), &s, s.f_bsize, s.f_fstyp ) == 0 )
+    {      if ( s.f_blocks < 1 )
+	{
+	  DefaultLogSink().Error("File system %s has impossible size: %ld\n",
+				 path.c_str(), s.f_blocks);
+	  return RESULT_FAIL;
+	}
+
+      free_space = (Kumu::fsize_t)s.f_bsize * (Kumu::fsize_t)s.f_bfree;
+      total_space = (Kumu::fsize_t)s.f_bsize * (Kumu::fsize_t)s.f_blocks;
+      return RESULT_OK;
+    }
+#else
   if ( statfs(path.c_str(), &s) == 0 )
     {
       if ( s.f_blocks < 1 )
@@ -1795,6 +1760,7 @@ Kumu::FreeSpaceForPath(const std::string& path, Kumu::fsize_t& free_space, Kumu:
 
   DefaultLogSink().Error("FreeSpaceForPath statfs %s: %s\n", path.c_str(), strerror(errno));
   return RESULT_FAIL;
+#endif // __sun 
 #endif // KM_WIN32
 } 
 
