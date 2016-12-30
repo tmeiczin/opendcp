@@ -91,6 +91,7 @@ extern "C" {
         OPENDCP_ERROR_MSG(OPENDCP_SPECIFICATION_MISMATCH,  "DCP contains MXF Interop and SMPTE track") \
         OPENDCP_ERROR_MSG(OPENDCP_TRACK_NO_DURATION,       "Track has no duration") \
         OPENDCP_ERROR_MSG(OPENDCP_J2K_ERROR,               "JPEG2000 error") \
+        OPENDCP_ERROR_MSG(OPENDCP_EXR_COMPRESS_ERROR,      "Can only open EXR file use ZIP compression") \
         OPENDCP_ERROR_MSG(OPENDCP_CALC_DIGEST,             "Could not calculate MXF digest") \
         OPENDCP_ERROR_MSG(OPENDCP_DETECT_TRACK_TYPE,       "Could not determine MXF track type") \
         OPENDCP_ERROR_MSG(OPENDCP_INVALID_TRACK_TYPE,      "Invalid MXF track type") \
@@ -99,6 +100,7 @@ extern "C" {
         OPENDCP_ERROR_MSG(OPENDCP_INVALID_WAV_CHANNELS,    "WAV has an incorrect number of channels") \
         OPENDCP_ERROR_MSG(OPENDCP_FILEOPEN_MPEG2,          "Could not open MPEG2 file") \
         OPENDCP_ERROR_MSG(OPENDCP_FILEOPEN_J2K,            "Could not open JPEG200 file") \
+        OPENDCP_ERROR_MSG(OPENDCP_FILEOPEN_EXR,            "Could not open EXR file") \
         OPENDCP_ERROR_MSG(OPENDCP_FILEOPEN_WAV,            "Could not open wav file") \
         OPENDCP_ERROR_MSG(OPENDCP_FILEOPEN_TT,             "Could not open subtitle file") \
         OPENDCP_ERROR_MSG(OPENDCP_FILEWRITE_MXF,           "Could not write MXF file") \

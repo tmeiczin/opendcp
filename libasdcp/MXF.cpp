@@ -1515,7 +1515,10 @@ ASDCP::MXF::decode_mca_string(const std::string& s, const mca_label_map_t& label
 
 	  current_soundfield = new ASDCP::MXF::SoundfieldGroupLabelSubDescriptor(dict);
 	  GenRandomValue(current_soundfield->MCALinkID);
+<<<<<<< HEAD
+=======
 
+>>>>>>> 080a14bc87e096fe181fb9f1d21e0d94bf71e7d0
 	  current_soundfield->MCATagSymbol = (i->second.requires_prefix ? "sg" : "") + i->first;
 	  current_soundfield->MCATagName = i->second.tag_name;
 	  current_soundfield->RFC5646SpokenLanguage = language;
@@ -1551,6 +1554,12 @@ ASDCP::MXF::decode_mca_string(const std::string& s, const mca_label_map_t& label
 	    new ASDCP::MXF::AudioChannelLabelSubDescriptor(dict);
 	  GenRandomValue(channel_descr->MCALinkID);
 
+<<<<<<< HEAD
+	  GenRandomValue(channel_descr->InstanceUID);
+	  GenRandomValue(channel_descr->MCALinkID);
+	  assert(current_soundfield);
+=======
+>>>>>>> 080a14bc87e096fe181fb9f1d21e0d94bf71e7d0
 	  channel_descr->SoundfieldGroupLinkID = current_soundfield->MCALinkID;
 	  channel_descr->MCAChannelID = channel_count++ + 1;
 	  channel_descr->MCATagSymbol = (i->second.requires_prefix ? "ch" : "") + i->first;
@@ -1629,6 +1638,11 @@ ASDCP::MXF::decode_mca_string(const std::string& s, const mca_label_map_t& label
 
       ASDCP::MXF::AudioChannelLabelSubDescriptor *channel_descr =
 	new ASDCP::MXF::AudioChannelLabelSubDescriptor(dict);
+<<<<<<< HEAD
+
+      GenRandomValue(channel_descr->InstanceUID);
+=======
+>>>>>>> 080a14bc87e096fe181fb9f1d21e0d94bf71e7d0
       GenRandomValue(channel_descr->MCALinkID);
 
       if ( current_soundfield != 0 )
