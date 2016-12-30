@@ -61,11 +61,8 @@ typedef struct {
     int signed_bit;
     opendcp_image_component_t *component;
     int n_components;
-<<<<<<< HEAD
     int id;
-=======
     unsigned char use_float;      /* flag for use float */
->>>>>>> c6fc5cadc128ced17ed49a7c98e0eeb354888878
 } opendcp_image_t;
 
 int  read_image(opendcp_image_t **image, char *file);
