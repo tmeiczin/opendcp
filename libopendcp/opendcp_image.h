@@ -42,8 +42,9 @@ typedef struct {
 } xyz_pixel_float_t;
 
 typedef struct {
-    int component_number;
-    int *data;
+    int component_number;   /* compoenent number                    */
+    int *data;              /* int data. use for integer image data */
+    float *float_data;      /* float data, use for float image data */
 } opendcp_image_component_t;
 
 typedef struct {
@@ -60,6 +61,7 @@ typedef struct {
     int signed_bit;
     opendcp_image_component_t *component;
     int n_components;
+    unsigned char use_float;      /* flag for use float */
 } opendcp_image_t;
 
 int  read_image(opendcp_image_t **image, char *file);

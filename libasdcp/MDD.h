@@ -360,6 +360,11 @@ namespace ASDCP {
 	MDD_DCAudioSoundfield_SDS, // 322
 	MDD_DCAudioSoundfield_61, // 323
 	MDD_DCAudioSoundfield_M, // 324
+<<<<<<< HEAD
+	MDD_DBOXMotionCodePrimaryStream, // 325
+	MDD_DBOXMotionCodeSecondaryStream, // 326
+	MDD_Max
+=======
 	MDD_WAVEssenceClip, // 325
 	MDD_IMFAudioChannelCfg_MCA, // 326
 	MDD_IMFAudioChannel_M1, // 327
@@ -417,6 +422,7 @@ namespace ASDCP {
 	MDD_PHDRMetadataTrackSubDescriptor_SimplePayloadSID, // 379
 	MDD_JPEG2000PictureSubDescriptor_J2CLayout, // 380
         MDD_Max
+>>>>>>> 080a14bc87e096fe181fb9f1d21e0d94bf71e7d0
     }; // enum MDD_t
 
     //

@@ -1,0 +1,39 @@
+language: c
+
+os:
+  - linux
+  - osx
+
+compiler:
+  - gcc
+  - clang
+
+addons:
+  apt:
+    packages:
+      - graphviz
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "centos" ]]; then
+      yum install xmlsec-devel
+      yum install xmlsec-openssl-devel
+    ; fi
+
+script:
+  - mkdir build 
+  - cd build
+  - cmake ../
+  - make 
+
+matrix:
+  include:
+    - os: centos 
+      dist: 6
+      pack: rpm 
+      sudo: required
+    - os: osx
+      osx_image: xcode7.2
+
+notification:
+  email: false
