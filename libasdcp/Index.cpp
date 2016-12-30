@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    Index.cpp
-    \version $Id: Index.cpp,v 1.25 2015/10/07 16:41:23 jhurst Exp $
+    \version $Id: Index.cpp,v 1.26 2016/06/28 22:00:06 jhurst Exp $
     \brief   MXF index segment objects
 */
 
@@ -79,7 +79,42 @@ ASDCP::MXF::IndexTableSegment::InitFromTLVSet(TLVReader& TLVSet)
   if ( ASDCP_SUCCESS(result) ) result = TLVSet.ReadUi8(OBJ_READ_ARGS(IndexTableSegmentBase, SliceCount));
   if ( ASDCP_SUCCESS(result) ) result = TLVSet.ReadUi8(OBJ_READ_ARGS(IndexTableSegmentBase, PosTableCount));
   if ( ASDCP_SUCCESS(result) ) result = TLVSet.ReadObject(OBJ_READ_ARGS(IndexTableSegment, DeltaEntryArray));
-  if ( ASDCP_SUCCESS(result) ) result = TLVSet.ReadObject(OBJ_READ_ARGS(IndexTableSegment, IndexEntryArray));
+
+  if ( ASDCP_SUCCESS(result) )
+    {
+      bool rc = TLVSet.FindTL(m_Dict->Type(MDD_IndexTableSegment_IndexEntryArray));
+
+      if ( rc )
+	{
+	  ui32_t item_count, item_size;
+	  ui32_t const decoder_item_size = IndexEntryArray.ItemSize();
+
+	  if ( TLVSet.ReadUi32BE(&item_count) )
+	    {
+	      if ( TLVSet.ReadUi32BE(&item_size) )
+		{
+		  for ( ui32_t i = 0; i < item_count && rc; ++i )
+		    {
+		      IndexEntry tmp_item;
+		      rc = tmp_item.Unarchive(&TLVSet);
+
+		      if ( rc )
+			{
+			  IndexEntryArray.push_back(tmp_item);
+
+			  if ( decoder_item_size < item_size )
+			    {
+			      TLVSet.SkipOffset(item_size - decoder_item_size);
+			    }
+			}
+		    }
+		}
+	    }
+	}
+
+      result = rc ? RESULT_OK : RESULT_FALSE;
+    }
+
   return result;
 }
 
@@ -136,7 +171,11 @@ ASDCP::MXF::IndexTableSegment::Dump(FILE* stream)
 
   fprintf(stream, "  DeltaEntryArray:\n");  DeltaEntryArray.Dump(stream);
 
-  if ( IndexEntryArray.size() < 1000 )
+  if ( IndexEntryArray.empty() )
+    {
+      fprintf(stream, "  IndexEntryArray: NO ENTRIES\n");
+    }
+  else if ( IndexEntryArray.size() < 1000 )
     {
       fprintf(stream, "  IndexEntryArray:\n");
       IndexEntryArray.Dump(stream);

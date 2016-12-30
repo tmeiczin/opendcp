@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2015, John Hurst
+Copyright (c) 2005-2017, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    Metadata.h
-    \version $Id: Metadata.h,v 1.39 2015/10/10 20:26:29 jhurst Exp $
+    \version $Id: Metadata.h,v 1.44 2016/12/10 19:57:45 jhurst Exp $
     \brief   MXF metadata objects
 */
 
@@ -502,6 +502,11 @@ namespace ASDCP
           optional_property<ui32_t > ActiveHeight;
           optional_property<ui32_t > ActiveXOffset;
           optional_property<ui32_t > ActiveYOffset;
+          optional_property<LineMapPair > VideoLineMap;
+          optional_property<ThreeColorPrimaries > MasteringDisplayPrimaries;
+          optional_property<ColorPrimary > MasteringDisplayWhitePointChromaticity;
+          optional_property<ui32_t > MasteringDisplayMaximumLuminance;
+          optional_property<ui32_t > MasteringDisplayMinimumLuminance;
 
       GenericPictureEssenceDescriptor(const Dictionary*& d);
       GenericPictureEssenceDescriptor(const GenericPictureEssenceDescriptor& rhs);
@@ -529,6 +534,7 @@ namespace ASDCP
           optional_property<ui32_t > AlphaMinRef;
           optional_property<ui32_t > AlphaMaxRef;
           optional_property<ui8_t > ScanningDirection;
+          RGBALayout PixelLayout;
 
       RGBAEssenceDescriptor(const Dictionary*& d);
       RGBAEssenceDescriptor(const RGBAEssenceDescriptor& rhs);
@@ -875,6 +881,14 @@ namespace ASDCP
           optional_property<UTF16String > MCATagName;
           optional_property<ui32_t > MCAChannelID;
           optional_property<ISO8String > RFC5646SpokenLanguage;
+          optional_property<UTF16String > MCATitle;
+          optional_property<UTF16String > MCATitleVersion;
+          optional_property<UTF16String > MCATitleSubVersion;
+          optional_property<UTF16String > MCAEpisode;
+          optional_property<UTF16String > MCAPartitionKind;
+          optional_property<UTF16String > MCAPartitionNumber;
+          optional_property<UTF16String > MCAAudioContentKind;
+          optional_property<UTF16String > MCAAudioElementKind;
 
       MCALabelSubDescriptor(const Dictionary*& d);
       MCALabelSubDescriptor(const MCALabelSubDescriptor& rhs);
@@ -981,6 +995,28 @@ namespace ASDCP
 	};
 
       //
+      class PrivateDCDataDescriptor : public GenericDataEssenceDescriptor
+	{
+	  PrivateDCDataDescriptor();
+
+	public:
+	  const Dictionary*& m_Dict;
+
+      PrivateDCDataDescriptor(const Dictionary*& d);
+      PrivateDCDataDescriptor(const PrivateDCDataDescriptor& rhs);
+      virtual ~PrivateDCDataDescriptor() {}
+
+      const PrivateDCDataDescriptor& operator=(const PrivateDCDataDescriptor& rhs) { Copy(rhs); return *this; }
+      virtual void Copy(const PrivateDCDataDescriptor& rhs);
+      virtual const char* HasName() { return "PrivateDCDataDescriptor"; }
+      virtual Result_t InitFromTLVSet(TLVReader& TLVSet);
+      virtual Result_t WriteToTLVSet(TLVWriter& TLVSet);
+      virtual void     Dump(FILE* = 0);
+      virtual Result_t InitFromBuffer(const byte_t* p, ui32_t l);
+      virtual Result_t WriteToBuffer(ASDCP::FrameBuffer&);
+	};
+
+      //
       class DolbyAtmosSubDescriptor : public InterchangeObject
 	{
 	  DolbyAtmosSubDescriptor();
@@ -1025,6 +1061,29 @@ namespace ASDCP
       const PHDRMetadataTrackSubDescriptor& operator=(const PHDRMetadataTrackSubDescriptor& rhs) { Copy(rhs); return *this; }
       virtual void Copy(const PHDRMetadataTrackSubDescriptor& rhs);
       virtual const char* HasName() { return "PHDRMetadataTrackSubDescriptor"; }
+      virtual Result_t InitFromTLVSet(TLVReader& TLVSet);
+      virtual Result_t WriteToTLVSet(TLVWriter& TLVSet);
+      virtual void     Dump(FILE* = 0);
+      virtual Result_t InitFromBuffer(const byte_t* p, ui32_t l);
+      virtual Result_t WriteToBuffer(ASDCP::FrameBuffer&);
+	};
+
+      //
+      class PIMFDynamicMetadataDescriptor : public GenericDataEssenceDescriptor
+	{
+	  PIMFDynamicMetadataDescriptor();
+
+	public:
+	  const Dictionary*& m_Dict;
+          ui32_t GlobalPayloadSID;
+
+      PIMFDynamicMetadataDescriptor(const Dictionary*& d);
+      PIMFDynamicMetadataDescriptor(const PIMFDynamicMetadataDescriptor& rhs);
+      virtual ~PIMFDynamicMetadataDescriptor() {}
+
+      const PIMFDynamicMetadataDescriptor& operator=(const PIMFDynamicMetadataDescriptor& rhs) { Copy(rhs); return *this; }
+      virtual void Copy(const PIMFDynamicMetadataDescriptor& rhs);
+      virtual const char* HasName() { return "PIMFDynamicMetadataDescriptor"; }
       virtual Result_t InitFromTLVSet(TLVReader& TLVSet);
       virtual Result_t WriteToTLVSet(TLVWriter& TLVSet);
       virtual void     Dump(FILE* = 0);

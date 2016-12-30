@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2006-2015, John Hurst
+Copyright (c) 2006-2016, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    MDD.[h|cpp]
-    \version $Id: MDD.h,v 1.35 2015/01/22 21:05:58 jhurst Exp $
+    \version $Id: MDD.h,v 1.41 2016/12/10 21:55:07 jhurst Exp $
     \brief   MXF Metadata Dictionary
 */
 
@@ -46,7 +46,7 @@ namespace ASDCP {
         MDD_DescriptiveMetaDataDef,  // 8
         MDD_WAVWrappingFrame,  // 9
         MDD_MPEG2_VESWrappingFrame,  // 10
-        MDD_JPEG_2000WrappingFrame,  // 11
+        MDD_MXFGCFUFrameWrappedPictureElement,  // 11
         MDD_JPEG2000Essence,  // 12
         MDD_MPEG2Essence,  // 13
         MDD_MXFInterop_CryptEssence,  // 14
@@ -360,11 +360,6 @@ namespace ASDCP {
 	MDD_DCAudioSoundfield_SDS, // 322
 	MDD_DCAudioSoundfield_61, // 323
 	MDD_DCAudioSoundfield_M, // 324
-<<<<<<< HEAD
-	MDD_DBOXMotionCodePrimaryStream, // 325
-	MDD_DBOXMotionCodeSecondaryStream, // 326
-	MDD_Max
-=======
 	MDD_WAVEssenceClip, // 325
 	MDD_IMFAudioChannelCfg_MCA, // 326
 	MDD_IMFAudioChannel_M1, // 327
@@ -421,8 +416,95 @@ namespace ASDCP {
 	MDD_PHDRMetadataTrackSubDescriptor_SourceTrackID, // 378
 	MDD_PHDRMetadataTrackSubDescriptor_SimplePayloadSID, // 379
 	MDD_JPEG2000PictureSubDescriptor_J2CLayout, // 380
+	MDD_PrivateDCDataWrappingFrame, // 381
+	MDD_PrivateDCDataEssence,  // 382
+	MDD_PrivateDCDataDescriptor, // 383
+	MDD_MCALabelSubDescriptor_MCATitle, // 384
+	MDD_MCALabelSubDescriptor_MCATitleVersion, // 385
+	MDD_MCALabelSubDescriptor_MCATitleSubVersion, // 386
+	MDD_MCALabelSubDescriptor_MCAEpisode, // 387
+	MDD_MCALabelSubDescriptor_MCAPartitionKind, // 388
+	MDD_MCALabelSubDescriptor_MCAPartitionNumber, // 389
+	MDD_MCALabelSubDescriptor_MCAAudioContentKind, // 390
+	MDD_MCALabelSubDescriptor_MCAAudioElementKind, // 391
+	MDD_MXFGCI1FrameWrappedPictureElement, // 392
+	MDD_MXFGCP1FrameWrappedPictureElement, // 393
+	MDD_TransferCharacteristics_709, // 394
+	MDD_TransferCharacteristics_2020,  // 395
+	MDD_TransferCharacteristics_xvYCC, // 396
+	MDD_TransferCharacteristics_St2084, // 397
+	MDD_TransferCharacteristics_linear, // 398
+	MDD_CodingEquations_601, // 399
+	MDD_CodingEquations_709, // 400
+	MDD_CodingEquations_Rec2020, // 401
+	MDD_ColorPrimaries_BT709, // 402
+	MDD_ColorPrimaries_BT2020, // 403
+	MDD_ColorPrimaries_P3D65, // 404
+	MDD_ColorPrimaries_XYZ, // 405
+	MDD_GenericPictureEssenceDescriptor_MasteringDisplayPrimaries, // 406
+	MDD_GenericPictureEssenceDescriptor_MasteringDisplayWhitePointChromaticity, // 407
+	MDD_GenericPictureEssenceDescriptor_MasteringDisplayMaximumLuminance, // 408
+	MDD_GenericPictureEssenceDescriptor_MasteringDisplayMinimumLuminance, // 409
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Lossy, // 410
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy, // 411
+	MDD_JP2KEssenceCompression_IMFProfile_8K_Lossy, // 412
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Reversible, // 413
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Reversible, // 414
+	MDD_JP2KEssenceCompression_IMFProfile_8K_Reversible, // 415
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_1_1, // 416
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_2_1, // 417
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_3_1, // 418
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_4_1, // 419
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_4_2, // 420
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_5_1, // 421
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_5_2, // 422
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_5_3, // 423
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_6_1, // 424
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_6_2, // 425
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_6_3, // 426
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_6_4, // 427
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_7_1, // 428
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_7_2, // 429
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_7_3, // 430
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_7_4, // 431
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_7_5, // 432
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_8_1, // 433
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_8_2, // 434
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_8_3, // 435
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_8_4, // 436
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_8_5, // 437
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Lossy_8_6, // 438
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Reversible_1_0, // 439
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Reversible_2_0, // 440
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Reversible_3_0, // 441
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Reversible_4_0, // 442
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Reversible_5_0, // 443
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Reversible_6_0, // 444
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Reversible_1_0, // 445
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Reversible_2_0, // 446
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Reversible_3_0, // 447
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Reversible_4_0, // 448
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Reversible_5_0, // 449
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Reversible_6_0, // 450
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Reversible_7_0, // 451
+	MDD_JP2KEssenceCompression_IMFProfile_4K_Reversible_8_0, // 452
+	MDD_JP2KEssenceCompression_IMFProfile_8K_Reversible_1_0, // 453
+	MDD_JP2KEssenceCompression_IMFProfile_8K_Reversible_2_0, // 454
+	MDD_JP2KEssenceCompression_IMFProfile_8K_Reversible_3_0, // 455
+	MDD_JP2KEssenceCompression_IMFProfile_8K_Reversible_4_0, // 456
+	MDD_JP2KEssenceCompression_IMFProfile_8K_Reversible_5_0, // 457
+	MDD_JP2KEssenceCompression_IMFProfile_8K_Reversible_6_0, // 458
+	MDD_JP2KEssenceCompression_IMFProfile_8K_Reversible_7_0, // 459
+	MDD_JP2KEssenceCompression_IMFProfile_8K_Reversible_8_0, // 460
+	MDD_JP2KEssenceCompression_IMFProfile_8K_Reversible_9_0, // 461
+	MDD_JP2KEssenceCompression_IMFProfile_8K_Reversible_10_0, // 462
+	MDD_SMPTE382MDefaultUncompressedSoundCoding, // 463
+	MDD_PIMFDynamicMetadataWrappingFrame, // 464
+	MDD_PIMFDynamicMetadataEssence, // 465
+	MDD_PIMFDynamicMetadataDescriptor, // 466
+	MDD_PIMFDynamicMetadataDescriptor_GlobalPayloadSID, // 467
+	
         MDD_Max
->>>>>>> 080a14bc87e096fe181fb9f1d21e0d94bf71e7d0
     }; // enum MDD_t
 
     //

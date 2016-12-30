@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2004-2013, John Hurst
+Copyright (c) 2004-2016, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_PCM.cpp
-    \version $Id: AS_DCP_PCM.cpp,v 1.47 2014/10/02 21:02:24 jhurst Exp $       
+    \version $Id: AS_DCP_PCM.cpp,v 1.48 2016/11/22 17:58:18 jhurst Exp $       
     \brief   AS-DCP library, PCM essence reader and writer implementation
 */
 
@@ -293,6 +293,9 @@ ASDCP::PCM::MXFReader::h__Reader::OpenRead(const std::string& filename)
        && m_ADesc.EditRate != EditRate_96
        && m_ADesc.EditRate != EditRate_100
        && m_ADesc.EditRate != EditRate_120
+       && m_ADesc.EditRate != EditRate_192
+       && m_ADesc.EditRate != EditRate_200
+       && m_ADesc.EditRate != EditRate_240
        && m_ADesc.EditRate != EditRate_16
        && m_ADesc.EditRate != EditRate_18
        && m_ADesc.EditRate != EditRate_20
@@ -567,6 +570,9 @@ ASDCP::PCM::MXFWriter::h__Writer::SetSourceStream(const AudioDescriptor& ADesc)
        && ADesc.EditRate != EditRate_96
        && ADesc.EditRate != EditRate_100
        && ADesc.EditRate != EditRate_120
+       && ADesc.EditRate != EditRate_192
+       && ADesc.EditRate != EditRate_200
+       && ADesc.EditRate != EditRate_240
        && ADesc.EditRate != EditRate_16
        && ADesc.EditRate != EditRate_18
        && ADesc.EditRate != EditRate_20

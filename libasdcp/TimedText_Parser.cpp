@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_TimedText.cpp
-    \version $Id: TimedText_Parser.cpp,v 1.23 2015/10/16 16:55:33 jhurst Exp $       
+    \version $Id: TimedText_Parser.cpp,v 1.25 2016/11/22 17:58:19 jhurst Exp $       
     \brief   AS-DCP library, PCM essence reader and writer implementation
 */
 
@@ -246,7 +246,13 @@ ASDCP::TimedText::DCSubtitleParser::h__SubtitleParser::OpenRead()
        && m_TDesc.EditRate != EditRate_30
        && m_TDesc.EditRate != EditRate_48
        && m_TDesc.EditRate != EditRate_50
-       && m_TDesc.EditRate != EditRate_60 )
+       && m_TDesc.EditRate != EditRate_60
+       && m_TDesc.EditRate != EditRate_96
+       && m_TDesc.EditRate != EditRate_100
+       && m_TDesc.EditRate != EditRate_120
+       && m_TDesc.EditRate != EditRate_192
+       && m_TDesc.EditRate != EditRate_200
+       && m_TDesc.EditRate != EditRate_240 )
     {
       DefaultLogSink(). Error("Unexpected EditRate: %d/%d\n",
 			      m_TDesc.EditRate.Numerator, m_TDesc.EditRate.Denominator);

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2004-2013, John Hurst
+Copyright (c) 2004-2016, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    AS_DCP_internal.h
-    \version $Id: AS_DCP_internal.h,v 1.45 2014/09/21 13:27:43 jhurst Exp $
+    \version $Id: AS_DCP_internal.h,v 1.46 2016/12/02 23:28:26 jhurst Exp $
     \brief   AS-DCP library, non-public common elements
 */
 
@@ -121,6 +121,14 @@ namespace ASDCP
   static const byte_t ESV_CheckValue[CBC_BLOCK_SIZE] =
   { 0x43, 0x48, 0x55, 0x4b, 0x43, 0x48, 0x55, 0x4b,
     0x43, 0x48, 0x55, 0x4b, 0x43, 0x48, 0x55, 0x4b };
+
+  // Version of MXF spec to which an MXF file conforms
+  enum MXFVersion
+  {
+    MXFVersion_2004,
+    MXFVersion_2011,
+    MXFVersion_MAX
+  };
 
   //------------------------------------------------------------------------------------------
   //
@@ -528,11 +536,11 @@ namespace ASDCP
 
 	const MXF::RIP& GetRIP() const { return m_RIP; }
 
-	void InitHeader()
+	void InitHeader(const MXFVersion& mxf_ver)
 	{
 	  assert(m_Dict);
 	  assert(m_EssenceDescriptor);
-
+ 
 	  m_HeaderPart.m_Primer.ClearTagList();
 	  m_HeaderPart.m_Preface = new Preface(m_Dict);
 	  m_HeaderPart.AddChildObject(m_HeaderPart.m_Preface);
@@ -541,6 +549,20 @@ namespace ASDCP
 	  // so we tell the world by using OP1a
 	  m_HeaderPart.m_Preface->OperationalPattern = UL(m_Dict->ul(MDD_OP1a));
 	  m_HeaderPart.OperationalPattern = m_HeaderPart.m_Preface->OperationalPattern;
+
+	  if ( mxf_ver == MXFVersion_2004 )
+	    {
+	      m_HeaderPart.MinorVersion = 2;
+	      m_HeaderPart.m_Preface->Version = 258;
+	      m_HeaderPart.m_Preface->ObjectModelVersion = 1;
+	    }
+	  else
+	    {
+	      assert(mxf_ver == MXFVersion_2011);
+	      m_HeaderPart.MinorVersion = 3;
+	      m_HeaderPart.m_Preface->Version = 259;
+	      m_HeaderPart.m_Preface->ObjectModelVersion = 1;
+	    }
 
 	  // Identification
 	  Identification* Ident = new Identification(m_Dict);

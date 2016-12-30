@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    h__Writer.cpp
-    \version $Id: h__Writer.cpp,v 1.59 2015/10/09 23:41:11 jhurst Exp $
+    \version $Id: h__Writer.cpp,v 1.60 2016/12/02 23:28:26 jhurst Exp $
     \brief   MXF file writer base class
 */
 
@@ -141,7 +141,7 @@ ASDCP::h__ASDCPWriter::WriteASDCPHeader(const std::string& PackageLabel, const U
 					const std::string& TrackName, const UL& EssenceUL, const UL& DataDefinition,
 					const MXF::Rational& EditRate, ui32_t TCFrameRate, ui32_t BytesPerEditUnit)
 {
-  InitHeader();
+  InitHeader(MXFVersion_2004);
 
   // First RIP Entry
   if ( m_Info.LabelSetType == LS_MXF_SMPTE )  // ERK

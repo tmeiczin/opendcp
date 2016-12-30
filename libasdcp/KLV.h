@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2011, John Hurst
+Copyright (c) 2005-2016, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    KLV.h
-  \version $Id: KLV.h,v 1.29 2014/09/21 13:27:43 jhurst Exp $
+  \version $Id: KLV.h,v 1.31 2016/05/16 21:56:53 jhurst Exp $
   \brief   KLV objects
 */
 
@@ -108,7 +108,7 @@ inline const char* ui64sz(ui64_t i, char* buf)
       const char* EncodeString(char* str_buf, ui32_t buf_len) const;
       bool operator==(const UL& rhs) const;
       bool MatchIgnoreStream(const UL& rhs) const;
-      bool ExactMatch(const UL& rhs) const;
+      bool MatchExact(const UL& rhs) const;
     };
 
   // UMID
@@ -159,7 +159,8 @@ inline const char* ui64sz(ui64_t i, char* buf)
       bool AddEntry(const MDDEntry& Entry, ui32_t index);
       bool DeleteEntry(ui32_t index);
 
-      const MDDEntry* FindUL(const byte_t*) const;
+      const MDDEntry* FindULAnyVersion(const byte_t*) const;
+      const MDDEntry* FindULExact(const byte_t*) const;
       const MDDEntry* FindSymbol(const std::string&) const;
       const MDDEntry& Type(MDD_t type_id) const;
 

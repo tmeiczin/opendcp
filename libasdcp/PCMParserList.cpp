@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2004-2015, John Hurst
+Copyright (c) 2004-2016, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*! \file    PCMParserList.cpp
-    \version $Id: PCMParserList.cpp,v 1.12 2015/02/19 19:06:57 jhurst Exp $
+    \version $Id: PCMParserList.cpp,v 1.13 2016/03/09 20:05:26 jhurst Exp $
     \brief   Read WAV file(s), multiplex multiple PCM frame buffers into one
 */
 
@@ -297,6 +297,20 @@ ASDCP::PCMParserList::ReadFrame(PCM::FrameBuffer& OutFB)
 	}
     }
 
+  return result;
+}
+
+//
+ASDCP::Result_t ASDCP::PCMParserList::Seek(ui32_t frame_number)
+{
+  Result_t result = RESULT_OK;
+  PCMParserList::iterator self_i;
+
+  for( self_i = begin(); self_i != end() && ASDCP_SUCCESS(result); self_i++ )
+    {
+      result = (*self_i)->Parser.Seek(frame_number);
+    }
+  
   return result;
 }
 
