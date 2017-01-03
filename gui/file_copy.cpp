@@ -16,13 +16,15 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
-
-#include <QtGui>
 #include <QDir>
+#include <QtGui>
+#include <QPlainTextEdit>
+#include <QProgressDialog>
+#include <QTextEdit>
 #include <stdio.h>
 #include <stdlib.h>
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 
 void MainWindow::fileCopy(QString source, QString destination)
 {

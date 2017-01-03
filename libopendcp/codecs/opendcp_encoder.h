@@ -23,8 +23,8 @@
             OPENDCP_ENCODER(OPENDCP_ENCODER_KAKADU,   kakadu,   "j2c;j2k",  0)  \
             OPENDCP_ENCODER(OPENDCP_ENCODER_OPENJPEG, openjpeg, "j2c;j2k",  1)  \
             OPENDCP_ENCODER(OPENDCP_ENCODER_RAGNAROK, ragnarok, "j2c;j2k",  0)  \
-            OPENDCP_ENCODER(OPENDCP_ENCODER_REMOTE,   remote,   "j2c;j2k",  0)  \
             OPENDCP_ENCODER(OPENDCP_ENCODER_TIFF,     tif,      "tif;tiff", 1)  \
+            OPENDCP_ENCODER(OPENDCP_ENCODER_REMOTE,   remote,   "j2c;j2k",  0)  \
             OPENDCP_ENCODER(OPENDCP_ENCODER_NONE,     none,     "none",     1)
 
 #define GENERATE_ENCODER_ENUM(ENCODER, NAME, EXT, ENABLED) ENCODER,

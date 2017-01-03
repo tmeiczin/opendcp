@@ -209,7 +209,7 @@ int decode_video(opendcp_t *opendcp,  const char *file) {
     }
 
     /* determine required buffer size and allocate buffer */
-    n_bytes = avpicture_get_size(PIX_FMT_RGB24, av->p_codec_ctx->width, av->p_codec_ctx->height);
+    n_bytes = avpicture_get_size(AV_PIX_FMT_RGB24, av->p_codec_ctx->width, av->p_codec_ctx->height);
     buffer = (uint8_t *)av_malloc(n_bytes * sizeof(uint8_t));
 
     av->sws_ctx =
@@ -220,7 +220,7 @@ int decode_video(opendcp_t *opendcp,  const char *file) {
             av->p_codec_ctx->pix_fmt,
             av->p_codec_ctx->width,
             av->p_codec_ctx->height,
-            PIX_FMT_RGB24,
+            AV_PIX_FMT_RGB24,
             SWS_BILINEAR,
             NULL,
             NULL,
@@ -238,7 +238,7 @@ int decode_video(opendcp_t *opendcp,  const char *file) {
     }
 
     /* Assign appropriate parts of buffer to image planes in p_frame_rgb */
-    avpicture_fill((AVPicture *)p_frame_rgb, buffer, PIX_FMT_RGB24, av->p_codec_ctx->width, av->p_codec_ctx->height);
+    avpicture_fill((AVPicture *)p_frame_rgb, buffer, AV_PIX_FMT_RGB24, av->p_codec_ctx->width, av->p_codec_ctx->height);
 
     /* Read frames and re-encode */
     i = 1;

@@ -16,12 +16,14 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
-
+#include <QPlainTextEdit>
+#include <QProgressDialog>
+#include <QTextEdit>
 #include <stdio.h>
 #include <stdlib.h>
 #include <opendcp.h>
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 
 int calculateDigestCallback(void *p)
 {
