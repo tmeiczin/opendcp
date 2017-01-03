@@ -5,4 +5,8 @@
   <qresource prefix="images">
     <file>opendcp.png</file>
   </qresource>
+  <qresource prefix="/Icons">
+    <file alias="AppIcon32">opendcp.png</file>
+    <file alias="AppIcon128">opendcp.png</file>
+  </qresource>
 </RCC>

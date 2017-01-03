@@ -58,7 +58,7 @@ IF(ENABLE_XMLSEC AND COMPILE_XMLSEC)
     IF(WIN32)
         SET(URL ${URL}/xmlsec1-1.2.18.tar.gz)
     ELSE()
-        SET(URL ${URL}/xmlsec1-1.2.20.tar.gz)
+        SET(URL ${URL}/xmlsec1-1.2.23.tar.gz)
     ENDIF()
     EXTERNALPROJECT_ADD(
         06_XMLSEC1

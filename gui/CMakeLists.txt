@@ -9,9 +9,13 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
   ADD_DEFINITIONS(-g)
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
-#--find qt4-------------------------------------------------------------
-FIND_PACKAGE(Qt4 REQUIRED)
-INCLUDE(${QT_USE_FILE})
+#--find qt5-------------------------------------------------------------
+FIND_PACKAGE(Qt5 COMPONENTS Core Widgets LinguistTools REQUIRED)
+SET(CMAKE_AUTOMOC ON)
+#SET(CMAKE_AUTOUIC ON)
+SET(CMAKE_AUTORCC ON)
+SET(CMAKE_INCLUDE_CURRENT_DIR ON)
+#INCLUDE(${QT_USE_FILE})
 #-----------------------------------------------------------------------------
 
 #--set gui source-------------------------------------------------------------
@@ -46,7 +50,7 @@ SET(OPENDCP_GUI_UI
     forms/settings.ui
 )
 
-SET(OPENDCP_GUI_RES
+SET(OPENDCP_GUI_RESOURCE
      ${CMAKE_CURRENT_SOURCE_DIR}/resources/opendcp.qrc
 )
 #-----------------------------------------------------------------------------
@@ -81,6 +85,8 @@ ENDFOREACH(LANGUAGE ${LANGUAGES})
 
 #--set application icon and information---------------------------------------
 IF(APPLE)
+    SET(BUNDLE_TYPE MACOSX_BUNDLE)
+    SET(ICON_FILE ${CMAKE_CURRENT_SOURCE_DIR}/resources/opendcp.icns)
     SET(EXE_NAME ${OPENDCP_NAME})
     SET(MACOSX_BUNDLE_ICON_FILE opendcp.icns)
     SET(MACOSX_BUNDLE_GUI_IDENTIFIER org.opendcp.opendcp)
@@ -89,16 +95,10 @@ IF(APPLE)
     SET(MACOSX_BUNDLE_BUNDLE_VERSION ${OPENDCP_VERSION})
     SET(MACOSX_BUNDLE_BUNDLE_NAME ${OPENDCP_NAME})
     SET(MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2010-2012 Terrence Meiczinger. All Rights Reserved.")
-
-    IF(ENABLE_OSX386)
-        SET(CMAKE_OSX_ARCHITECTURES i386;x86_64)
-    ELSE()
-        SET(CMAKE_OSX_ARCHITECTURES x86_64)
-    ENDIF()
-
-    SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_SOURCE_DIR}/resources/opendcp.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-    SET(OPENDCP_GUI_CXX_SRC ${OPENDCP_GUI_CXX_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/resources/opendcp.icns)
+    SET(CMAKE_OSX_ARCHITECTURES x86_64)
+    SET_SOURCE_FILES_PROPERTIES(${ICON_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 ELSEIF(UNIX)
+    SET(BUNDLE_TYPE)
     STRING(TOLOWER ${OPENDCP_NAME} EXE_NAME)
     IF(NOT DESKTOP_ENTRY)
         SET(DESKTOP_ENTRY opendcp.desktop)
@@ -115,27 +115,28 @@ ELSEIF(UNIX)
         DEPENDS ${DESKTOP_ENTRY}
     )
  
-    SET(APP_ICON ${CMAKE_CURRENT_SOURCE_DIR}/resources/opendcp.png)
+    SET(ICON_FILE ${CMAKE_CURRENT_SOURCE_DIR}/resources/opendcp.png)
 ELSEIF(WIN32)
+    SET(BUNDLE_TYPE WIN32)
     STRING(TOLOWER ${OPENDCP_NAME} EXE_NAME)
     ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/opendcp_ico.o
                        COMMAND ${CMAKE_RC_COMPILER} -I${CMAKE_CURRENT_SOURCE_DIR} -i${CMAKE_CURRENT_SOURCE_DIR}/resources/opendcp.rc 
                                -o ${CMAKE_CURRENT_BINARY_DIR}/opendcp_ico.o)
-    SET(OPENDCP_GUI_CXX_SRC ${OPENDCP_GUI_CXX_SRC} ${CMAKE_CURRENT_BINARY_DIR}/opendcp_ico.o)
+    SET(ICON_FILE ${OPENDCP_GUI_CXX_SRC} ${CMAKE_CURRENT_BINARY_DIR}/opendcp_ico.o)
 ENDIF()
 #-----------------------------------------------------------------------------
 
-#--add qt4 src----------------------------------------------------------------
-QT4_ADD_RESOURCES(OPENDCP_GUI_RES_CXX ${OPENDCP_GUI_RES})
-QT4_WRAP_UI(OPENDCP_FORM_H ${OPENDCP_GUI_UI})
-QT4_WRAP_CPP(OPENDCP_MOC_H ${OPENDCP_GUI_H_SRC})
+#--add qt5 src----------------------------------------------------------------
+#QT5_ADD_RESOURCES(OPENDCP_GUI_RES_CXX ${OPENDCP_GUI_RES})
+QT5_WRAP_UI(OPENDCP_FORM_H ${OPENDCP_GUI_UI})
+#QT5_WRAP_CPP(OPENDCP_MOC_H ${OPENDCP_GUI_H_SRC})
 IF(LANGUAGE_TS_FILES)
   MESSAGE(STATUS "Building Language files ${LANGUAGE_TS_FILES}")
   FILE(GLOB OPENDCP_GEN_SRC "${CMAKE_CURRENT_BINARY_DIR}/*.h")
   IF(GENERATE_LANGUAGE_FILES)
-      QT4_CREATE_TRANSLATION(OPENDCP_QM_FILES ${OPENDCP_GUI_CXX_SRC} ${OPENDCP_GEN_SRC} ${LANGUAGE_TS_FILES})
+      QT5_CREATE_TRANSLATION(OPENDCP_QM_FILES ${OPENDCP_GUI_CXX_SRC} ${OPENDCP_GEN_SRC} ${LANGUAGE_TS_FILES})
   ELSE()
-      QT4_ADD_TRANSLATION(OPENDCP_QM_FILES ${LANGUAGE_TS_FILES})
+      QT5_ADD_TRANSLATION(OPENDCP_QM_FILES ${LANGUAGE_TS_FILES})
   ENDIF()
 ENDIF(LANGUAGE_TS_FILES)
 #-----------------------------------------------------------------------------
@@ -143,17 +144,12 @@ ENDIF(LANGUAGE_TS_FILES)
 #--compile gui----------------------------------------------------------------
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
-IF(APPLE)
-    ADD_EXECUTABLE(${EXE_NAME} MACOSX_BUNDLE ${OPENDCP_GUI_CXX_SRC} ${OPENDCP_GUI_RES_CXX} ${OPENDCP_FORM_H} ${OPENDCP_MOC_H} ${OPENDCP_QM_FILES})
-ELSEIF(WIN32)
-    ADD_EXECUTABLE(${EXE_NAME} WIN32 ${OPENDCP_GUI_CXX_SRC} ${OPENDCP_GUI_RES_CXX} ${OPENDCP_FORM_H} ${OPENDCP_MOC_H} ${OPENDCP_QM_FILES})
-ELSE()
-    ADD_EXECUTABLE(${EXE_NAME} ${OPENDCP_GUI_CXX_SRC} ${OPENDCP_GUI_RES_CXX} ${OPENDCP_FORM_H} ${OPENDCP_MOC_H} ${OPENDCP_QM_FILES})
-ENDIF()
+ADD_EXECUTABLE(${EXE_NAME} ${BUNDLE_TYPE} ${OPENDCP_GUI_CXX_SRC} ${OPENDCP_GUI_RESOURCE} ${ICON_FILE} ${OPENDCP_FORM_H} ${OPENDCP_MOC_H} ${OPENDCP_QM_FILES})
+QT5_USE_MODULES(${EXE_NAME} Widgets Core Concurrent PrintSupport)
 #----------------------------------------------------------------------------
 
 #--build---------------------------------------------------------------------
-SET_TARGET_PROPERTIES(${EXE_NAME} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+#SET_TARGET_PROPERTIES(${EXE_NAME} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
 SET_TARGET_PROPERTIES(${EXE_NAME} PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS})
 TARGET_LINK_LIBRARIES(${EXE_NAME} ${QT_LIBRARIES} ${OPENDCP_LIB} ${LIBS})
 #----------------------------------------------------------------------------
@@ -200,7 +196,7 @@ IF(APPLE)
     )
 ELSEIF(UNIX)
     SET(TRANSLATION_DEST_DIR share/opendcp/translation)
-    INSTALL(FILES ${APP_ICON} DESTINATION share/icons)
+    INSTALL(FILES ${ICON_FILE} DESTINATION share/icons)
     INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/opendcp.desktop DESTINATION share/applications)
 ELSEIF(WIN32)
     SET(TRANSLATION_DEST_DIR translation)

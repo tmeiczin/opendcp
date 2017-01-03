@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <QtGui/QApplication>
+#include <QtWidgets>
 #include "mainwindow.h"
 #include "translator.h"
 
@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
     }
 #endif
     QApplication a(argc, argv);
+    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
     QCoreApplication::setOrganizationName("OpenDCP");
     QCoreApplication::setOrganizationDomain("opendcp.org");

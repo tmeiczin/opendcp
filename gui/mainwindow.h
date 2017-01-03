@@ -19,6 +19,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QMainWindow>
+#include <QPlainTextEdit>
+#include <QTextEdit>
 #include <opendcp.h>
 #include "settings.h"
 

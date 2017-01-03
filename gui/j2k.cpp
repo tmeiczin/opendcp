@@ -16,15 +16,21 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
-#include "conversion_dialog.h"
-#include <QtGui>
+#include <QtConcurrent>
 #include <QDir>
+#include <QFileDialog>
+#include <QtGui>
+#include <QMessageBox>
+#include <QPlainTextEdit>
 #include <QPixmap>
+#include <QString>
+#include <QTextEdit>
 #include <stdio.h>
 #include <opendcp.h>
 #include <opendcp_encoder.h>
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include "conversion_dialog.h"
 
 enum J2K_STATE {
     DISABLED = 0,
@@ -167,7 +173,7 @@ void MainWindow::preview(QString filename)
 }
 
 int j2kEncode(QStringList pair) {
-    int rc = convert_to_j2k(context,pair.at(0).toAscii().data(),pair.at(1).toAscii().data());
+    int rc = convert_to_j2k(context,pair.at(0).toLatin1().data(),pair.at(1).toLatin1().data());
 
     return rc;
 }

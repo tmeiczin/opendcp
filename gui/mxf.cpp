@@ -16,11 +16,20 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include <QtConcurrent>
+#include <QDir>
+#include <QFileDialog>
+#include <QtGui>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QPixmap>
+#include <QString>
+#include <QTextEdit>
 #include <stdio.h>
 #include <stdlib.h>
 #include <opendcp.h>
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 #include "mxf_writer.h"
 #include "conversion_dialog.h"
 
