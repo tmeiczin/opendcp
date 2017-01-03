@@ -13,6 +13,7 @@ STRING(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
 #-------------------------------------------------------------------------------
 
 #--set os specifc linking mode--------------------------------------------------
+SET(BREW_DIR /usr/local)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules/)
 IF(${CMAKE_COMPILER_IS_GNUCC})
     SET(ENABLE_CLANG OFF)

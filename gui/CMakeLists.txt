@@ -86,6 +86,7 @@ ENDFOREACH(LANGUAGE ${LANGUAGES})
 #--set application icon and information---------------------------------------
 IF(APPLE)
     SET(BUNDLE_TYPE MACOSX_BUNDLE)
+    SET(INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Resources/Info.plist.in)
     SET(ICON_FILE ${CMAKE_CURRENT_SOURCE_DIR}/resources/opendcp.icns)
     SET(EXE_NAME ${OPENDCP_NAME})
     SET(MACOSX_BUNDLE_ICON_FILE opendcp.icns)
@@ -149,8 +150,11 @@ QT5_USE_MODULES(${EXE_NAME} Widgets Core Concurrent PrintSupport)
 #----------------------------------------------------------------------------
 
 #--build---------------------------------------------------------------------
-#SET_TARGET_PROPERTIES(${EXE_NAME} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+SET_TARGET_PROPERTIES(${EXE_NAME} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
 SET_TARGET_PROPERTIES(${EXE_NAME} PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS})
+IF (APPLE)
+    SET_TARGET_PROPERTIES(${EXE_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${INFO_PLIST})
+ENDIF(APPLE)
 TARGET_LINK_LIBRARIES(${EXE_NAME} ${QT_LIBRARIES} ${OPENDCP_LIB} ${LIBS})
 #----------------------------------------------------------------------------
 
