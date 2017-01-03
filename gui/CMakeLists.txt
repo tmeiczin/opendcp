@@ -10,7 +10,7 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 #--find qt5-------------------------------------------------------------
-FIND_PACKAGE(Qt5 COMPONENTS Core Widgets LinguistTools REQUIRED)
+FIND_PACKAGE(Qt5 COMPONENTS Core Widgets LinguistTools PrintSupport REQUIRED)
 SET(CMAKE_AUTOMOC ON)
 #SET(CMAKE_AUTOUIC ON)
 SET(CMAKE_AUTORCC ON)
