@@ -13,14 +13,14 @@ addons:
       - graphviz
 
 before_install:
-  - '[ "$TRAVIS_OS_NAME" != osx ] || brew update'
-  - '[ "$TRAVIS_OS_NAME" != osx ] || brew install libxmlsec1'
-  - '[ "$TRAVIS_OS_NAME" != osx ] || brew tap cartr/qt4'
-  - '[ "$TRAVIS_OS_NAME" != osx ] || brew tap cartr/qt4'
-  - '[ "$TRAVIS_OS_NAME" != osx ] || brew tap-pin cartr/qt4'
-  - '[ "$TRAVIS_OS_NAME" != osx ] || brew install qt@4'
-  - '[ "$TRAVIS_OS_NAME" == "centos" ] || yum install xmlsec-devel'
-  - '[ "$TRAVIS_OS_NAME" == "centos" ] || yum install xmlsec-openssl-devel'
+  - '[ "$TRAVIS_OS_NAME" == osx ] && brew update'
+  - '[ "$TRAVIS_OS_NAME" == osx ] && brew install libxmlsec1'
+  - '[ "$TRAVIS_OS_NAME" == osx ] && brew tap cartr/qt4'
+  - '[ "$TRAVIS_OS_NAME" == osx ] && brew tap cartr/qt4'
+  - '[ "$TRAVIS_OS_NAME" == osx ] && brew tap-pin cartr/qt4'
+  - '[ "$TRAVIS_OS_NAME" == osx ] && brew install qt@4'
+  - '[ "$TRAVIS_OS_NAME" == "centos" ] && yum install xmlsec-devel'
+  - '[ "$TRAVIS_OS_NAME" == "centos" ] && yum install xmlsec-openssl-devel'
 
 script:
   - mkdir build 
