@@ -19,8 +19,6 @@ before_install:
   - '[ "$TRAVIS_OS_NAME" == osx ] && brew tap cartr/qt4'
   - '[ "$TRAVIS_OS_NAME" == osx ] && brew tap-pin cartr/qt4'
   - '[ "$TRAVIS_OS_NAME" == osx ] && brew install qt@4'
-  - '[ "$TRAVIS_OS_NAME" == "centos" ] && yum install xmlsec-devel'
-  - '[ "$TRAVIS_OS_NAME" == "centos" ] && yum install xmlsec-openssl-devel'
 
 script:
   - mkdir build 
@@ -30,10 +28,6 @@ script:
 
 matrix:
   include:
-    - os: centos 
-      dist: 6
-      pack: rpm 
-      sudo: required
     - os: osx
       osx_image: xcode7.2
 
